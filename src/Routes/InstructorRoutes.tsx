@@ -1,0 +1,33 @@
+import { Routes, Route } from "react-router-dom";
+import InstructorHome from "@/Pages/Instructor/Home";
+import DashboardOverview from "@/Pages/Instructor/Dashboard";
+import Courses from "@/Pages/Instructor/Courses";
+import LandingPage from "@/Pages/Instructor/LandingPage";
+import Carricculam from "@/Pages/Instructor/Carriculam";
+import Profile from "@/Pages/Instructor/Profile";
+import Login from "@/Pages/Instructor/Login";
+import Signup from "@/Pages/Instructor/Signup";
+import OTPVerification from "@/Pages/Students/OtpPage";
+
+const InstructorRoutes = () => {
+  return (
+    <Routes>
+      <Route path="login" element={<Login />} />
+      <Route path="signup" element={<Signup />} />
+      <Route path="otpVerify" element={<OTPVerification />} />
+      <Route path="home" element={<InstructorHome />} />
+      <Route path="dashboard" element={<DashboardOverview />} />
+      <Route path="dashboard/courses" element={<Courses />} />
+      <Route path="dashboard/courses/landingpage" element={<LandingPage />} />
+      <Route
+        path="dashboard/courses/landingpage/:id"
+        element={<LandingPage />}
+      />
+      <Route path="dashboard/courses/carriculam" element={<Carricculam />} />
+      <Route path="dashboard/courses/carriculam/:id" element={<Carricculam />} />
+      <Route path="profile" element={<Profile />} />
+    </Routes>
+  );
+};
+
+export default InstructorRoutes;
