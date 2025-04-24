@@ -5,16 +5,16 @@ import Footer from "@/components/studentComponents/Footer";
 import { useEffect, useState } from "react";
 import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
-const baseUrl = import.meta.env.VITE_BASE_URL
+const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Courses = () => {
-    const [courses, setCourses] = useState<ICourseData[]>([]);
+  const [courses, setCourses] = useState<ICourseData[]>([]);
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-          const res = await studentAPI.getAllCourses();
-          console.log(res.courses);
+        const res = await studentAPI.getAllCourses();
+        console.log(res.courses);
         setCourses(res.courses);
       } catch (error) {
         console.error(error);
