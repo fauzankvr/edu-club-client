@@ -1,5 +1,5 @@
 
-import { Card, CardContent } from "@/Components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@iconify/react";
 
 const testimonials = [

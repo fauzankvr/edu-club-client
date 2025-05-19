@@ -8,6 +8,7 @@ import Profile from "@/Pages/Instructor/Profile";
 import Login from "@/Pages/Instructor/Login";
 import Signup from "@/Pages/Instructor/Signup";
 import OTPVerification from "@/Pages/Students/OtpPage";
+import ChatApp from "@/Pages/Instructor/Chatlist";
 
 const InstructorRoutes = () => {
   return (
@@ -23,9 +24,16 @@ const InstructorRoutes = () => {
         path="dashboard/courses/landingpage/:id"
         element={<LandingPage />}
       />
-      <Route path="dashboard/courses/carriculam" element={<Carricculam />} />
-      <Route path="dashboard/courses/carriculam/:id" element={<Carricculam />} />
+      <Route
+        path="dashboard/courses/editcarriculam/:id"
+        element={<Carricculam />}
+      />
+      <Route
+        path="dashboard/courses/addcarriculam/:id"
+        element={<Carricculam />}
+      />
       <Route path="profile" element={<Profile />} />
+      <Route path="dashboard/chatlist" element={<ChatApp />} />
     </Routes>
   );
 };

@@ -100,7 +100,7 @@ const handleSubmit = async (values: typeof initialValues) => {
   return (
     <>
       <Navbar />
-      <ToastContainer/>
+      <ToastContainer />
       <div className="max-w-4xl mx-auto border-2 border-indigo-500 p-6 rounded-xl mt-6 mb-6">
         <p className="text-sm mb-4 text-gray-600">
           Enter your correct details below
@@ -122,8 +122,8 @@ const handleSubmit = async (values: typeof initialValues) => {
                     <img
                       src={
                         typeof image === "string"
-                          ? `http://localhost:5000/${image}` 
-                          : URL.createObjectURL(image) 
+                     ? `http://localhost:5000/${image}` 
+                        : URL.createObjectURL(image)
                       }
                       alt="Profile"
                       className="object-cover w-full h-full"

@@ -6,7 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import instructorAPI from "@/API/InstructorApi";
 import CoureseSideBar from "./CourseSideBar";
 import * as Yup from "yup";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 // Define types for the curriculum structure
@@ -60,9 +60,13 @@ const validationSchema = Yup.object().shape({
 });
 
 const Carricculam = () => {
-  // Get course ID from URL params
+  // Get course ID and path from URL params
   const { id } = useParams<{ id?: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Determine if in edit mode based on URL path
+  const isEditMode = location.pathname.includes("editcarriculam");
 
   // Initial state for the form
   const defaultInitialValues: CurriculumFormValues = {
@@ -73,15 +77,14 @@ const Carricculam = () => {
 
   const [initialValues, setInitialValues] =
     useState<CurriculumFormValues>(defaultInitialValues);
-  const [loading, setLoading] = useState<boolean>(!!id);
-  const [isEditMode] = useState<boolean>(!!id);
+  const [loading, setLoading] = useState<boolean>(isEditMode && !!id);
 
-  // Get courseId from URL params if editing, otherwise from localStorage
-  const courseId: string = id || localStorage.getItem("courseId") || "";
+  // Get courseId from URL params
+  const courseId: string = id || "";
 
   useEffect(() => {
-    if (id) {
-      // We're in edit mode
+    if (isEditMode && id) {
+      // Fetch curriculum for edit mode
       instructorAPI
         .getCurriculumByCourseId(id)
         .then((res: { data: CurriculumResponse }) => {
@@ -107,7 +110,7 @@ const Carricculam = () => {
           setLoading(false);
         });
     }
-  }, [id]);
+  }, [id, isEditMode]);
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -194,20 +197,20 @@ const Carricculam = () => {
 
       let response;
 
-      if (isEditMode && id) {
+      if (isEditMode && courseId) {
         // Update existing curriculum
-        response = await instructorAPI.updateCurriculum(id, formData);
+        response = await instructorAPI.updateCurriculum(courseId, formData);
         toast.success("Curriculum updated successfully!");
+        navigate(`/Instructor/dashboard/courses/editcarriculam/${courseId}`);
       } else if (courseId) {
         // Create new curriculum
         response = await instructorAPI.postCarriculam(courseId, formData);
         console.log(response);
         toast.success("Curriculum created successfully!");
+        navigate(`/Instructor/dashboard/courses/addcarriculam/${courseId}`);
       } else {
         throw new Error("Course ID is required");
       }
-
-      navigate("/Instructor/dashboard/courses");
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "Unknown error occurred";
@@ -392,9 +395,7 @@ const Carricculam = () => {
                                                   src={`${
                                                     import.meta.env
                                                       .VITE_BASE_URL
-                                                  }/${
-                                                    lecture.videoPath
-                                                  }`}
+                                                  }/${lecture.videoPath}`}
                                                 />
                                               </div>
                                             ) : null}

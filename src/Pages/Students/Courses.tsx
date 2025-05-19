@@ -5,10 +5,12 @@ import Footer from "@/components/studentComponents/Footer";
 import { useEffect, useState } from "react";
 import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
+import { useNavigate } from "react-router-dom";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 const Courses = () => {
   const [courses, setCourses] = useState<ICourseData[]>([]);
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -23,6 +25,9 @@ const Courses = () => {
 
     fetchCourses();
   }, []);
+  const handleCardClick=(id:string)=>{
+    navigate(`/courses/details/${id}`);
+  }
 
   return (
     <>
@@ -86,7 +91,10 @@ const Courses = () => {
                       className="w-full md:w-52 h-32 md:h-36 object-cover rounded-md"
                     />
 
-                    <div className="flex-1 flex flex-col justify-between">
+                    <div
+                      className="flex-1 flex flex-col justify-between cursor-pointer"
+                      onClick={() => handleCardClick(item._id)}
+                    >
                       <div>
                         <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded font-medium">
                           {item.category}
@@ -111,16 +119,18 @@ const Courses = () => {
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-yellow-500 mt-1">
-                          <Icon icon="mdi:star" /> {item.rating}k
+                          <Icon icon="mdi:star" />k
+                          {/* {item.rating}k */}
                         </div>
 
                         <div className="flex gap-6 text-sm text-gray-500 mt-2 flex-wrap">
                           <div className="flex items-center gap-1">
                             <Icon icon="mdi:book-open-page-variant" /> Lesson{" "}
-                            {item.lessons}
+                            {/* {item.lesson} */}
                           </div>
                           <div className="flex items-center gap-1">
-                            <Icon icon="mdi:clock-outline" /> {item.duration}
+                            <Icon icon="mdi:clock-outline" />
+                            {/* {item.duration} */}
                           </div>
                           <div className="flex items-center gap-1">
                             <Icon icon="mdi:account-multiple-outline" />{" "}
@@ -132,7 +142,7 @@ const Courses = () => {
                       <div className="flex items-center justify-between mt-4 flex-wrap gap-4">
                         <div className="flex items-center gap-2">
                           <img
-                            src={item.instructor.avatar}
+                            src={`${baseUrl}/${item.instructor.profileImage}`}
                             alt="Instructor"
                             className="w-8 h-8 rounded-full"
                           />
@@ -141,7 +151,12 @@ const Courses = () => {
                           </span>
                         </div>
 
-                        <button className="ml-auto bg-indigo-600 text-white px-4 py-2 rounded-md">
+                        <button 
+                          className="cursor-pointer ml-auto bg-indigo-600 text-white px-4 py-2 rounded-md"
+                          onClick={()=>navigate(
+                            "/courses/checkout/${item.course._id}"
+                          )}
+                        >
                           Buy Now
                         </button>
                       </div>

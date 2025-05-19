@@ -28,7 +28,9 @@ const Navbar = () => {
     // }
     navigate("/profile");
   };
-
+  const handleWishlist = async () => {
+  navigate("/wishlist")
+}
   const handileLogout = async() => {
     try {
       console.log('logout')
@@ -58,7 +60,7 @@ const Navbar = () => {
           <a href="/courses" className="hover:text-indigo-600">
             Courses
           </a>
-          <a href="#" className="hover:text-indigo-600">
+          <a href="/mylearing" className="hover:text-indigo-600">
             My Learning
           </a>
           <a href="#" className="hover:text-indigo-600">
@@ -84,13 +86,29 @@ const Navbar = () => {
           </div>
         ) : (
           <div className="flex items-center gap-2">
+            {/* Wishlist Button */}
+            <button
+              onClick={() => handleWishlist()} // 👉 You can define this function
+              className="p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <Icon
+                icon="mdi:heart-outline"
+                className="w-7 h-7 text-pink-500"
+              />
+            </button>
+
+            {/* Profile Button */}
             <button
               onClick={() => handleProfile()}
               className="p-2 rounded-full hover:bg-gray-100 transition"
             >
               <Icon icon="mdi:account" className="w-7 h-7 text-indigo-600" />
             </button>
-            <Button variant="outline" onClick={handileLogout}>Logout</Button>
+
+            {/* Logout Button */}
+            <Button variant="outline" onClick={handileLogout}>
+              Logout
+            </Button>
           </div>
         )}
 

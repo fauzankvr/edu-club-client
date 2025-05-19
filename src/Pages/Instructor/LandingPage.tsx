@@ -13,11 +13,13 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 
 const CourseSchema = Yup.object().shape({
-  title: Yup.string().trim().required("Course title is required").max(40),
+  title: Yup.string().trim().required("Course title is required").max(50),
   description: Yup.string()
     .trim()
     .required("Course description is required")
-    .max(170),
+    .min(200, "Description must be at least 200 characters")
+    .max(1700, "Description cannot exceed 1500 characters"),
+
   language: Yup.string().trim().required("Language is required"),
   category: Yup.string().trim().required("Category is required"),
   price: Yup.number().required("Actual price is required"),
@@ -123,11 +125,14 @@ const LandingPage = () => {
       if (id) {
         response = await instructorAPI.updateCourse(id, sendData);
         toast.success(response.message);
-        navigate(`/Instructor/dashboard/courses/carriculam/${id}`);
+        navigate(`/Instructor/dashboard/courses/editcarriculam/${id}`);
       } else {
         response = await instructorAPI.createCourse(sendData);
+        console.log(response)
         toast.success(response.message);
-        navigate(`/Instructor/dashboard/courses/carriculam`);
+        navigate(
+          `/Instructor/dashboard/courses/addcarriculam/${response.course._id}`
+        );
       }
 
     } catch (err) {
@@ -181,14 +186,16 @@ const LandingPage = () => {
                   {/* Subtitle */}
                   <div className="mb-6">
                     <label className="block text-indigo-600 font-semibold mb-1">
-                      Course subtitle
+                      Course Description
                     </label>
-                    <Input
+                    <textarea
                       name="description"
                       onChange={handleChange}
                       value={values.description}
                       placeholder="Enter course subtitle"
+                      className="w-full p-2 border rounded-md min-h-[120px] resize-y"
                     />
+
                     {touched.description && errors.description && (
                       <p className="text-red-500 text-sm mt-1">
                         {String(errors.description)}

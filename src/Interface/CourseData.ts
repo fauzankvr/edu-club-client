@@ -1,3 +1,5 @@
+import { Instructor } from "./Iinstructro";
+
 export interface CourseFormData {
   title: string;
   subtitle: string;
@@ -14,11 +16,36 @@ export interface ICourseData {
   category: string;
   courseImageId: string;
   description: string;
-  discount: string; 
-  instructor: string;
+  discount: string;
+  instructor: {
+    name: string;
+    profileImage: string;
+  };
   language: string;
-  points: string[]; 
+  points: string[];
   price: number;
-  students: string[]; 
+  students: string[];
   title: string;
+  instructorDetails:Instructor
 }
+
+export interface ILecture {
+  title: string;
+  videoPath?: string;
+  pdfPath?: string;
+}
+
+export interface ISection {
+  title: string;
+  lectures: ILecture[];
+}
+
+export interface ICarriculam {
+  _id: string; 
+  courseId: string; 
+  instructor: string;
+  sections: ISection[];
+  createdAt: string; 
+  updatedAt: string;
+}
+

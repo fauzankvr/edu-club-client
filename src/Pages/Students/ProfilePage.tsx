@@ -118,7 +118,6 @@ const handleImageChange = (file: File) => {
 };
 
 
-
   return (
     <>
       <Navbar />

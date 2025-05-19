@@ -13,8 +13,8 @@ axiosInstance.interceptors.response.use(
 
     if (
       error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message ==="Unauthorized: No token provided"&&
+      error.response.status === 401 &&
+      error.response.data?.message === "Unauthorized: Token expired" &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
@@ -169,22 +169,22 @@ const instructorAPI = {
     }
   },
   updateCurriculum: async (courseId: string, formData: FormData) => {
-  try {
-    const response = await axiosInstance.put(
-      `/instructor/updateCurriculum/${courseId}`,
-      formData,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      }
-    );
+    try {
+      const response = await axiosInstance.put(
+        `/instructor/updateCurriculum/${courseId}`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
-    console.log("Curriculum updated:", response);
-    return response;
-  } catch (error) {
-    console.error("Error updating curriculum:", error);
-    throw error;
-  }
- },
+      console.log("Curriculum updated:", response);
+      return response;
+    } catch (error) {
+      console.error("Error updating curriculum:", error);
+      throw error;
+    }
+  },
   getAllCourses: async () => {
     try {
       const response = await axiosInstance.get("/instructor/getAllCourses");
@@ -205,7 +205,15 @@ const instructorAPI = {
       throw error;
     }
   },
+  getAllChats: async () => {
+    return await axiosInstance.get("/instructor/getAllChats");
+  },
+  getMessages: async (chatId: string) => {
+    return await axiosInstance.get(`/instructor/getMessages/${chatId}`);
+  },
+  postMessage: async (data: { chatId: string; text: string; sender: string }) => {
+    return await axiosInstance.post("/instructor/postMessage", data);
+  },
 };
-
 export default instructorAPI;
 

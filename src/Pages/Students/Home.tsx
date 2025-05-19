@@ -15,15 +15,15 @@ const Home = () => {
           <div className="container lg:px-8 mx-auto flex flex-col lg:flex-row items-center text-center lg:text-left">
             {/* Left: Heading */}
             <div className="w-full lg:w-1/2 ">
-              <h1 className="text-5xl font-bold text-gray-900 mb-4 lg:px-2">
-                Grow Your <span className="text-indigo-600">Skills</span> to
+              <h1 className="text-5xl font-bold text-gray-900 mb-4 lg:px-2 animate__animated animate__pulse">
+                Grow Your <span className="text-indigo-600 ">Skills</span> to
                 Advance Your Career Path
               </h1>
             </div>
 
             {/* Right: Description and Search Bar */}
             <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-              <p className="text-gray-700 max-w-2xl mx-auto lg:mx-0">
+              <p className="text-gray-700 max-w-2xl mx-auto lg:mx-0 animate__animated animate__fadeIn">
                 Unlock new skills and expand your knowledge. Learn from industry
                 experts at your own pace. Gain practical experience with
                 real-world projects. Take the next step toward a successful
@@ -52,14 +52,14 @@ const Home = () => {
             <InfoBox
               topText="25"
               bottomText="Online Courses"
-              right="2"
-              topValue="22"
+              right="20"
+              topValue="2"
             />
             <InfoBox
               topText="100"
-              bottomText="Expireance Mentor"
-              right="6"
-              topValue="2" 
+              bottomText="Experienced Mentor"
+              right="2"
+              topValue="12"
             />
           </div>
         </div>
@@ -67,9 +67,8 @@ const Home = () => {
         <TopCourses />
         <LookingFor />
         <Testimonials />
-        <Footer/>
-     </>
-      
+        <Footer />
+      </>
     );
 }
 
