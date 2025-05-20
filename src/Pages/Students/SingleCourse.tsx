@@ -9,8 +9,11 @@ import { ICarriculam, ICourseData } from "@/Interface/CourseData";
 import AiChat from "./AiChat";
 import Discussion from "./Discussion";
 import ChatTutorInterface from "./ChatWithTeacher";
-
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import { MediaPlayer, MediaProvider } from "@vidstack/react";
+import {
+  defaultLayoutIcons,
+  DefaultVideoLayout,
+} from "@vidstack/react/player/layouts/default";
 
 const TABS = [
   "Overview",
@@ -96,16 +99,19 @@ export default function SingleCourse() {
             <div className="bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center relative">
               {currentLesson ? (
                 currentLesson.videoPath ? (
-                  <video
-                    controls
-                    className="w-full h-full object-cover"
-                    src={`${baseUrl}/${currentLesson.videoPath}`}
+                  <MediaPlayer
+                    title="Sprite Fight"
+                    src={currentLesson.videoPath}
                   >
-                    Your browser does not support the video tag.
-                  </video>
+                    <MediaProvider />
+                    <DefaultVideoLayout
+                      thumbnails={currentLesson.videoPath}
+                      icons={defaultLayoutIcons}
+                    />
+                  </MediaPlayer>
                 ) : currentLesson.pdfPath ? (
                   <iframe
-                    src={`${baseUrl}/${currentLesson.pdfPath}`}
+                    src={currentLesson.pdfPath}
                     className="w-full h-full"
                     title="PDF Viewer"
                   />
@@ -157,9 +163,7 @@ export default function SingleCourse() {
                 <FeedbackSection courseId={course?._id ?? ""} />
               )}
               {currentTab === "Discussion" && <Discussion />}
-              {currentTab === "Contact Tutor" && (
-                <ChatTutorInterface/>
-              )}
+              {currentTab === "Contact Tutor" && <ChatTutorInterface />}
               {currentTab === "Not Book" && (
                 <p className="text-gray-600">Content for “Not Book” tab.</p>
               )}

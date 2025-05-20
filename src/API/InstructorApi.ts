@@ -72,11 +72,8 @@ const instructorAPI = {
   },
 
   getProfile: async () => {
-    const res = await axiosInstance
-      .get("/instructor/profile")
-      .then((res) => res.data);
-    console.log(res);
-    return res;
+    const res = await axiosInstance.get("/instructor/profile")
+    return res.data;
   },
 
   logout: async () => {
@@ -213,6 +210,12 @@ const instructorAPI = {
   },
   postMessage: async (data: { chatId: string; text: string; sender: string }) => {
     return await axiosInstance.post("/instructor/postMessage", data);
+  },
+  getAllCategories: () => {
+      return axiosInstance.get("/admin/category/getAll")
+  },
+  getAllLanguages: () => {
+    return axiosInstance.get("/admin/language/getAll")
   },
 };
 export default instructorAPI;

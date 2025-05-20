@@ -6,8 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { ICourseData } from "@/Interface/CourseData";
 import { IOrder } from "@/Interface/IOrder";
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
-
 export interface IEnrolledCourse {
   courseDetails: ICourseData;
   orderDetails: IOrder;
@@ -93,7 +91,7 @@ const MyLearning = () => {
                 className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-2xl transition border flex flex-col"
               >
                 <img
-                  src={`${baseUrl}/${course.courseDetails.courseImageId}`}
+                  src={course.courseDetails.courseImageId}
                   alt={course.courseDetails.title}
                   className="w-full h-40 object-cover"
                 />

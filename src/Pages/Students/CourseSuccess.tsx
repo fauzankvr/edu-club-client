@@ -6,7 +6,6 @@ import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { SyncLoader } from "react-spinners";
-const baseUrl = import.meta.env.VITE_BASE_URL;
 
 function CourseSuccessCard() {
   const [showSuccess, setShowSuccess] = useState(true);
@@ -87,7 +86,7 @@ function CourseSuccessCard() {
                 {/* Course Image */}
                 <div className="md:w-1/3 w-full">
                   <img
-                    src={`${baseUrl}/${course?.courseImageId}`}
+                    src={course?.courseImageId}
                     alt="Course Thumbnail"
                     className="w-full h-40 md:h-full object-cover rounded-lg"
                   />

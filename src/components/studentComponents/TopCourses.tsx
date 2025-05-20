@@ -7,8 +7,6 @@ import { useEffect, useState } from "react";
 import { ICourseData } from "@/Interface/CourseData";
 import studentAPI from "@/API/StudentApi";
 
-const baseUrl = import.meta.env.VITE_BASE_URL
-
 const TopCourses = () => {
   const navigate = useNavigate();
    const [courses, setCourses] = useState<ICourseData[]>([]);
@@ -66,7 +64,7 @@ const TopCourses = () => {
                 <CardContent className="px-4 py-3">
                   <div className="relative">
                     <img
-                      src={`${baseUrl}/${course.courseImageId}`}
+                      src={course.courseImageId}
                       alt={course.title}
                       className="w-full h-48 object-cover rounded-md"
                     />
@@ -109,7 +107,7 @@ const TopCourses = () => {
                       <div className="flex items-center">
                         <Avatar>
                           <AvatarImage
-                            src={`${baseUrl}/${course.instructor.profileImage}`}
+                            src={course.instructor.profileImage}
                             alt="Instructor"
                           />
                         </Avatar>

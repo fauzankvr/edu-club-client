@@ -3,6 +3,8 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button"; 
 import studentAPI from "@/API/StudentApi";
+import { NavLink } from "react-router-dom";
+
 // import { useSelector } from "react-redux";
 // import { RootState } from "@/features/student/redux/store";
 
@@ -11,7 +13,6 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate()
   const token = localStorage.getItem("studentToken");
-  console.log(token)
 
   const handleProfile = async () => {
     // try {
@@ -54,18 +55,46 @@ const Navbar = () => {
 
         {/* Navbar links (Hidden on small screens) */}
         <div className="hidden md:flex gap-16 text-lg font-medium">
-          <a href="/" className="hover:text-indigo-600">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-indigo-600 after:absolute after:left-0 after:bottom-[-4px] after:w-full after:h-[2px] after:bg-indigo-600"
+                : "hover:text-indigo-600"
+            }
+          >
             Home
-          </a>
-          <a href="/courses" className="hover:text-indigo-600">
+          </NavLink>
+          <NavLink
+            to="/courses"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-indigo-600 after:absolute after:left-0 after:bottom-[-4px] after:w-full after:h-[2px] after:bg-indigo-600"
+                : "hover:text-indigo-600"
+            }
+          >
             Courses
-          </a>
-          <a href="/mylearing" className="hover:text-indigo-600">
+          </NavLink>
+          <NavLink
+            to="/mylearning"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-indigo-600 after:absolute after:left-0 after:bottom-[-4px] after:w-full after:h-[2px] after:bg-indigo-600"
+                : "hover:text-indigo-600"
+            }
+          >
             My Learning
-          </a>
-          <a href="#" className="hover:text-indigo-600">
+          </NavLink>
+          <NavLink
+            to="/about"
+            className={({ isActive }) =>
+              isActive
+                ? "relative text-indigo-600 after:absolute after:left-0 after:bottom-[-4px] after:w-full after:h-[2px] after:bg-indigo-600"
+                : "hover:text-indigo-600"
+            }
+          >
             About
-          </a>
+          </NavLink>
         </div>
 
         {/* Buttons (Hidden on small screens) */}

@@ -7,6 +7,7 @@ const menuItems = [
   { label: "Teachers", icon: "mdi:teach", path: "/admin/teachers" },
   { label: "Courses", icon: "mdi:book-open-variant", path: "/admin/courses" },
   { label: "Categories", icon: "mdi:shape-outline", path: "/admin/categories" },
+  { label: "Languages", icon: "mdi:translate", path: "/admin/languages" },
   { label: "Plans", icon: "mdi:clipboard-list-outline", path: "/admin/plans" },
 ];
 

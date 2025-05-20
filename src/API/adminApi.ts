@@ -62,7 +62,26 @@ const adminApi = {
   },
   logout: () => {
     return axiosInstance.post("/admin/logout")
-  }
+  },
+
+  getAllCategories: () => {
+    return axiosInstance.get("/admin/category/getAll")
+  },
+  addCategory: (data: { name: string }) => {
+    return axiosInstance.post("/admin/category/add", data)
+  },
+  toggleCategoryStatus: (id: string) => {
+    return axiosInstance.patch(`/admin/category/update/${id}`)
+  },
+  getAllLanguages: () => {
+    return axiosInstance.get("/admin/language/getAll")
+  },
+  addLanguage: (data: { name: string }) => {
+    return axiosInstance.post("/admin/language/add", data)
+  },
+  toggleLanguageStatus: (id: string) => {
+    return axiosInstance.patch(`/admin/language/update/${id}`)
+  },
 };
 
 export default adminApi

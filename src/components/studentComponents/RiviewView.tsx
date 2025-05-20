@@ -8,8 +8,6 @@ import { toast } from "react-toastify";
 
 dayjs.extend(relativeTime);
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
-
 interface CourseContentProps {
   courseId: string;
 }
@@ -77,7 +75,7 @@ const ReviewCard: React.FC<CourseContentProps> = ({ courseId }) => {
         >
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             <img
-              src={`${baseUrl}/${review.userDetails.profileImage}`}
+              src={review.userDetails.profileImage}
               alt={`${review.userDetails.firstName} ${review.userDetails.lastName}`}
               className="w-14 h-14 rounded-full object-cover"
             />

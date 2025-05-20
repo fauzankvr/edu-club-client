@@ -122,8 +122,8 @@ const handleSubmit = async (values: typeof initialValues) => {
                     <img
                       src={
                         typeof image === "string"
-                     ? `http://localhost:5000/${image}` 
-                        : URL.createObjectURL(image)
+                          ? image
+                          : URL.createObjectURL(image)
                       }
                       alt="Profile"
                       className="object-cover w-full h-full"

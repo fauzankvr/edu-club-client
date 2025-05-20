@@ -6,8 +6,6 @@ import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
 import { useNavigate } from "react-router-dom";
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
-
 interface WishlistItem {
   _id: string;
   student: string;
@@ -32,14 +30,24 @@ const Wishlist = () => {
     }
   };
 
+  const handleRemove = async (courseId: string) => {
+    try {
+      await studentAPI.removeFromWishlist(courseId);
+      setWishlistItems((prev) =>
+        prev.filter((item) => item.course._id !== courseId)
+      );
+    } catch (error) {
+      console.error("Failed to remove from wishlist:", error);
+    }
+  };
+
+  const handleCardClick = (courseId: string) => {
+    navigate(`/courses/${courseId}`); // or detail page
+  };
+
   useEffect(() => {
     fetchWishlist();
   }, []);
-
-  const handleCardClick = (courseId: string) => {
-    console.log("Clicked course:", courseId);
-    // Optional: Navigate to course detail page
-  };
 
   return (
     <>
@@ -68,7 +76,7 @@ const Wishlist = () => {
               >
                 <div className="w-full h-40 overflow-hidden">
                   <img
-                    src={`${baseUrl}/${item.course.courseImageId}`}
+                    src={item.course.courseImageId}
                     alt={item.course.title}
                     className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300"
                   />
@@ -106,9 +114,18 @@ const Wishlist = () => {
                     <Icon icon="mdi:star" /> 4.5k
                   </div>
 
-                  <div className="mt-auto pt-3">
+                  <div className="mt-auto pt-3 grid grid-cols-2 gap-2">
                     <button
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-lg transition text-sm font-semibold"
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm font-semibold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(item.course._id);
+                      }}
+                    >
+                      Remove
+                    </button>
+                    <button
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition text-sm font-semibold"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/courses/checkout/${item.course._id}`);

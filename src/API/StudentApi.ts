@@ -55,7 +55,9 @@ const studentAPI = {
   login: (formdata: object) => {
     return axiosInstance.post("/student/login", formdata);
   },
-
+  googleLogin: ({ token }: { token: string }) => {
+    return axiosInstance.post("/student/google-login", { token });
+  },
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/student/verifyotp", formData);
   },
@@ -175,6 +177,9 @@ const studentAPI = {
   addToWishlist: (courseId: string) => {
     return axiosInstance.post(`/student/course/${courseId}/wishlist`);
   },
+  removeFromWishlist: (courseId: string) => {
+    return axiosInstance.delete(`/student/course/${courseId}/wishlist`);
+  },
   getWishlist: () => {
     return axiosInstance.get("/student/course/wishlist");
   },
@@ -206,10 +211,10 @@ const studentAPI = {
   getReplies: (discussionId: string) => {
     return axiosInstance.get(`/student/discussion/replay/${discussionId}`);
   },
-postChat: (chatData: { userId: string; instructorId: string }) => {
-  return axiosInstance.post("/student/chat", chatData);
-},
-getChat: (userId: string) => {
+  postChat: (chatData: { userId: string; instructorId: string }) => {
+    return axiosInstance.post("/student/chat", chatData);
+  },
+  getChat: (userId: string) => {
     return axiosInstance.get(`/student/chat/user/${userId}`);
   },
   getMessage: (selectedChatId: string) => {

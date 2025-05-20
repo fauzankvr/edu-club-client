@@ -9,76 +9,90 @@ import studentAPi from "@/API/StudentApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setProfile } from "@/features/student/redux/studentSlce";
 import { RootState } from "@/features/student/redux/store";
-import { ProfileData } from "../types/student"; 
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
+
+// Define the ProfileData interface
+interface ProfileData {
+  firstName: string;
+  lastName: string;
+  phone: string; // Changed to string to match Input component and API
+  linkedInId: string;
+  githubId: string;
+  profileImage: string;
+}
+
+// Define the API response type
+interface ProfileResponse {
+  profile: ProfileData & { email: string };
+}
 
 export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const navigate = useNavigate()
-  const successToast = () => toast.success("Profile Updated Successfully");
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const profile = useSelector((state: RootState) => state.student.profile);
-  const [email, setEmail] = useState("user@email.com");
- 
+  const [email, setEmail] = useState<string>("user@email.com");
+
   const [formData, setFormData] = useState<ProfileData>({
     firstName: "",
     lastName: "",
-    phone: 0,
+    phone: "",
     linkedInId: "",
     githubId: "",
     profileImage: "",
   });
-  const imageUrl = `${import.meta.env.VITE_BASE_URL}/${formData.profileImage}`;
+
+  const imageUrl = formData.profileImage;
 
   useLayoutEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await studentAPi.getProfile();
+        const res = (await studentAPi.getProfile()) as ProfileResponse;
         const profileData = res.profile;
-        setEmail(res.profile.email)
-        console.log(profileData)
+        setEmail(profileData.email);
+        console.log(profileData);
         dispatch(setProfile(profileData));
 
         setFormData({
-          firstName: profileData.firstName || "",
-          lastName: profileData.lastName || "",
-          profileImage: profileData.profileImage || "",
-          phone: profileData.phone || "",
-          linkedInId: profileData.linkedInId || "",
-          githubId: profileData.githubId || "",
+          firstName: profileData.firstName ?? "",
+          lastName: profileData.lastName ?? "",
+          profileImage: profileData.profileImage ?? "",
+          phone: profileData.phone ?? "",
+          linkedInId: profileData.linkedInId ?? "",
+          githubId: profileData.githubId ?? "",
         });
       } catch (err) {
-            console.error("Profile fetch failed:", err);
-           if (err.response?.status === 403) {
-             toast.error("Access denied. You have been blocked.");
-             navigate("/login"); 
-             localStorage.removeItem("studentToken");
-           } else {
-             toast.error("Failed to fetch profile.");
-           }
+        const error = err as AxiosError;
+        console.error("Profile fetch failed:", error);
+        if (error.response?.status === 403) {
+          toast.error("Access denied. You have been blocked.");
+          navigate("/login");
+          localStorage.removeItem("studentToken");
+        } else {
+          toast.error("Failed to fetch profile.");
+        }
       }
     };
 
     if (!profile) {
       fetchProfile();
     } else {
-      const { firstName, lastName, profileImage, phone, linkedInId, githubId } =
-        profile;
       setFormData({
-        firstName: firstName || "",
-        lastName: lastName || "",
-        profileImage: profileImage || "",
-        phone: phone || 0,
-        linkedInId: linkedInId || "",
-        githubId: githubId || "",
+        firstName: profile.firstName ?? "",
+        lastName: profile.lastName ?? "",
+        profileImage: profile.profileImage ?? "",
+        phone: profile.phone ?? "",
+        linkedInId: profile.linkedInId ?? "",
+        githubId: profile.githubId ?? "",
       });
     }
-  }, []);
+  }, [profile, dispatch, navigate]);
 
   const handleChange = <K extends keyof ProfileData>(
     field: K,
-    value: string
+    value: ProfileData[K]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -86,37 +100,38 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       const data = new FormData();
-      data.append("firstName", formData.firstName!);
-      data.append("lastName", formData.lastName!);
-      data.append("phone", formData.phone!.toString());
-      data.append("linkedInId", formData.linkedInId!);
-      data.append("githubId", formData.githubId!);
+      data.append("firstName", formData.firstName);
+      data.append("lastName", formData.lastName);
+      data.append("phone", formData.phone);
+      data.append("linkedInId", formData.linkedInId);
+      data.append("githubId", formData.githubId);
       if (selectedImage) {
-        data.append("profileImage", selectedImage); // key must match backend Multer field
+        data.append("profileImage", selectedImage);
       }
 
       const res = await studentAPi.updateProfile(data);
-      successToast();
+      toast.success("Profile Updated Successfully");
       console.log("Update success:", res);
     } catch (error) {
       console.error("Failed to update profile:", error);
+      toast.error("Failed to update profile.");
     }
   };
 
-
-  const displayName = `${formData.firstName} ${formData.lastName}`.trim();
-const handleImageChange = (file: File) => {
-  setSelectedImage(file);
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    setFormData((prev) => ({
-      ...prev,
-      profileImage: reader.result as string, // For preview only
-    }));
+  const handleImageChange = (file: File) => {
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        profileImage: reader.result as string, // For preview only
+      }));
+    };
+    reader.readAsDataURL(file);
   };
-  reader.readAsDataURL(file);
-};
 
+  const displayName =
+    `${formData.firstName} ${formData.lastName}`.trim() || "Student Name";
 
   return (
     <>
@@ -131,7 +146,7 @@ const handleImageChange = (file: File) => {
                   src={
                     formData.profileImage.startsWith("data:")
                       ? formData.profileImage // base64 preview
-                      : imageUrl 
+                      : imageUrl
                   }
                   alt="Profile Preview"
                   className="w-full h-full object-cover"
@@ -140,13 +155,11 @@ const handleImageChange = (file: File) => {
                 <Icon
                   icon="mdi:account"
                   width={25}
-                  className="text-white mx-auto "
+                  className="text-white mx-auto"
                 />
               )}
             </div>
-            <p className="mt-2 font-semibold">
-              {displayName || "Student Name"}
-            </p>
+            <p className="mt-2 font-semibold">{displayName}</p>
           </div>
           <nav className="mt-6 flex flex-col gap-2">
             {["My Profile", "My Courses", "Class Room", "Class Room"].map(
@@ -170,7 +183,7 @@ const handleImageChange = (file: File) => {
                   src={
                     formData.profileImage.startsWith("data:")
                       ? formData.profileImage // base64 preview
-                      : `http://localhost:5000/${formData.profileImage}` // server path
+                      : imageUrl
                   }
                   alt="Profile Preview"
                   className="w-full h-full object-cover"
@@ -179,7 +192,7 @@ const handleImageChange = (file: File) => {
                 <Icon
                   icon="mdi:account"
                   width={35}
-                  className="text-white mx-auto "
+                  className="text-white mx-auto"
                 />
               )}
             </div>
@@ -225,7 +238,7 @@ const handleImageChange = (file: File) => {
                   />
                   <Input
                     placeholder="Enter your Phone Number"
-                    value={formData.phone ?? ""}
+                    value={formData.phone}
                     className="sm:col-span-2"
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
@@ -237,12 +250,12 @@ const handleImageChange = (file: File) => {
                 <div className="grid grid-cols-1 gap-4">
                   <Input
                     placeholder="Enter your LinkedIn Url"
-                    value={formData.linkedInId ?? ""}
+                    value={formData.linkedInId}
                     onChange={(e) => handleChange("linkedInId", e.target.value)}
                   />
                   <Input
                     placeholder="Enter your Github Url"
-                    value={formData.githubId ?? ""}
+                    value={formData.githubId}
                     onChange={(e) => handleChange("githubId", e.target.value)}
                   />
                 </div>

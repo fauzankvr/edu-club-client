@@ -144,9 +144,7 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
 
               <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4">
                 <img
-                  src={`${import.meta.env.VITE_BASE_URL}/${
-                    course.courseImageId
-                  }`}
+                  src={course.courseImageId}
                   alt="Course preview"
                   className="w-full h-auto rounded-lg mb-4"
                 />

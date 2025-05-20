@@ -43,7 +43,7 @@ const Navbar = () => {
               Dashboard
             </a>
           ) : (
-            <a href="/instrucotr/login" className="hover:text-indigo-600">
+            <a href="/instructor/login" className="hover:text-indigo-600">
               Dashboard
             </a>
           )}

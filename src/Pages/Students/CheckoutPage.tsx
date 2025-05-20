@@ -6,7 +6,6 @@ import Checkout from "./Checkout";
 import { useParams } from "react-router-dom";
 import { ICourseData } from "@/Interface/CourseData";
 import studentAPI from "@/API/StudentApi";
-const baseUrl = import.meta.env.VITE_BASE_URL
 
 const CheckoutPage = () => {
   const [showModal, setShowModal] = useState(false); 
@@ -154,7 +153,7 @@ const CheckoutPage = () => {
             {/* Course */}
             <div className="flex items-center gap-4">
               <img
-                src={`${baseUrl}/${course?.courseImageId}`}
+                src={course?.courseImageId}
                 alt="Course"
                 className="w-16 h-16 rounded-full object-cover"
               />

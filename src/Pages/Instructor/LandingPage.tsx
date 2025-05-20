@@ -19,7 +19,6 @@ const CourseSchema = Yup.object().shape({
     .required("Course description is required")
     .min(200, "Description must be at least 200 characters")
     .max(1700, "Description cannot exceed 1500 characters"),
-
   language: Yup.string().trim().required("Language is required"),
   category: Yup.string().trim().required("Category is required"),
   price: Yup.number().required("Actual price is required"),
@@ -33,11 +32,16 @@ const CourseSchema = Yup.object().shape({
     .min(1, "At least one point is required"),
 });
 
-
 const LandingPage = () => {
   const { id } = useParams();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<{ _id: string; name: string }[]>(
+    []
+  );
+  const [languages, setLanguages] = useState<{ _id: string; name: string }[]>(
+    []
+  );
 
   interface CourseValues {
     title: string;
@@ -65,9 +69,18 @@ const LandingPage = () => {
     useState<CourseValues>(emptyInitialValues);
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      if (id) {
-        try {
+    const fetchCourseAndOptions = async () => {
+      try {
+        // Fetch categories
+        const categoryResponse = await instructorAPI.getAllCategories();
+        setCategories(categoryResponse.data); // Adjust based on actual response structure
+
+        // Fetch languages
+        const languageResponse = await instructorAPI.getAllLanguages();
+        setLanguages(languageResponse.data); // Adjust based on actual response structure
+
+        // Fetch course if id exists
+        if (id) {
           const course = await instructorAPI.getCourseById(id);
           const parsedPoints = Array.isArray(course.points[0])
             ? course.points
@@ -84,17 +97,16 @@ const LandingPage = () => {
             courseImgeId: null,
           });
 
-          const imageUrl = `${import.meta.env.VITE_BASE_URL}/${
-            course.courseImageId
-          }`;
+          const imageUrl = course.courseImageId;
           setImagePreview(imageUrl);
-        } catch (error) {
-          console.error("Failed to fetch course:", error);
         }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+        toast.error("Failed to load course data or options");
       }
     };
 
-    fetchCourse();
+    fetchCourseAndOptions();
   }, [id]);
 
   const handleImageChange = (
@@ -128,15 +140,14 @@ const LandingPage = () => {
         navigate(`/Instructor/dashboard/courses/editcarriculam/${id}`);
       } else {
         response = await instructorAPI.createCourse(sendData);
-        console.log(response)
         toast.success(response.message);
         navigate(
           `/Instructor/dashboard/courses/addcarriculam/${response.course._id}`
         );
       }
-
     } catch (err) {
       console.error("Error submitting course:", err);
+      toast.error("Failed to submit course");
     }
   };
 
@@ -178,12 +189,12 @@ const LandingPage = () => {
                     />
                     {touched.title && errors.title && (
                       <p className="text-red-500 text-sm mt-1">
-                        {String(errors.title)}
+                        {errors.title}
                       </p>
                     )}
                   </div>
 
-                  {/* Subtitle */}
+                  {/* Description */}
                   <div className="mb-6">
                     <label className="block text-indigo-600 font-semibold mb-1">
                       Course Description
@@ -192,32 +203,40 @@ const LandingPage = () => {
                       name="description"
                       onChange={handleChange}
                       value={values.description}
-                      placeholder="Enter course subtitle"
+                      placeholder="Enter course description"
                       className="w-full p-2 border rounded-md min-h-[120px] resize-y"
                     />
-
                     {touched.description && errors.description && (
                       <p className="text-red-500 text-sm mt-1">
-                        {String(errors.description)}
+                        {errors.description}
                       </p>
                     )}
                   </div>
 
-                  {/* Language & Category */}
+                  {/* Language & Category Dropdowns */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                       <label className="block text-indigo-600 font-semibold mb-1">
                         Language
                       </label>
-                      <Input
+                      <select
                         name="language"
                         onChange={handleChange}
                         value={values.language}
-                        placeholder="Language"
-                      />
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="" disabled>
+                          Select Language
+                        </option>
+                        {languages.map((lang) => (
+                          <option key={lang._id} value={lang.name}>
+                            {lang.name}
+                          </option>
+                        ))}
+                      </select>
                       {touched.language && errors.language && (
                         <p className="text-red-500 text-sm mt-1">
-                          {String(errors.language)}
+                          {errors.language}
                         </p>
                       )}
                     </div>
@@ -225,15 +244,24 @@ const LandingPage = () => {
                       <label className="block text-indigo-600 font-semibold mb-1">
                         Category
                       </label>
-                      <Input
+                      <select
                         name="category"
                         onChange={handleChange}
                         value={values.category}
-                        placeholder="Category"
-                      />
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="" disabled>
+                          Select Category
+                        </option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
                       {touched.category && errors.category && (
                         <p className="text-red-500 text-sm mt-1">
-                          {String(errors.category)}
+                          {errors.category}
                         </p>
                       )}
                     </div>
@@ -258,7 +286,7 @@ const LandingPage = () => {
                       />
                       {touched.price && errors.price && (
                         <p className="text-red-500 text-sm mt-1">
-                          {String(errors.price)}
+                          {errors.price}
                         </p>
                       )}
                     </div>
@@ -275,7 +303,7 @@ const LandingPage = () => {
                       />
                       {touched.discount && errors.discount && (
                         <p className="text-red-500 text-sm mt-1">
-                          {String(errors.discount)}
+                          {errors.discount}
                         </p>
                       )}
                     </div>

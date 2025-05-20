@@ -201,13 +201,13 @@ const Carricculam = () => {
         // Update existing curriculum
         response = await instructorAPI.updateCurriculum(courseId, formData);
         toast.success("Curriculum updated successfully!");
-        navigate(`/Instructor/dashboard/courses/editcarriculam/${courseId}`);
+        navigate(`/Instructor/dashboard/courses`);
       } else if (courseId) {
         // Create new curriculum
         response = await instructorAPI.postCarriculam(courseId, formData);
         console.log(response);
         toast.success("Curriculum created successfully!");
-        navigate(`/Instructor/dashboard/courses/addcarriculam/${courseId}`);
+        navigate(`/Instructor/dashboard/courses`);
       } else {
         throw new Error("Course ID is required");
       }
@@ -392,10 +392,7 @@ const Carricculam = () => {
                                                 <video
                                                   controls
                                                   className="rounded-md w-full"
-                                                  src={`${
-                                                    import.meta.env
-                                                      .VITE_BASE_URL
-                                                  }/${lecture.videoPath}`}
+                                                  src={lecture.videoPath}
                                                 />
                                               </div>
                                             ) : null}
@@ -464,10 +461,7 @@ const Carricculam = () => {
                                                   Current PDF
                                                 </p>
                                                 <iframe
-                                                  src={`${
-                                                    import.meta.env
-                                                      .VITE_BASE_URL
-                                                  }/${lecture.pdfPath}`}
+                                                  src={lecture.pdfPath}
                                                   className="w-full h-64 border rounded-md"
                                                   title={`PDF Preview ${sectionIndex}-${lectureIndex}`}
                                                 />

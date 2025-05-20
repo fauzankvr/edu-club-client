@@ -27,7 +27,7 @@ const Courses = () => {
 
     fetchCourses();
   }, []);
-  const imageUrl = import.meta.env.VITE_BASE_URL
+  // const imageUrl = import.meta.env.VITE_BASE_URL
 
   return (
     <>
@@ -82,7 +82,7 @@ const Courses = () => {
                 <img
                   src={
                     course.courseImageId
-                      ? `${imageUrl}/${course.courseImageId}`
+                      ? course.courseImageId
                       : "/images/seo-course.png"
                   }
                   alt={course.title}

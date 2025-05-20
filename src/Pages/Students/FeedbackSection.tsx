@@ -3,7 +3,6 @@ import { Icon } from "@iconify/react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"; // adjust path if needed
 import studentAPI from "@/API/StudentApi";
-const baseUrl = import.meta.env.VITE_BASE_URL
 import { toast, Toaster } from "react-hot-toast";
 
 dayjs.extend(relativeTime);
@@ -228,10 +227,11 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
               className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
             >
               <div className="flex items-center mb-3">
-                <div className="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-600 font-semibold mr-3">
+                <div className="w-10 h-10 bg-indigo-200 rounded-full overflow-hidden flex items-center justify-center mr-3">
                   <img
-                    src={`${baseUrl}/${review.userDetails.profileImage}`}
+                    src={review.userDetails.profileImage}
                     alt=""
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div>

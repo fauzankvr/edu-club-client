@@ -1,8 +1,6 @@
 import { Instructor } from "@/Interface/Iinstructro";
 // import { Icon } from "@iconify/react";
 
-const baseUrl = import.meta.env.VITE_BASE_URL;
-
 interface InstructorProfileProps {
   instructor: Instructor;
 }
@@ -15,7 +13,7 @@ const InstructorProfile: React.FC<InstructorProfileProps> = ({
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
         {/* Profile Image */}
         <img
-          src={`${baseUrl}/${instructor.profileImage}`}
+          src={instructor.profileImage}
           alt="Instructor"
           className="w-32 h-32 rounded-full object-cover border-4 border-indigo-100"
         />

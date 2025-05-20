@@ -12,6 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import studentApi from "@/API/StudentApi"; // make sure this exists
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -108,10 +109,37 @@ export default function Login() {
               or sign in with
             </div>
             <div className="flex gap-3 justify-center">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="flat-color-icons:google" className="text-xl" />
-                Google
-              </Button>
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  const token = credentialResponse.credential;
+
+                  if (!token) {
+                    toast.error("Google login token is missing.");
+                    return;
+                  }
+
+                  try {
+                    const res = await studentApi.googleLogin({ token }); // ✅ This works now
+
+                    if (res?.data?.success) {
+                      dispatch(setStudent(res.data.accessToken));
+                      localStorage.setItem(
+                        "studentToken",
+                        res.data.accessToken
+                      );
+                      successToast();
+                      navigate("/");
+                    } else {
+                      failToast();
+                    }
+                  } catch (err) {
+                    console.error("Google login error:", err);
+                    failToast();
+                  }
+                }}
+                onError={() => toast.error("Google login failed")}
+              />
+
               <Button variant="outline" className="flex items-center gap-2">
                 <Icon icon="logos:facebook" className="text-xl" />
                 Facebook

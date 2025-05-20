@@ -1,6 +1,6 @@
-import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Card } from "@/Components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
 export default function ForgotPassword() {
