@@ -53,7 +53,7 @@ export default function ProfilePage() {
         const profileData = res.profile;
         setEmail(profileData.email);
         console.log(profileData);
-        dispatch(setProfile(profileData));
+        dispatch(setProfile({ profile: profileData }));
 
         setFormData({
           firstName: profileData.firstName ?? "",

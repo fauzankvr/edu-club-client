@@ -1,8 +1,23 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 
-// Define filter options with their possible values
-const filterOptions = [
+// Define the shape of a filter option
+interface FilterOption {
+  name: string;
+  values: string[];
+}
+
+// Define the props for the component
+interface SidebarFiltersProps {
+  courses: any[]; // You can replace `any` with your Course type
+}
+
+// Selected filters map each filter name to its selected value
+type SelectedFilters = {
+  [key: string]: string;
+};
+
+const filterOptions: FilterOption[] = [
   { name: "Topics", values: ["Math", "Science", "History", "Literature"] },
   { name: "Language", values: ["English", "Spanish", "French", "German"] },
   {
@@ -16,19 +31,15 @@ const filterOptions = [
   },
 ];
 
-const SidebarFilters = ({ courses }) => {
-  // State to track which filter is expanded
-  const [expandedFilter, setExpandedFilter] = useState(null);
-  // State to track selected filter values
-  const [selectedFilters, setSelectedFilters] = useState({});
+const SidebarFilters: React.FC<SidebarFiltersProps> = ({ courses }) => {
+  const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
 
-  // Toggle filter expansion
-  const toggleFilter = (filterName) => {
-    setExpandedFilter(expandedFilter === filterName ? null : filterName);
+  const toggleFilter = (filterName: string) => {
+    setExpandedFilter((prev) => (prev === filterName ? null : filterName));
   };
 
-  // Handle filter value selection
-  const handleFilterSelect = (filterName, value) => {
+  const handleFilterSelect = (filterName: string, value: string) => {
     setSelectedFilters((prev) => ({
       ...prev,
       [filterName]: value,
@@ -43,8 +54,8 @@ const SidebarFilters = ({ courses }) => {
       </button>
 
       <div className="space-y-6">
-        {filterOptions.map((option, index) => (
-          <div key={index}>
+        {filterOptions.map((option) => (
+          <div key={option.name}>
             <div
               className="flex justify-between items-center text-gray-700 font-medium border-b pb-2 cursor-pointer"
               onClick={() => toggleFilter(option.name)}
@@ -61,9 +72,9 @@ const SidebarFilters = ({ courses }) => {
             </div>
             {expandedFilter === option.name && (
               <div className="mt-2 space-y-2">
-                {option.values.map((value, idx) => (
+                {option.values.map((value) => (
                   <div
-                    key={idx}
+                    key={value}
                     className={`p-2 cursor-pointer rounded ${
                       selectedFilters[option.name] === value
                         ? "bg-indigo-100 text-indigo-700"

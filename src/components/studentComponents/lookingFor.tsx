@@ -1,5 +1,5 @@
-import { Button } from "@/Components/ui/button";
-import { Card, CardContent } from "@/Components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@iconify/react";
 import teacherImage from "@/assets/students/teacherimage.png"
 import studentImg from "@/assets/students/studetnimage.png"
