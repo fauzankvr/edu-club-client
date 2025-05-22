@@ -12,7 +12,7 @@ import { NavLink } from "react-router-dom";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate()
-  const token = localStorage.getItem("studentToken");
+  const token = localStorage.getItem("studentToken"); 
 
   const handleProfile = async () => {
     // try {
@@ -157,22 +157,28 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden flex flex-col items-center gap-3 py-4 border-t">
-          <a href="#" className="hover:text-blue-600">
+          <a href="/home" className="hover:text-blue-600">
             Home
           </a>
-          <a href="#" className="hover:text-blue-600">
+          <a href="/courses" className="hover:text-blue-600">
             Courses
           </a>
-          <a href="#" className="hover:text-blue-600">
+          <a href="/mylearning" className="hover:text-blue-600">
             My Learning
           </a>
-          <a href="#" className="hover:text-blue-600">
+          <a href="/about" className="hover:text-blue-600">
             About
           </a>
-          <button className="w-sm px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white transition">
+          <button
+            className="w-sm px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white transition"
+            onClick={() => navigate("/login")}
+          >
             Login
           </button>
-          <button className="w-sm px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition">
+          <button
+            className="w-sm px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+            onClick={() => navigate("/signup")}
+          >
             Sign Up
           </button>
         </div>

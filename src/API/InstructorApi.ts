@@ -4,6 +4,19 @@ import { store } from "@/features/student/redux/store";
 import { ProfileData } from "@/Pages/types/student";
 
 
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (config.url?.startsWith("/instructor")) {
+      const accessToken = localStorage.getItem("InstructorToken");
+      if (accessToken) {
+        config.headers["Authorization"] = `Bearer ${accessToken}`;
+      }       
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {

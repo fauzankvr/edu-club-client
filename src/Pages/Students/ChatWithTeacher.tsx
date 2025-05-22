@@ -1,8 +1,9 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent, JSX } from "react";
-import { useParams } from "react-router-dom";
-import { Video, Phone } from "lucide-react";
+import {useParams } from "react-router-dom";
+import { Video} from "lucide-react";
 import io from "socket.io-client";
 import studentAPI from "@/API/StudentApi";
+import premiumImg from "../../assets/students/premiumicon.png";
 
 const baseUri = import.meta.env.VITE_BASE_URL;
 
@@ -52,6 +53,7 @@ export default function ChatTutorInterface(): JSX.Element {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -251,11 +253,7 @@ export default function ChatTutorInterface(): JSX.Element {
       )}
       <div className="bg-gray-200 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <img
-            src="/api/placeholder/50/50"
-            alt="Premium"
-            className="w-10 h-10"
-          />
+          <img src={premiumImg} alt="Premium" className="w-10 h-10" />
           <div>
             <h2 className="text-indigo-600 font-medium">
               Unlock Premium Features - Upgrade Your Plan Today!
@@ -274,22 +272,30 @@ export default function ChatTutorInterface(): JSX.Element {
         <div className="flex-1 text-center">Make Video call to instructor</div>
         <div className="flex space-x-4">
           <button className="bg-blue-500 p-2 rounded-full">
-            <Video size={20} className="text-white" />
+            <Video
+              size={20}
+              className="text-white"
+              onClick={() => window.open("/video-call", "_blank")}
+            />
           </button>
-          <button className="bg-blue-500 p-2 rounded-full">
+          {/* <button className="bg-blue-500 p-2 rounded-full">
             <Phone size={20} className="text-white" />
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="bg-gray-50 p-4 border-b border-gray-200 flex items-center">
         {chat?.instructor?.profileImage ? (
           <img
-            src={`${baseUri}/${chat.instructor.profileImage}`}
+            src={chat.instructor.profileImage}
             alt="Instructor"
             className="w-8 h-8 rounded-full object-cover mr-3"
           />
         ) : (
-          <div className="w-8 h-8 bg-gray-300 rounded-full mr-3" />
+          <img
+            src="/avathar.jpg"
+            alt="Instructor"
+            className="w-8 h-8 rounded-full object-cover mr-3"
+          />
         )}
         <div className="font-medium">
           {chat?.instructor?.fullName

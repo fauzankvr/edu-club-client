@@ -188,7 +188,7 @@ const ChatApp: React.FC = () => {
                 )}
               >
                 <img
-                  src={`${baseUri}/${contact.avatar}`}
+                  src={contact.avatar}
                   alt={contact.name}
                   className="w-10 h-10 rounded-full object-cover"
                 />

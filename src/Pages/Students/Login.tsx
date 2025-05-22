@@ -13,10 +13,14 @@ import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import studentApi from "@/API/StudentApi"; // make sure this exists
 import { GoogleLogin } from "@react-oauth/google";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const successToast = () => toast.success("Login successful!");
   const failToast = () => toast.error("Login failed");
@@ -74,14 +78,25 @@ export default function Login() {
                 </div>
               )}
 
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password *"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password *"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="pr-10"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               {formik.touched.password && formik.errors.password && (
                 <div className="text-red-500 text-sm">
                   {formik.errors.password}

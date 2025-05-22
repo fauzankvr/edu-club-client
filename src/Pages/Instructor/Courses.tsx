@@ -96,7 +96,7 @@ const Courses = () => {
                     <span>{course.duration || "0h"}</span>
                     <span>Students {course.students?.length || 0}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
+                  {/* <div className="flex items-center gap-2 text-sm">
                     <img
                       src={
                         course.instructor?.image || "/images/default-user.png"
@@ -105,14 +105,14 @@ const Courses = () => {
                       className="w-6 h-6 rounded-full"
                     />
                     <span>{course.instructor?.name || "Unknown"}</span>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="text-right">
-                  {course.oldPrice && (
+                  {/* {course.discount && (
                     <p className="text-gray-400 line-through">
-                      ₹{course.oldPrice}
+                      ₹{course.discount}
                     </p>
-                  )}
+                  )} */}
                   <p className="text-lg text-indigo-600 font-bold">
                     ₹{course.price}
                   </p>

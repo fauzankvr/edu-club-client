@@ -10,6 +10,7 @@ import Signup from "@/Pages/Instructor/Signup";
 import OTPVerification from "@/Pages/Students/OtpPage";
 import ChatApp from "@/Pages/Instructor/Chatlist";
 import ProtectedRoute from "@/Middleware/ProtectedRouteIn";
+import VideoCallApp from "@/Pages/Instructor/VideoList";
 
 const InstructorRoutes = () => {
   return (
@@ -39,6 +40,7 @@ const InstructorRoutes = () => {
       />
       <Route path="profile" element={<Profile />} />
         <Route path="dashboard/chatlist" element={<ChatApp />} />
+        <Route path="dashboard/video-call" element={<VideoCallApp />} />
     </Route>
     </Routes>
   );

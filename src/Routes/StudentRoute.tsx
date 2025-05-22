@@ -13,6 +13,7 @@ import SingleCourse from "@/Pages/Students/SingleCourse";
 import Wishlist from "@/Pages/Students/Wishlist";
 import MyLearning from "@/Pages/Students/MyLearning";
 import ProtectedRoute from "@/Middleware/ProtectedRouteStd";
+import VideoCallApp from "@/Pages/Students/VideoCall";
 
 const StudentRoute = () => {
   return (
@@ -37,6 +38,7 @@ const StudentRoute = () => {
         <Route path="/courses/singlecourse/:id" element={<SingleCourse />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/mylearning" element={<MyLearning />} />
+        <Route path="/video-call" element={<VideoCallApp />} />
       </Route>
     </Routes>
   );

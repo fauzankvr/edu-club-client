@@ -31,7 +31,7 @@ const Sidebar = () => {
     },
     {
       name: "Live Class",
-      path: "/Instructor/dashboard/live",
+      path: "/Instructor/dashboard/video-call",
       icon: "mdi:video",
     },
     {
