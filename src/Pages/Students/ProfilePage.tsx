@@ -109,7 +109,16 @@ export default function ProfilePage() {
         data.append("profileImage", selectedImage);
       }
 
-      const res = await studentAPi.updateProfile(data);
+      const profileData: ProfileData = {
+        firstName: data.get("firstName") as string,
+        lastName: data.get("lastName") as string,
+        phone: data.get("phone") as string,
+        linkedInId: data.get("linkedInId") as string,
+        githubId: data.get("githubId") as string,
+        profileImage: data.get("profileImage") as string,
+      };
+
+      const res = await studentAPi.updateProfile(profileData);
       toast.success("Profile Updated Successfully");
       console.log("Update success:", res);
     } catch (error) {

@@ -31,7 +31,7 @@ const filterOptions: FilterOption[] = [
   },
 ];
 
-const SidebarFilters: React.FC<SidebarFiltersProps> = ({ courses }) => {
+const SidebarFilters: React.FC<SidebarFiltersProps> = () => {
   const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
 
