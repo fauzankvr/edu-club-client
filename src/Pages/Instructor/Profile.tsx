@@ -9,27 +9,31 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import instructorApi from "@/API/InstructorApi";
+import { ProfileData } from "../types/student";
 
-const successToast = () => toast.success("Profile Updated Successfully");
+// Toast on successful profile update
+const successToast = () => toast.success("Profile updated successfully");
 
+// Validation schema
 const ProfileSchema = Yup.object().shape({
-  fullName: Yup.string().required("Full name is required"),
-  dateOfBirth: Yup.string().required("Date of birth is required"),
-  nationality: Yup.string().required("Nationality is required"),
-  eduQulification: Yup.string().required("Education is required"),
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
   phone: Yup.string()
     .required("Phone number is required")
     .matches(/^[0-9]{10}$/, "Phone must be 10 digits"),
+  linkedInId: Yup.string().nullable(),
+  githubId: Yup.string().nullable(),
 });
 
+
 const Profile = () => {
-  const [image, setImage] = useState<File | null>(null);
-  const [initialValues, setInitialValues] = useState({
-    fullName: "",
-    dateOfBirth: "",
-    nationality: "",
-    eduQulification: "",
+  const [image, setImage] = useState<File | null | string>(null);
+  const [initialValues, setInitialValues] = useState<ProfileData>({
+    firstName: "",
+    lastName: "",
     phone: "",
+    linkedInId: "",
+    githubId: "",
     profileImage: "",
   });
 
@@ -40,11 +44,11 @@ const Profile = () => {
         const profileData = res.profile;
 
         setInitialValues({
-          fullName: profileData.fullName || "",
-          dateOfBirth: profileData.dateOfBirth?.split("T")[0] || "",
-          nationality: profileData.nationality || "",
-          eduQulification: profileData.eduQulification || "",
-          phone: profileData.phone || "",
+          firstName: profileData.firstName || "",
+          lastName: profileData.lastName || "",
+          phone: profileData.phone?.toString() || "",
+          linkedInId: profileData.linkedInId || "",
+          githubId: profileData.githubId || "",
           profileImage: profileData.profileImage || "",
         });
 
@@ -59,52 +63,32 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  // const handleImageUpload = (
-  //   e: React.ChangeEvent<HTMLInputElement>,
-  //   setFieldValue: any
-  // ) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-  //     const file = e.target.files[0];
-  //     setImage(file);
+  const handleSubmit = async (values: ProfileData) => {
+    try {
+      const formData = new FormData();
+      formData.append("firstName", values.firstName || "");
+      formData.append("lastName", values.lastName || "");
+      formData.append("phone", values.phone || "");
+      formData.append("linkedInId", values.linkedInId || "");
+      formData.append("githubId", values.githubId || "");
 
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setFieldValue("profileImage", reader.result);
-  //     };
-  //     reader.readAsData(file);
-  //   }
-  // };
+      if (image && typeof image !== "string") {
+        formData.append("profileImage", image);
+      }
 
-const handleSubmit = async (values: typeof initialValues) => {
-  try {
-    const formData = new FormData();
-    formData.append("fullName", values.fullName);
-    formData.append("dateOfBirth", values.dateOfBirth);
-    formData.append("nationality", values.nationality);
-    formData.append("eduQulification", values.eduQulification);
-    formData.append("phone", values.phone);
-
-    // Append image file if selected
-    if (image && typeof image !== "string") {
-      formData.append("profileImage", image);
+      await instructorApi.updateProfile(formData as ProfileData);
+      successToast();
+    } catch (error) {
+      console.error("Failed to update profile:", error);
     }
-
-    await instructorApi.updateProfile(formData); // should handle multipart
-    successToast();
-  } catch (error) {
-    console.error("Failed to update profile:", error);
-  }
-};
-
+  };
 
   return (
     <>
       <Navbar />
       <ToastContainer />
       <div className="max-w-4xl mx-auto border-2 border-indigo-500 p-6 rounded-xl mt-6 mb-6">
-        <p className="text-sm mb-4 text-gray-600">
-          Enter your correct details below
-        </p>
+        <p className="text-sm mb-4 text-gray-600">Update your profile below</p>
 
         <Formik
           enableReinitialize
@@ -115,8 +99,7 @@ const handleSubmit = async (values: typeof initialValues) => {
           {({ errors, touched, setFieldValue }) => (
             <Form>
               <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
-                <h2 className="text-lg font-semibold">{touched.fullName}</h2>
-                {/* Image preview box */}
+                {/* Image Preview */}
                 <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
                   {image ? (
                     <img
@@ -133,7 +116,6 @@ const handleSubmit = async (values: typeof initialValues) => {
                   )}
                 </div>
 
-                {/* File input & trigger */}
                 <div className="flex flex-col gap-2">
                   <input
                     id="profileImage"
@@ -153,8 +135,6 @@ const handleSubmit = async (values: typeof initialValues) => {
                     }}
                     className="hidden"
                   />
-
-                  {/* Fix: Button triggers hidden file input */}
                   <button
                     type="button"
                     className="text-indigo-600 underline text-sm cursor-pointer"
@@ -167,77 +147,45 @@ const handleSubmit = async (values: typeof initialValues) => {
                 </div>
               </div>
 
+              {/* Form Fields */}
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="fullName" className="font-semibold">
-                    Your Full Name
-                  </Label>
-                  <Field
-                    as={Input}
-                    name="fullName"
-                    placeholder="Enter full name"
-                    className="mt-1 border border-indigo-500"
-                  />
-                  {errors.fullName && touched.fullName && (
-                    <div className="text-red-500 text-sm">
-                      {errors.fullName}
-                    </div>
-                  )}
-                </div>
-
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
-                    <Label htmlFor="dateOfBirth" className="font-semibold">
-                      Date of Birth
+                    <Label htmlFor="firstName" className="font-semibold">
+                      First Name
                     </Label>
                     <Field
-                      type="date"
-                      name="dateOfBirth"
-                      className="mt-1 border border-indigo-500 w-full"
                       as={Input}
+                      name="firstName"
+                      placeholder="Enter first name"
+                      className="mt-1 border border-indigo-500"
                     />
-                    {errors.dateOfBirth && touched.dateOfBirth && (
+                    {errors.firstName && touched.firstName && (
                       <div className="text-red-500 text-sm">
-                        {errors.dateOfBirth}
+                        {errors.firstName}
                       </div>
                     )}
                   </div>
+
                   <div className="flex-1">
-                    <Label htmlFor="nationality" className="font-semibold">
-                      Nationality
+                    <Label htmlFor="lastName" className="font-semibold">
+                      Last Name
                     </Label>
                     <Field
                       as={Input}
-                      name="nationality"
-                      placeholder="Nationality"
+                      name="lastName"
+                      placeholder="Enter last name"
                       className="mt-1 border border-indigo-500"
                     />
-                    {errors.nationality && touched.nationality && (
+                    {errors.lastName && touched.lastName && (
                       <div className="text-red-500 text-sm">
-                        {errors.nationality}
+                        {errors.lastName}
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="eduQulification" className="font-semibold">
-                      Education Qualification
-                    </Label>
-                    <Field
-                      as={Input}
-                      name="eduQulification"
-                      placeholder="Enter qualification"
-                      className="mt-1 border border-indigo-500"
-                    />
-                    {errors.eduQulification && touched.eduQulification && (
-                      <div className="text-red-500 text-sm">
-                        {errors.eduQulification}
-                      </div>
-                    )}
-                  </div>
-
                   <div className="flex-1">
                     <Label htmlFor="phone" className="font-semibold">
                       Phone Number
@@ -245,13 +193,37 @@ const handleSubmit = async (values: typeof initialValues) => {
                     <Field
                       as={Input}
                       name="phone"
-                      placeholder="Enter phone number"
+                      placeholder="Enter 10-digit phone number"
                       className="mt-1 border border-indigo-500"
                     />
                     {errors.phone && touched.phone && (
                       <div className="text-red-500 text-sm">{errors.phone}</div>
                     )}
                   </div>
+
+                  <div className="flex-1">
+                    <Label htmlFor="linkedInId" className="font-semibold">
+                      LinkedIn ID
+                    </Label>
+                    <Field
+                      as={Input}
+                      name="linkedInId"
+                      placeholder="LinkedIn profile URL"
+                      className="mt-1 border border-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="githubId" className="font-semibold">
+                    GitHub ID
+                  </Label>
+                  <Field
+                    as={Input}
+                    name="githubId"
+                    placeholder="GitHub profile URL"
+                    className="mt-1 border border-indigo-500"
+                  />
                 </div>
               </div>
 
