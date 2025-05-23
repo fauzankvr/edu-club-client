@@ -1,50 +1,69 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Icon } from "@iconify/react";
 
-// Define the shape of a filter option
 interface FilterOption {
   name: string;
   values: string[];
 }
 
-// Define the props for the component
 interface SidebarFiltersProps {
-  courses: any[]; // You can replace `any` with your Course type
+  language: string[];
+  category: string[];
+  selectedFilters: { [key: string]: string  };
+  onFilterChange: (filters: { [key: string]: string  }) => void;
 }
 
-// Selected filters map each filter name to its selected value
-type SelectedFilters = {
-  [key: string]: string;
-};
-
-const filterOptions: FilterOption[] = [
-  { name: "Topics", values: ["Math", "Science", "History", "Literature"] },
-  { name: "Language", values: ["English", "Spanish", "French", "German"] },
-  {
-    name: "Rating",
-    values: ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"],
-  },
-  { name: "Price", values: ["Free", "$1-$10", "$10-$50", "$50+"] },
-  {
-    name: "Video Duration",
-    values: ["0-10 min", "10-30 min", "30-60 min", "60+ min"],
-  },
-];
-
-const SidebarFilters: React.FC<SidebarFiltersProps> = () => {
+export const SidebarFilters: React.FC<SidebarFiltersProps> = ({
+  language,
+  category,
+  selectedFilters,
+  onFilterChange,
+}) => {
   const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
+
+  const filterOptions: FilterOption[] = useMemo(
+    () => [
+      { name: "Topics", values: category },
+      { name: "Language", values: language },
+      {
+        name: "Rating",
+        values: ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"],
+      },
+      { name: "Price", values: ["Free", "₹100-₹1000", "₹1000-₹5000", "₹5000+"] },
+    ],
+    [language, category]
+  );
+  
 
   const toggleFilter = (filterName: string) => {
     setExpandedFilter((prev) => (prev === filterName ? null : filterName));
   };
 
   const handleFilterSelect = (filterName: string, value: string) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [filterName]: value,
-    }));
-  };
+    const newFilters = { ...selectedFilters };
+
+    if (filterName === "Rating") {
+      newFilters.Rating = value.split(" ")[0]; 
+    } else if (filterName === "Price") {
+      if (value === "Free") {
+        newFilters.priceMin = "0";
+        newFilters.priceMax = "0";
+      } else if (value.includes("-")) {
+        const [min, max] = value.replace(/₹/g, "").split("-");
+        newFilters.priceMin = String(Number(min));
+        newFilters.priceMax = String(Number(max));
+      } else if (value.includes("+")) {
+        const min = value.replace(/₹/g, "").replace("+", "");
+        newFilters.priceMin = String(Number(min));
+        newFilters.priceMax = ""; // No upper limit
+      }
+    } else {
+      newFilters[filterName] = value;
+    }
+
+    onFilterChange(newFilters);
+  };  
+  
 
   return (
     <div className="w-full md:w-64 p-4 border-r border-gray-200">
@@ -93,5 +112,3 @@ const SidebarFilters: React.FC<SidebarFiltersProps> = () => {
     </div>
   );
 };
-
-export default SidebarFilters;

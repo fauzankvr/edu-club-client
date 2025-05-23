@@ -116,12 +116,36 @@ const studentAPI = {
       throw error;
     }
   },
-  getAllCourses: async () => {
+  getAllCourses: async (
+    searchQuery?: string,
+    page?: number,
+    limit?: number,
+    filters?: { [key: string]: string },
+    sort?: string
+  ) => {
     try {
-      const response = await axiosInstance.get("/student/getAllCourses");
+      const params: any = {
+        search: searchQuery,
+        page,
+        limit,
+        sort,
+      };
+  
+      // Flatten filters
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          params[key] = value;
+        });
+      }
+  
+      const response = await axiosInstance.get("/student/getAllCourses", {
+        params,
+        withCredentials: true,
+      });
+  
       return response.data;
     } catch (error) {
-      console.error("Fetching courses failed:", error);
+      console.error("Error in getAllCourses:", error);
       throw error;
     }
   },

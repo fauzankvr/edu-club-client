@@ -14,6 +14,7 @@ import {
   defaultLayoutIcons,
   DefaultVideoLayout,
 } from "@vidstack/react/player/layouts/default";
+import NotesApp from "./Notebook";
 
 const TABS = [
   "Overview",
@@ -164,9 +165,7 @@ export default function SingleCourse() {
               )}
               {currentTab === "Discussion" && <Discussion />}
               {currentTab === "Contact Tutor" && <ChatTutorInterface />}
-              {currentTab === "Not Book" && (
-                <p className="text-gray-600">Content for “Not Book” tab.</p>
-              )}
+              {currentTab === "Not Book" && <NotesApp />}
               {currentTab === "Ai Chat" && <AiChat />}
             </div>
           </div>
