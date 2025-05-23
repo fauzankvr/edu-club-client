@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@iconify/react";
 import teacherImage from "@/assets/students/teacherimage.png"
 import studentImg from "@/assets/students/studetnimage.png"
+import { useNavigate } from "react-router-dom";
 
 const LookingFor = () => {
+  const navigate = useNavigate()
   return (
     <div className="bg-gray-50 py-16 px-6">
       <div className="container mx-auto text-center">
@@ -31,7 +33,7 @@ const LookingFor = () => {
                 </p>
               </div>
               <div className="flex justify-between items-center mt-6">
-                <Button className="bg-yellow-400 text-black hover:bg-yellow-500 ml-4">
+                <Button onClick={() => navigate("/instructor/home")} className="bg-yellow-400 text-black hover:bg-yellow-500 ml-4">
                   Get Start <Icon icon="mdi:arrow-right" className="ml-2" />
                 </Button>
                 <img

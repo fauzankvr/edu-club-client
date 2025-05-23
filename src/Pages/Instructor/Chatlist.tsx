@@ -46,6 +46,7 @@ const ChatApp: React.FC = () => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -63,6 +64,7 @@ const ChatApp: React.FC = () => {
         setContacts(formattedContacts);
       } catch (err) {
         console.error("Error fetching chats:", err);
+        setError("Failed to load chats");
       }
     };
 
@@ -72,6 +74,11 @@ const ChatApp: React.FC = () => {
   useEffect(() => {
     socket.on("connect", () => {
       console.log("Socket connected:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+      setError("Failed to connect to chat server");
     });
 
     socket.on("newMessage", (message: Message) => {
@@ -102,15 +109,17 @@ const ChatApp: React.FC = () => {
       }
     });
 
-    socket.on("error", (err) => {
+    socket.on("error", (err: { error: string }) => {
       console.error("Socket error:", err);
+      setError(err.error || "An error occurred");
     });
 
     return () => {
+      socket.off("connect");
+      socket.off("connect_error");
       socket.off("newMessage");
       socket.off("typing");
       socket.off("stopTyping");
-      socket.off("connect");
       socket.off("error");
     };
   }, [selectedContact, instructorId]);
@@ -127,16 +136,20 @@ const ChatApp: React.FC = () => {
         createdAt: msg.createdAt,
       }));
       setSelectedContact({ ...contact, messages: formattedMessages });
+      setError("");
     } catch (err) {
       console.error("Error fetching messages:", err);
+      setError("Failed to load messages");
     }
   };
 
   const handleTyping = () => {
-    if (!selectedContact || !newMessage.trim()) {
+    if (!selectedContact || !instructorId) return;
+
+    if (!newMessage.trim()) {
       if (typingTimeout) {
         socket.emit("stopTyping", {
-          chatId: selectedContact?.id,
+          chatId: selectedContact.id,
           sender: instructorId,
         });
         clearTimeout(typingTimeout);
@@ -159,16 +172,47 @@ const ChatApp: React.FC = () => {
     setTypingTimeout(timeout);
   };
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedContact || !instructorId) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedContact || !instructorId) {
+      setError("Please select a contact and enter a message");
+      return;
+    }
 
-    socket.emit("sendMessage", {
-      chatId: selectedContact.id,
-      sender: instructorId,
-      text: newMessage,
-    });
+    try {
+      // Post message to the backend API
+      const response = await instructorAPI.postMessage({
+        chatId: selectedContact.id,
+        text: newMessage,
+        sender: instructorId,
+      });
 
-    setNewMessage("");
+      const savedMessage: Message = {
+        id: response.data._id,
+        chatId: selectedContact.id,
+        text: newMessage,
+        sender: instructorId,
+        createdAt: response.data.createdAt || new Date().toISOString(),
+      };
+
+      // Emit message via Socket.IO for real-time update
+      socket.emit("sendMessage", savedMessage);
+
+      // Update local messages
+      setSelectedContact((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: [...prev.messages, savedMessage],
+            }
+          : prev
+      );
+
+      setNewMessage("");
+      setError("");
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setError("Failed to send message");
+    }
   };
 
   return (
@@ -203,6 +247,11 @@ const ChatApp: React.FC = () => {
           </CardContent>
         </Card>
         <Card className="w-2/3 flex flex-col">
+          {error && (
+            <div className="bg-red-100 text-red-700 p-2 text-center">
+              {error}
+            </div>
+          )}
           {selectedContact ? (
             <>
               <CardContent className="flex-1 p-4 overflow-y-auto">

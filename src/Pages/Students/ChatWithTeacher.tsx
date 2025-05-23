@@ -1,6 +1,6 @@
 import { useState, useEffect, KeyboardEvent, ChangeEvent, JSX } from "react";
-import {useParams } from "react-router-dom";
-import { Video} from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Video } from "lucide-react";
 import io from "socket.io-client";
 import studentAPI from "@/API/StudentApi";
 import premiumImg from "../../assets/students/premiumicon.png";
@@ -32,14 +32,14 @@ interface Message {
   chatId: string;
   createdAt: string;
 }
+
 interface Msg {
   _id: string;
   text: string;
-  sender: string;   
+  sender: string;
   chatId: string;
-  createdAt: string; 
+  createdAt: string;
 }
-
 
 export default function ChatTutorInterface(): JSX.Element {
   const [message, setMessage] = useState<string>("");
@@ -53,7 +53,6 @@ export default function ChatTutorInterface(): JSX.Element {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -65,12 +64,17 @@ export default function ChatTutorInterface(): JSX.Element {
     });
     socket.on("disconnect", (reason) => {
       console.log("Socket.IO disconnected:", reason);
+      setError("Disconnected from chat server");
+    });
+    socket.on("error", (data: { error: string }) => {
+      setError(data.error);
     });
 
     return () => {
       socket.off("connect");
       socket.off("connect_error");
       socket.off("disconnect");
+      socket.off("error");
     };
   }, []);
 
@@ -186,22 +190,18 @@ export default function ChatTutorInterface(): JSX.Element {
       }
     });
 
-    socket.on("error", (err) => {
-      console.error("Socket error:", err);
-      setError(err.error || "Socket error occurred");
-    });
-
     return () => {
       socket.off("newMessage");
       socket.off("typing");
       socket.off("stopTyping");
-      socket.off("error");
+      socket.emit("stopTyping", { chatId: chat._id, sender: studentId });
     };
   }, [chat, studentId]);
 
   const handleTyping = () => {
-    if(!studentId || !chat?._id) return;
-    if (!chat || !message.trim()) {
+    if (!studentId || !chat?._id) return;
+
+    if (!message.trim()) {
       if (typingTimeout) {
         socket.emit("stopTyping", { chatId: chat._id, sender: studentId });
         clearTimeout(typingTimeout);
@@ -227,14 +227,36 @@ export default function ChatTutorInterface(): JSX.Element {
       return;
     }
 
-    socket.emit("sendMessage", {
-      chatId: chat._id,
-      sender: studentId,
-      text: message.trim(),
-    });
+    try {
+      // Post message to the backend API
+      const response = await studentAPI.postMessage({
+        chatId: chat._id,
+        text: message.trim(),
+        sender: studentId,
+      });
 
-    setMessage("");
-    setError("");
+      const savedMessage: Message = {
+        id: response.data._id,
+        chatId: chat._id,
+        text: message.trim(),
+        sender: studentId,
+        createdAt: response.data.createdAt || new Date().toISOString(),
+      };
+
+      // Emit message via Socket.IO for real-time update
+      socket.emit("sendMessage", savedMessage);
+
+      // Update local messages
+      setChatMessages((prev) => [...prev, savedMessage]);
+
+      setMessage("");
+      setError("");
+    } catch (error: unknown) {
+      console.error("Error sending message:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to send message"
+      );
+    }
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
@@ -278,9 +300,6 @@ export default function ChatTutorInterface(): JSX.Element {
               onClick={() => window.open("/video-call", "_blank")}
             />
           </button>
-          {/* <button className="bg-blue-500 p-2 rounded-full">
-            <Phone size={20} className="text-white" />
-          </button> */}
         </div>
       </div>
       <div className="bg-gray-50 p-4 border-b border-gray-200 flex items-center">
