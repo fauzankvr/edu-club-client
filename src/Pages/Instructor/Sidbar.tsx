@@ -39,6 +39,11 @@ const Sidebar = () => {
       path: "/Instructor/dashboard/chatlist",
       icon: "mdi:chat",
     },
+    {
+      name: "Wallet",
+      path: "/Instructor/dashboard/wallet",
+      icon: "mdi:wallet", // Material Design Icons wallet icon
+    },
   ];
 
   return (

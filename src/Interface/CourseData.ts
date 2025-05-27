@@ -26,7 +26,8 @@ export interface ICourseData {
   price: number;
   students: string[];
   title: string;
-  instructorDetails:Instructor
+  instructorDetails: Instructor;
+  averageRating: number;
 }
 
 export interface ILecture {

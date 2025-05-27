@@ -165,7 +165,7 @@ export default function SingleCourse() {
               )}
               {currentTab === "Discussion" && <Discussion />}
               {currentTab === "Contact Tutor" && <ChatTutorInterface />}
-              {currentTab === "Not Book" && <NotesApp />}
+              {currentTab === "Not Book" && <NotesApp course={course} />}
               {currentTab === "Ai Chat" && <AiChat />}
             </div>
           </div>

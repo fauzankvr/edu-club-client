@@ -9,6 +9,7 @@ const menuItems = [
   { label: "Categories", icon: "mdi:shape-outline", path: "/admin/categories" },
   { label: "Languages", icon: "mdi:translate", path: "/admin/languages" },
   { label: "Plans", icon: "mdi:clipboard-list-outline", path: "/admin/plans" },
+  { label: "Payout", icon: "mdi:cash-multiple", path: "/admin/payout" },
 ];
 
 const Sidebar = () => {

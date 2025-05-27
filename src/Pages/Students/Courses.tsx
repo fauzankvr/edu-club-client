@@ -42,6 +42,7 @@ const Courses = () => {
       setTotalPages(res.totalPages);
       setLanguage(res.languages);
       setCategory(res.categories);
+      
     } catch (error) {
       console.error("Error fetching courses:", error);
     } finally {
@@ -58,8 +59,8 @@ const Courses = () => {
     fetchCourses(searchQuery, 1);
   };
 
-  const handleCardClick = (id: string) => {
-    navigate(`/courses/details/${id}`);
+  const handleCardClick = (id: string,item:ICourseData) => {
+    navigate(`/courses/details/${id}`, { state: { course: item } });
   };
 
   const handlePrev = () => {
@@ -201,7 +202,7 @@ const Courses = () => {
                         />
                         <div
                           className="flex-1 flex flex-col justify-between cursor-pointer"
-                          onClick={() => handleCardClick(item._id)}
+                          onClick={() => handleCardClick(item._id,item)}
                         >
                           <div>
                             <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded font-medium">
@@ -224,22 +225,40 @@ const Courses = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-yellow-500 mt-1">
-                              <Icon icon="mdi:star" />
+                            <div className="flex items-center gap-1 text-yellow-500">
+                              {Array.from({ length: 5 }).map((_, index) => {
+                                const rating = item.averageRating;
+                                const isFull = index + 1 <= Math.floor(rating);
+                                const isHalf = !isFull && index < rating;
+
+                                return (
+                                  <Icon
+                                    key={index}
+                                    icon={
+                                      isFull
+                                        ? "mdi:star"
+                                        : isHalf
+                                        ? "mdi:star-half-full" // or "mdi:star-half"
+                                        : "mdi:star-outline"
+                                    }
+                                  />
+                                );
+                              })}
                             </div>
-                            <div className="flex gap-6 text-sm text-gray-500 mt-2 flex-wrap">
+
+                            {/* <div className="flex gap-6 text-sm text-gray-500 mt-2 flex-wrap">
                               <div className="flex items-center gap-1">
                                 <Icon icon="mdi:book-open-page-variant" />
                                 Lesson
                               </div>
-                              <div className="flex items-center gap-1">
+                              {/* <div className="flex items-center gap-1">
                                 <Icon icon="mdi:clock-outline" />
-                              </div>
-                              <div className="flex items-center gap-1">
+                              </div> */}
+                              {/* <div className="flex items-center gap-1">
                                 <Icon icon="mdi:account-multiple-outline" />
                                 Students {item.students.length}+
                               </div>
-                            </div>
+                            </div> */} 
                           </div>
                           <div className="flex items-center justify-between mt-4 flex-wrap gap-4">
                             <div className="flex items-center gap-2">
@@ -254,7 +273,7 @@ const Courses = () => {
                             </div>
                             <button
                               className="flex items-center gap-1 rounded-full px-4 py-1 text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
-                              onClick={() => handleCardClick(item._id)}
+                              onClick={() => handleCardClick(item._id,item)}
                             >
                               View course
                               <Icon icon="mdi:arrow-right" />

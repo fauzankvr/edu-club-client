@@ -49,39 +49,45 @@ const adminApi = {
     return axiosInstance.post("/admin/login", formdata);
   },
   blockStudent: (email: string) => {
-    return axiosInstance.patch('/admin/blockStudent', { email })
+    return axiosInstance.patch("/admin/blockStudent", { email });
   },
   findStudentDatas: () => {
-    return axiosInstance.get("/admin/findAllStudent")
+    return axiosInstance.get("/admin/findAllStudent");
   },
   getAllTeachers: () => {
-    return axiosInstance.get("/admin/findAllTeachers")
+    return axiosInstance.get("/admin/findAllTeachers");
   },
-  blockTeacher:(email: string)=> {
-  return axiosInstance.patch("/admin/blockTeacher",{email})
+  blockTeacher: (email: string) => {
+    return axiosInstance.patch("/admin/blockTeacher", { email });
   },
   logout: () => {
-    return axiosInstance.post("/admin/logout")
+    return axiosInstance.post("/admin/logout");
   },
 
   getAllCategories: () => {
-    return axiosInstance.get("/admin/category/getAll")
+    return axiosInstance.get("/admin/category/getAll");
   },
   addCategory: (data: { name: string }) => {
-    return axiosInstance.post("/admin/category/add", data)
+    return axiosInstance.post("/admin/category/add", data);
   },
   toggleCategoryStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/category/update/${id}`)
+    return axiosInstance.patch(`/admin/category/update/${id}`);
   },
   getAllLanguages: () => {
-    return axiosInstance.get("/admin/language/getAll")
+    return axiosInstance.get("/admin/language/getAll");
   },
   addLanguage: (data: { name: string }) => {
-    return axiosInstance.post("/admin/language/add", data)
+    return axiosInstance.post("/admin/language/add", data);
   },
   toggleLanguageStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/language/update/${id}`)
+    return axiosInstance.patch(`/admin/language/update/${id}`);
+  },
+  getPayoutRequests: () => {
+    return axiosInstance.get("/admin/payouts");
+  },
+  approvePayout: (requestId: string, action: "APPROVE" | "REJECT") => {
+    return  axiosInstance.post(`/admin/payout/${requestId}`, { action })
   },
 };
 
-export default adminApi
+export default adminApi;

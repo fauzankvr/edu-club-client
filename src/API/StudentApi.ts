@@ -130,19 +130,19 @@ const studentAPI = {
         limit,
         sort,
       };
-  
+
       // Flatten filters
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           params[key] = value;
         });
       }
-  
+
       const response = await axiosInstance.get("/student/getAllCourses", {
         params,
         withCredentials: true,
       });
-  
+
       return response.data;
     } catch (error) {
       console.error("Error in getAllCourses:", error);
@@ -246,6 +246,35 @@ const studentAPI = {
   },
   postMessage: (messageData: object) => {
     return axiosInstance.post("/chat/message", messageData);
+  },
+  getNotes: (courseId: string) => {
+    return axiosInstance.get(`/student/notes/${courseId}`);
+  },
+  createNote: (noteData: {
+    title: string;
+    course_id: string;
+    notes: string[];
+  }) => {
+    return axiosInstance.post("/student/notes", noteData);
+  },
+  addNoteToNotebook: (id: string, note: string) => {
+    return axiosInstance.put(`/student/notes/${id}`, { note });
+  },
+  deleteNotebook: async (notebookId: string) => {
+    return await axiosInstance.delete(`/student/notes/${notebookId}`);
+  },
+  deleteNoteFromNotebook: async (notebookId: string, noteIndex: number) => {
+    return await axiosInstance.patch(`/student/note/${notebookId}/delete`, { noteIndex });
+  },
+  updateNoteInNotebook: async (
+    notebookId: string,
+    noteIndex: number,
+    newText: string
+  ) => {
+    return await axiosInstance.patch(`/student/note/${notebookId}/update`, {
+      noteIndex,
+      newText,
+    });
   },
 };
 

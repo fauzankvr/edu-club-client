@@ -85,7 +85,7 @@ const instructorAPI = {
   },
 
   getProfile: async () => {
-    const res = await axiosInstance.get("/instructor/profile")
+    const res = await axiosInstance.get("/instructor/profile");
     return res.data;
   },
 
@@ -221,15 +221,34 @@ const instructorAPI = {
   getMessages: async (chatId: string) => {
     return await axiosInstance.get(`/instructor/getMessages/${chatId}`);
   },
-  postMessage: async (data: { chatId: string; text: string; sender: string }) => {
+  postMessage: async (data: {
+    chatId: string;
+    text: string;
+    sender: string;
+  }) => {
     return await axiosInstance.post("/instructor/postMessage", data);
   },
   getAllCategories: () => {
-      return axiosInstance.get("/admin/category/getAll")
+    return axiosInstance.get("/admin/category/getAll");
   },
   getAllLanguages: () => {
-    return axiosInstance.get("/admin/language/getAll")
+    return axiosInstance.get("/admin/language/getAll");
   },
+  getWallet: () => {
+    return axiosInstance.get("/instructor/wallet");
+  },
+  getPaypalEmail: () => {
+    return axiosInstance.get("/instructor/profile");
+  },
+  updatePaypalEmail: (email: string) => {
+    return axiosInstance.patch("/instructor/updatePaypalEmail", {
+      paypalEmail: email,
+    });
+  },
+  requestPayout : (email: string) => {
+    return axiosInstance.post("/instructor/requestPayout", { paypalEmail: email });
+  }
 };
+
 export default instructorAPI;
 

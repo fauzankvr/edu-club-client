@@ -11,6 +11,7 @@ import OTPVerification from "@/Pages/Students/OtpPage";
 import ChatApp from "@/Pages/Instructor/Chatlist";
 import ProtectedRoute from "@/Middleware/ProtectedRouteIn";
 import VideoCallApp from "@/Pages/Instructor/VideoList";
+import Wallet from "@/Pages/Instructor/Wallet";
 
 const InstructorRoutes = () => {
   return (
@@ -41,6 +42,7 @@ const InstructorRoutes = () => {
       <Route path="profile" element={<Profile />} />
         <Route path="dashboard/chatlist" element={<ChatApp />} />
         <Route path="dashboard/video-call" element={<VideoCallApp />} />
+        <Route path="dashboard/wallet" element={<Wallet />} />
     </Route>
     </Routes>
   );

@@ -6,7 +6,7 @@ import RelatedCourses from "@/components/studentComponents/TopRelated";
 import CourseContent from "@/components/studentComponents/CourseContant";
 import ReviewCard from "@/components/studentComponents/RiviewView";
 import InstructorProfile from "@/components/studentComponents/InstructorProfile";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"; // Assuming you use this loader
@@ -16,7 +16,10 @@ const CourseDetails = () => {
   const [activeTab, setActiveTab] = useState("learn"); // 'learn' or 'content'
   const [course, setCourse] = useState<ICourseData>();
   const { id } = useParams();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+  console.log("state", location.state.course);
+  const state = location.state?.course;
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -66,7 +69,7 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
 
                 <div className="flex flex-wrap items-center gap-3 text-sm text-indigo-100 mb-4">
                   <span className="flex items-center font-semibold text-yellow-300">
-                    4.6
+                    {(state?.averageRating ?? 0).toFixed(1)}
                     <Icon
                       icon="ic:round-star"
                       className="text-yellow-400 ml-1 mr-0.5"
@@ -74,9 +77,9 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
                   </span>
                   <span>{course.students?.length ?? 0} students</span>
                   <span>
-                    Created by{" "}
+                    Created by {" "}
                     <span className="font-medium text-white">
-                      {course.instructor?.name ?? "Unknown"}
+                      {state?.instructor?.name ?? "Unknown"}
                     </span>
                   </span>
                   <span>Language: {course.language}</span>
