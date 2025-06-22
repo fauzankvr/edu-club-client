@@ -54,7 +54,9 @@ export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const profile = useSelector((state: RootState) => state.student.profile);
+  const profile = useSelector(
+    (state: RootState) => state.student.profile as ProfileData | null
+  );
   const [email, setEmail] = useState<string>("user@email.com");
 
   const [formData, setFormData] = useState<ProfileData>({

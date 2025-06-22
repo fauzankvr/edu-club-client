@@ -368,7 +368,7 @@ export default function SingleCourse() {
                 />
               )}
               {currentTab === "Not Book" && <NotesApp course={course} />}
-              {currentTab === "Ai Chat" && <AiChat courseId={course?._id} />}
+              {currentTab === "Ai Chat" && <AiChat courseId={course?._id ?? ""} />}
             </div>
           </div>
           <div className="bg-white border rounded-xl p-6 w-full max-w-md mx-auto">
