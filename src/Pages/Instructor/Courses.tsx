@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChevronDown } from "lucide-react";
+// import { Input } from "@/components/ui/input";
+// import { ChevronDown } from "lucide-react";
 import Navbar from "@/components/InstructorCompontents/Navbar";
 import Footer from "@/components/InstructorCompontents/Footer";
 import Sidebar from "./Sidbar";
 import courseDummy from "@/assets/instructor/couse_dummy.jpg";
 import { useNavigate } from "react-router-dom";
 import instructorAPI from "@/API/InstructorApi";
+import { ICourseData } from "@/Interface/CourseData";
 
 const Courses = () => {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ const Courses = () => {
           </Card>
 
           {/* Dynamic Course Cards */}
-          {courses.map((course: any) => (
+          {courses.map((course:ICourseData) => (
             <Card key={course._id} className="mb-4">
               <CardContent className="flex flex-col md:flex-row p-4 gap-4">
                 <img

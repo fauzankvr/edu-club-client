@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 import Navbar from "@/components/InstructorCompontents/Navbar";
 import { getSocket } from "@/services/socketService";
 import instructorAPI from "@/API/InstructorApi";
-import { v4 as uuidv4 } from "uuid";
-import { useNavigate } from "react-router-dom";
+// import { v4 as uuidv4 } from "uuid";
+// import { useNavigate } from "react-router-dom";
 
 interface Call {
   _id: string;
@@ -34,7 +34,7 @@ export default function CallHistory() {
   const [selectedCallId, setSelectedCallId] = useState<string | null>(null);
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [instructorId, setInstructorId] = useState<string>("");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     const socket = getSocket();
@@ -98,11 +98,11 @@ export default function CallHistory() {
     setIncomingCall(null);
   };
 
-  const handleRecall = (callerId: string) => {
-    const socket = getSocket();
-    const newRoomId = uuidv4();
-    socket.emit("recall", { targetUserId: callerId, roomId: newRoomId });
-  };
+  // const handleRecall = (callerId: string) => {
+  //   const socket = getSocket();
+  //   const newRoomId = uuidv4();
+  //   socket.emit("recall", { targetUserId: callerId, roomId: newRoomId });
+  // };
 
   return (
     <>

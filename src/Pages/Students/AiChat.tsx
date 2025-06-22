@@ -19,7 +19,7 @@ const AiChat = ({ courseId }: AiChatProps) => {
         const res = await studentAPI.findAiChat(courseId);
         const loadedMessages: { from: "user" | "ai"; text: string }[] = [];
         const data = res.data.data
-        data.forEach((msg: any) => {
+        data.forEach((msg: { text: string; reply: string }) => {
           loadedMessages.push({ from: "user", text: msg.text });
           loadedMessages.push({ from: "ai", text: msg.reply });
         });

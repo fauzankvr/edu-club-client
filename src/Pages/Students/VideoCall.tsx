@@ -5,7 +5,6 @@ import {
   Mic,
   MicOff,
   PhoneOff,
-  MessageSquare,
   Monitor,
   X,
   Send,

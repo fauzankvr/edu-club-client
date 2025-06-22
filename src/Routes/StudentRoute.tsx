@@ -16,7 +16,7 @@ import ProtectedRoute from "@/Middleware/ProtectedRouteStd";
 import VideoCallApp from "@/Pages/Students/VideoCall";
 import Plans from "@/Pages/Students/Plans";
 import PlanCheckout from "@/Pages/Students/PlanCheckout";
-import AboutUs from "@/Pages/Students/aboutUs";
+import AboutUs from "@/Pages/Students/AboutUs"; 
 
 const StudentRoute = () => {
   return (
