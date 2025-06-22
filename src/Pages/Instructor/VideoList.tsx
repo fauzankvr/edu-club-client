@@ -5,7 +5,6 @@ import {
   Mic,
   MicOff,
   PhoneOff,
-  MessageSquare,
   Monitor,
   X,
   Send,
@@ -36,6 +35,7 @@ export default function InstructorVideoCallApp() {
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const location = useLocation();
+  const [isloading, setIsLocalVideoLoading] = useState<boolean>(true);
 
   const query = new URLSearchParams(location.search);
   const chatId = query.get("chatId") || "";
@@ -45,7 +45,9 @@ export default function InstructorVideoCallApp() {
 
   useEffect(() => {
     console.log(callStatus);
-  });
+    console.log(error)
+    console.log(isloading)
+  },[callStatus, error,isloading]);
 
   const createPeer = (targetUserId: string): RTCPeerConnection => {
     console.log("Creating peer connection for:", targetUserId);
@@ -156,8 +158,8 @@ export default function InstructorVideoCallApp() {
     return peer;
   };
 
-  const [isLocalVideoLoading, setIsLocalVideoLoading] = useState<boolean>(true);
 
+ 
   const setupLocalStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({

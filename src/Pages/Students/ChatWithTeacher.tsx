@@ -187,8 +187,8 @@ export default function ChatWithTeacher({
   studentId,
   instructorId,
   setUnseenCount,
-  instructorStatus,
-  instructorLastSeen,
+  // instructorStatus,
+  // instructorLastSeen,
   isInstructorBlocked,
   socket,
 }: ChatTutorInterfaceProps): JSX.Element {

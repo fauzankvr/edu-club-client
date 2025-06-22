@@ -41,9 +41,9 @@ interface SectionResponse {
   _id?: string;
 }
 
-interface CurriculumResponse {
-  sections: SectionResponse[];
-}
+// interface CurriculumResponse {
+//   sections: SectionResponse[];
+// }
 
 // Validation schema
 const validationSchema = Yup.object().shape({
@@ -118,7 +118,7 @@ const Carricculam = () => {
     lectureIndex: number,
     type: "video" | "pdf",
     values: CurriculumFormValues,
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void
+    setFieldValue: (field: string, value: unknown, shouldValidate?: boolean) => void
   ): void => {
     const file = e.target.files?.[0];
     if (!file) return;
