@@ -1,0 +1,23 @@
+# .gitlab-ci.yml
+image: node:18
+
+stages:
+  - install
+  - build
+
+cache:
+  paths:
+    - node_modules/
+
+install:
+  stage: install
+  script:
+    - npm ci || npm install
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist
