@@ -123,7 +123,7 @@ const instructorAPI = {
     try {
       const response = await axiosInstance.get(`/instructor/getCourse/${id}`);
       console.log(response);
-      return response.data;
+      return response.data.data.course;
     } catch (error) {
       console.error("Error fetching course:", error);
       throw error; // Rethrow or handle the error as per your requirements
@@ -209,7 +209,7 @@ const instructorAPI = {
       const response = await axiosInstance.get(
         `/instructor/getCurriculum/${courseId}`
       );
-      return response;
+      return response.data.data.curriculum;
     } catch (error) {
       console.log(error);
       throw error;
@@ -229,7 +229,7 @@ const instructorAPI = {
     return await axiosInstance.post("/instructor/postMessage", data);
   },
   getAllCategories: () => {
-    return axiosInstance.get("/admin/category/getAll");
+    return axiosInstance.get("/admin/category/getNotBlocked");
   },
   getAllLanguages: () => {
     return axiosInstance.get("/admin/language/getAll");
@@ -245,9 +245,17 @@ const instructorAPI = {
       paypalEmail: email,
     });
   },
-  requestPayout : (email: string) => {
-    return axiosInstance.post("/instructor/requestPayout", { paypalEmail: email });
-  }
+  requestPayout: (email: string) => {
+    return axiosInstance.post("/instructor/requestPayout", {
+      paypalEmail: email,
+    });
+  },
+  getCallhistory: (instructorId: string) => {
+    return axiosInstance.get(`/instructor/getCallhistory/${instructorId}`);
+  },
+  getDashboard: (params: any) => {
+    return axiosInstance.get("/instructor/dashboard",{params});
+  },
 };
 
 export default instructorAPI;

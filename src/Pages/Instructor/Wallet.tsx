@@ -8,10 +8,12 @@ import Sidebar from "./Sidbar";
 
 interface Transaction {
   _id: string;
+  payoutStatus:string;
   course: {
     _id: string;
     title: string;
     courseImageId: string;
+    status: string;
   };
   student: {
     _id: string;
@@ -39,7 +41,7 @@ const Wallet: React.FC = () => {
         console.log(txData);
         setTransactions(txData);
         setTotalPending(
-          txData.reduce((sum, txn) => sum + txn.instructorShare, 0)
+          txData.filter((val)=>val.payoutStatus=="PENDING").reduce((sum, txn) => sum + txn.instructorShare, 0)
         );
 
         // Fetch PayPal email
@@ -177,30 +179,34 @@ const Wallet: React.FC = () => {
 
           {/* Pending Transactions Table */}
           <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Pending Transactions</h2>
+            <h2 className="text-xl font-semibold mb-4">Wallet History</h2>
             {transactions.length === 0 ? (
-              <p className="text-gray-500">No pending transactions.</p>
+              <p className="text-gray-500">No wallet historys .</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full table-auto">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-2 text-left">Course Image</th>
+                      {/* <th className="px-4 py-2 text-left">Course Image</th> */}
+                      <th className="px-4 py-2 text-left">Date</th>
                       <th className="px-4 py-2 text-left">Course</th>
                       <th className="px-4 py-2 text-left">Student</th>
                       <th className="px-4 py-2 text-right">Your Share</th>
-                      <th className="px-4 py-2 text-left">Date</th>
+                      <th className="px-4 py-2 text-left">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.map((txn) => (
                       <tr key={txn._id} className="border-t">
-                        <td className="px-4 py-2">
+                        {/* <td className="px-4 py-2">
                           <img
                             src={txn.course.courseImageId}
                             alt={txn.course.title}
                             className="w-16 h-16 object-cover rounded"
                           />
+                        </td> */}
+                        <td className="px-4 py-2">
+                          {format(new Date(txn.createdAt), "MMM dd, yyyy")}
                         </td>
                         <td className="px-4 py-2">{txn.course.title}</td>
                         <td className="px-4 py-2">
@@ -210,7 +216,19 @@ const Wallet: React.FC = () => {
                           ${txn.instructorShare.toFixed(2)}
                         </td>
                         <td className="px-4 py-2">
-                          {format(new Date(txn.createdAt), "MMM dd, yyyy")}
+                          <span
+                            className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              txn.payoutStatus === "PENDING"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : txn.payoutStatus === "COMPLETED"
+                                ? "bg-green-100 text-green-800"
+                                : txn.payoutStatus === "REJECTED"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {txn.payoutStatus}
+                          </span>
                         </td>
                       </tr>
                     ))}

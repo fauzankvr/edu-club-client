@@ -16,8 +16,7 @@ const successToast = () => toast.success("Profile updated successfully");
 
 // Validation schema
 const ProfileSchema = Yup.object().shape({
-  firstName: Yup.string().required("First name is required"),
-  lastName: Yup.string().required("Last name is required"),
+  fullName: Yup.string().required("Full name is required"),
   phone: Yup.string()
     .required("Phone number is required")
     .matches(/^[0-9]{10}$/, "Phone must be 10 digits"),
@@ -26,16 +25,17 @@ const ProfileSchema = Yup.object().shape({
 });
 
 
+
 const Profile = () => {
   const [image, setImage] = useState<File | null | string>(null);
   const [initialValues, setInitialValues] = useState<ProfileData>({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     phone: "",
     linkedInId: "",
     githubId: "",
     profileImage: "",
   });
+  
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -44,14 +44,13 @@ const Profile = () => {
         const profileData = res.profile;
 
         setInitialValues({
-          firstName: profileData.firstName || "",
-          lastName: profileData.lastName || "",
+          fullName: profileData.fullName || "",
           phone: profileData.phone?.toString() || "",
           linkedInId: profileData.linkedInId || "",
           githubId: profileData.githubId || "",
           profileImage: profileData.profileImage || "",
         });
-
+        
         if (profileData.profileImage) {
           setImage(profileData.profileImage);
         }
@@ -66,8 +65,7 @@ const Profile = () => {
   const handleSubmit = async (values: ProfileData) => {
     try {
       const formData = new FormData();
-      formData.append("firstName", values.firstName || "");
-      formData.append("lastName", values.lastName || "");
+      formData.append("fullName", values.fullName || "");
       formData.append("phone", values.phone || "");
       formData.append("linkedInId", values.linkedInId || "");
       formData.append("githubId", values.githubId || "");
@@ -151,41 +149,22 @@ const Profile = () => {
               <div className="space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
-                    <Label htmlFor="firstName" className="font-semibold">
-                      First Name
+                    <Label htmlFor="fullName" className="font-semibold">
+                      Full Name
                     </Label>
                     <Field
                       as={Input}
-                      name="firstName"
-                      placeholder="Enter first name"
+                      name="fullName"
+                      placeholder="Enter full name"
                       className="mt-1 border border-indigo-500"
                     />
-                    {errors.firstName && touched.firstName && (
+                    {errors.fullName && touched.fullName && (
                       <div className="text-red-500 text-sm">
-                        {errors.firstName}
+                        {errors.fullName}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex-1">
-                    <Label htmlFor="lastName" className="font-semibold">
-                      Last Name
-                    </Label>
-                    <Field
-                      as={Input}
-                      name="lastName"
-                      placeholder="Enter last name"
-                      className="mt-1 border border-indigo-500"
-                    />
-                    {errors.lastName && touched.lastName && (
-                      <div className="text-red-500 text-sm">
-                        {errors.lastName}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
                     <Label htmlFor="phone" className="font-semibold">
                       Phone Number
@@ -200,7 +179,9 @@ const Profile = () => {
                       <div className="text-red-500 text-sm">{errors.phone}</div>
                     )}
                   </div>
+                </div>
 
+                <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
                     <Label htmlFor="linkedInId" className="font-semibold">
                       LinkedIn ID
@@ -212,18 +193,18 @@ const Profile = () => {
                       className="mt-1 border border-indigo-500"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="githubId" className="font-semibold">
-                    GitHub ID
-                  </Label>
-                  <Field
-                    as={Input}
-                    name="githubId"
-                    placeholder="GitHub profile URL"
-                    className="mt-1 border border-indigo-500"
-                  />
+                  <div className="flex-1">
+                    <Label htmlFor="githubId" className="font-semibold">
+                      GitHub ID
+                    </Label>
+                    <Field
+                      as={Input}
+                      name="githubId"
+                      placeholder="GitHub profile URL"
+                      className="mt-1 border border-indigo-500"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -1,13 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import studentAPI from "@/API/StudentApi";
 
-const AiChat = () => {
+interface AiChatProps {
+  courseId: string; 
+}
+
+const AiChat = ({ courseId }: AiChatProps) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<
     { from: "user" | "ai"; text: string }[]
-  >([]);
+    >([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const res = await studentAPI.findAiChat(courseId);
+        const loadedMessages: { from: "user" | "ai"; text: string }[] = [];
+        const data = res.data.data
+        data.forEach((msg: any) => {
+          loadedMessages.push({ from: "user", text: msg.text });
+          loadedMessages.push({ from: "ai", text: msg.reply });
+        });
+
+        setMessages(loadedMessages);
+      } catch (err) {
+        console.error("Failed to fetch chat history:", err);
+      }
+    };
+
+    fetchChatHistory();
+  }, [courseId]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -22,9 +46,8 @@ const AiChat = () => {
     setLoading(true);
 
     try {
-        const res = await studentAPI.chatApi({ message: input });
-        console.log("res",res)
-      const aiReply = res.data.response;
+        const res = await studentAPI.chatApi({ message: input }, courseId);
+      const aiReply = res.data.data.response;
 
       setMessages((prev) => [...prev, { from: "ai", text: aiReply }]);
     } catch (err) {

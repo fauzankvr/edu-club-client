@@ -34,9 +34,9 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
     const loadReviews = async () => {
       try {
         const data = await studentAPI.getReviews(courseId);
-        const { data: myReviewRes } = await studentAPI.getMyReview(courseId);
-        setMyReview(myReviewRes.myReview); 
-        setReviews(data.data.reviews);
+        const res = await studentAPI.getMyReview(courseId);
+        setMyReview(res.data.data.myReview); 
+        setReviews(data.data.data.reviews);
       } catch (error) {
         console.error("Failed to fetch reviews:", error);
       } finally {
@@ -46,7 +46,6 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
 
     loadReviews();
   }, [courseId]);
-  console.log('my reivew',myReview);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rating || !comment.trim()) return;
@@ -56,8 +55,8 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
          rating,
          comment: comment.trim(),
        });
-      const { data: myReviewRes } = await studentAPI.getMyReview(courseId);
-      setMyReview(myReviewRes.myReview);
+      const res = await studentAPI.getMyReview(courseId);
+      setMyReview(res.data.data.myReview);
       console.log(response)
       toast.success("Review added successfully!");
     } catch (error) {
@@ -88,14 +87,13 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
   const handleReact = async (reviewId: string, type: "like" | "dislike") => {
     try {
       const { data } = await studentAPI.reactToReview(reviewId, type);
-      console.log(data)
       setReviews((prev) =>
         prev.map((r) =>
           r._id === reviewId
             ? {
                 ...r,
-                likes: data.reviews.likes,
-                dislikes: data.reviews.dislikes,
+                likes: data.data.reviews.likes,
+                dislikes: data.data.reviews.dislikes,
               }
             : r
         )

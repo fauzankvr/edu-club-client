@@ -73,11 +73,11 @@ const LandingPage = () => {
       try {
         // Fetch categories
         const categoryResponse = await instructorAPI.getAllCategories();
-        setCategories(categoryResponse.data); // Adjust based on actual response structure
+        setCategories(categoryResponse.data.data); // Adjust based on actual response structure
 
         // Fetch languages
         const languageResponse = await instructorAPI.getAllLanguages();
-        setLanguages(languageResponse.data); // Adjust based on actual response structure
+        setLanguages(languageResponse.data.data); // Adjust based on actual response structure
 
         // Fetch course if id exists
         if (id) {
@@ -142,7 +142,7 @@ const LandingPage = () => {
         response = await instructorAPI.createCourse(sendData);
         toast.success(response.message);
         navigate(
-          `/Instructor/dashboard/courses/addcarriculam/${response.course._id}`
+          `/Instructor/dashboard/courses/addcarriculam/${response.data._id}`
         );
       }
     } catch (err) {

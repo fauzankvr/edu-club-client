@@ -26,8 +26,8 @@ const CourseDetails = () => {
       try {
         if (!id) return;
         const res = await studentAPI.findOneCourse(id);
-        console.log(res.course)
-        setCourse(res.course);
+        console.log(res.data.course)
+        setCourse(res.data.course);
       } catch (error) {
         console.log(error);
       }

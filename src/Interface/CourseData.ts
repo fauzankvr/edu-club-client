@@ -50,3 +50,11 @@ export interface ICarriculam {
   updatedAt: string;
 }
 
+export interface CourseQueryParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sort?: string;
+  [key: string]: string | number | undefined; 
+}
+

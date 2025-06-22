@@ -1,6 +1,18 @@
+import { Plan } from "@/Pages/admin/PlanManagment";
 import { axiosInstance } from "./axiosInstance";
 
-
+axiosInstance.interceptors.request.use(
+  (config) => {
+    if (config.url?.startsWith("/admin")) {
+      const accessToken = localStorage.getItem("accessTokenAdmin");
+      if (accessToken) {
+        config.headers["Authorization"] = `Bearer ${accessToken}`;
+      }       
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -71,7 +83,10 @@ const adminApi = {
     return axiosInstance.post("/admin/category/add", data);
   },
   toggleCategoryStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/category/update/${id}`);
+    return axiosInstance.patch(`/admin/category/toggleBlock/${id}`);
+  },
+  updateCategory: (id: string, data: { name: string }) => {
+    return axiosInstance.patch(`/admin/category/update/${id}`, data);
   },
   getAllLanguages: () => {
     return axiosInstance.get("/admin/language/getAll");
@@ -79,15 +94,36 @@ const adminApi = {
   addLanguage: (data: { name: string }) => {
     return axiosInstance.post("/admin/language/add", data);
   },
+  updateLanguage: (id: string, data: { name: string }) => {
+    return axiosInstance.patch(`/admin/language/update/${id}`, data);
+  },
   toggleLanguageStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/language/update/${id}`);
+    return axiosInstance.patch(`/admin/language/toggleBlock/${id}`);
   },
   getPayoutRequests: () => {
     return axiosInstance.get("/admin/payouts");
   },
   approvePayout: (requestId: string, action: "APPROVE" | "REJECT") => {
-    return  axiosInstance.post(`/admin/payout/${requestId}`, { action })
+    return axiosInstance.post(`/admin/payout/${requestId}`, { action });
   },
+  getAllPlans: () => axiosInstance.get("/admin/plans"),
+  addPlan: (plan: Plan) => axiosInstance.post("/admin/plans", plan),
+  updatePlan: (id: string, plan: Plan) =>
+    axiosInstance.put(`/admin/plans/${id}`, plan),
+  togglePlanStatus: (id: string) =>
+    axiosInstance.patch(`/admin/plans/${id}/toggle`),
+  findPlan: (id: string) => axiosInstance.get(`/admin/plan/${id}`),
+  getDashboard: (params: any) =>
+    axiosInstance.get("/admin/dashboard", { params }),
+  getReport: (params: any) =>
+    axiosInstance.get("/admin/report", { params, responseType: "blob" }),
+
+  findCourseDatas: () => {
+    return axiosInstance.get("/admin/courses");
+  },
+  blockCourse: (courseId: string) => {
+    return axiosInstance.patch(`/admin/course/${courseId}/block`);
+  }
 };
 
 export default adminApi;

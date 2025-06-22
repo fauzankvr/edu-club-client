@@ -1,6 +1,7 @@
 import {axiosInstance} from "./axiosInstance";
 import { store } from "@/features/student/redux/store";
 import { setAccessToken,clearStudent } from "@/features/student/redux/studentSlce";
+import { CourseQueryParams } from "@/Interface/CourseData";
 import { ProfileData } from "@/Pages/types/student";
       
 axiosInstance.interceptors.request.use(
@@ -56,7 +57,7 @@ const studentAPI = {
     return axiosInstance.post("/student/login", formdata);
   },
   googleLogin: ({ token }: { token: string }) => {
-    return axiosInstance.post("/student/google-login", { token });
+    return axiosInstance.post("/student/googleLogin", { token });
   },
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/student/verifyotp", formData);
@@ -89,9 +90,10 @@ const studentAPI = {
       // window.location.href = "/student/login";
     }
   },
-  resendOtp: async (email: object) => {
-    return await axiosInstance.post("/student/resendOtp", email);
-  },
+ resendOtp: async (email: string) => {
+    console.log(email)
+    return await axiosInstance.post("/student/resendOtp", {email} );
+  }, 
   updateProfile: async (data: ProfileData) => {
     try {
       console.log("Updating profile with data:", data);
@@ -124,11 +126,12 @@ const studentAPI = {
     sort?: string
   ) => {
     try {
-      const params: any = {
+      const params: CourseQueryParams = {
         search: searchQuery,
         page,
         limit,
         sort,
+        ...filters, 
       };
 
       // Flatten filters
@@ -143,7 +146,7 @@ const studentAPI = {
         withCredentials: true,
       });
 
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.error("Error in getAllCourses:", error);
       throw error;
@@ -211,11 +214,11 @@ const studentAPI = {
     return axiosInstance.get("/student/courses/enrolled");
   },
 
-  chatApi: (message: { message: string }) => {
-    return axiosInstance.post<{ response: string }>(
-      "/student/gemini/chat",
-      message
-    );
+  chatApi: (message: { message: string }, courseId: string) => {
+    return axiosInstance.post(`/student/gemini/chat/${courseId}`, message);
+  },
+  findAiChat: (courseId: string) => {
+    return axiosInstance.get(`/student/gemini/chat/${courseId}`);
   },
   getDiscussion: (id: string) => {
     return axiosInstance.get(`/student/discussion/${id}`);
@@ -257,6 +260,9 @@ const studentAPI = {
   }) => {
     return axiosInstance.post("/student/notes", noteData);
   },
+  updateNoteBookTitle: (notebookId: string, title: string) => {
+    return axiosInstance.patch(`/student/noteTitle/${notebookId}`, { title });
+  },
   addNoteToNotebook: (id: string, note: string) => {
     return axiosInstance.put(`/student/notes/${id}`, { note });
   },
@@ -264,7 +270,9 @@ const studentAPI = {
     return await axiosInstance.delete(`/student/notes/${notebookId}`);
   },
   deleteNoteFromNotebook: async (notebookId: string, noteIndex: number) => {
-    return await axiosInstance.patch(`/student/note/${notebookId}/delete`, { noteIndex });
+    return await axiosInstance.patch(`/student/note/${notebookId}/delete`, {
+      noteIndex,
+    });
   },
   updateNoteInNotebook: async (
     notebookId: string,
@@ -276,6 +284,27 @@ const studentAPI = {
       newText,
     });
   },
+  getPlans: async () => {
+    return await axiosInstance.get("/admin/plans");
+  },
+  getPlan: async () => {
+    return await axiosInstance.get("/student/plan");
+  },
+  checkout: (data: {
+    userId: string;
+    planId: string;
+    paymentMethod: string;
+    amount: number;
+    currency: string;
+  }) => axiosInstance.post("/plan/checkout", data),
+  updateCheckout: (
+    id: string,
+    data: { paymentStatus: string; transactionId?: string }
+  ) => axiosInstance.patch(`/plan/checkout/${id}`, data),
+  createPlanOrder: (data: { planId: string; userId: string }) =>
+    axiosInstance.post("/plan/checkout", data),
+  capturePlanOrder: (orderId: string) =>
+    axiosInstance.post(`/plan/checkout/capture`, { orderId }),
 };
 
 export default studentAPI;

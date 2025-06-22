@@ -12,12 +12,15 @@ import { setStudent } from "@/features/student/redux/studentSlce";
 import  InstructorApi  from "@/API/InstructorApi";
 import Footer from "@/components/InstructorCompontents/Footer";
 import Navbar from "@/components/InstructorCompontents/Navbar";
+import { useState } from "react";
 
 export default function Signup() {
   const dispatch = useDispatch();
   const successTost = () => toast.success("Signup successful!");
   const faileTost = () => toast.error("Signup failed. Try again.");
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   //  Formik Setup
   const formik = useFormik({
     initialValues: {
@@ -94,29 +97,41 @@ export default function Signup() {
                   {formik.errors.email}
                 </div>
               )}
-
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password *"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password *"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <Icon
+                  icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                  className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                />
+              </div>
               {formik.touched.password && formik.errors.password && (
                 <div className="text-red-500 text-sm">
                   {formik.errors.password}
                 </div>
               )}
-
-              <Input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password *"
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password *"
+                  value={formik.values.confirmPassword}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <Icon
+                  icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"}
+                  className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                />
+              </div>
               {formik.touched.confirmPassword &&
                 formik.errors.confirmPassword && (
                   <div className="text-red-500 text-sm">
@@ -140,15 +155,15 @@ export default function Signup() {
                 <Icon icon="flat-color-icons:google" className="text-xl" /> Sign
                 In With Google
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              {/* <Button variant="outline" className="flex items-center gap-2">
                 <Icon icon="logos:facebook" className="text-xl" /> Sign With
                 Facebook
-              </Button>
+              </Button> */}
             </div>
 
             <p className="text-center text-gray-500 mt-4">
               Do you have an account?{" "}
-              <a href="#" className="text-indigo-600">
+              <a href="/instructor/login" className="text-indigo-600">
                 Log in
               </a>
             </p>

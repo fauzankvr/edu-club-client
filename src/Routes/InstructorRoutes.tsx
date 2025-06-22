@@ -12,6 +12,7 @@ import ChatApp from "@/Pages/Instructor/Chatlist";
 import ProtectedRoute from "@/Middleware/ProtectedRouteIn";
 import VideoCallApp from "@/Pages/Instructor/VideoList";
 import Wallet from "@/Pages/Instructor/Wallet";
+import CallHistory from "@/Pages/Instructor/CallHistory";
 
 const InstructorRoutes = () => {
   return (
@@ -42,6 +43,7 @@ const InstructorRoutes = () => {
       <Route path="profile" element={<Profile />} />
         <Route path="dashboard/chatlist" element={<ChatApp />} />
         <Route path="dashboard/video-call" element={<VideoCallApp />} />
+        <Route path="dashboard/call-history" element={ <CallHistory/>} />
         <Route path="dashboard/wallet" element={<Wallet />} />
     </Route>
     </Routes>

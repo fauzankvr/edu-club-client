@@ -5,12 +5,13 @@ import { Icon } from "@iconify/react";
 import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+
 
 interface Category {
   _id?: string;
   name: string;
-  isDisabled?: boolean;
+  isBlocked?: boolean;
 }
 
 const CategoryManagement = () => {
@@ -18,6 +19,9 @@ const CategoryManagement = () => {
   const [newCategory, setNewCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editData, setEditData] = useState<Category>({ name: "" });
+
 
   const rowsPerPage = 5;
   const totalPages = Math.ceil(categories.length / rowsPerPage);
@@ -33,7 +37,7 @@ const CategoryManagement = () => {
   const fetchCategories = async () => {
     try {
       const res = await adminApi.getAllCategories(); // Update this API method
-      setCategories(res.data);
+      setCategories(res.data.data);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
     } finally {
@@ -45,7 +49,7 @@ const CategoryManagement = () => {
     if (!newCategory.trim()) return;
     try {
       const res = await adminApi.addCategory({ name: newCategory }); // Update this API method
-      setCategories((prev) => [...prev, res.data]);
+      setCategories((prev) => [...prev, res.data.data]);
       setNewCategory("");
       toast.success("Category added successfully");
     } catch (err) {
@@ -59,19 +63,43 @@ const CategoryManagement = () => {
     try {
       await adminApi.toggleCategoryStatus(category._id!); // Update this API method
       const updated = [...categories];
-      updated[index].isDisabled = !category.isDisabled;
+      updated[index].isBlocked = !category.isBlocked;
       setCategories(updated);
     } catch (err) {
       console.error("Failed to toggle category:", err);
       toast.error("Action failed");
     }
   };
+  const handleEdit = (category: Category) => {
+    setEditData(category);
+    setIsEditModalOpen(true);
+  };
+  
+  const handleUpdateCategory = async () => {
+    if (!editData.name.trim() || !editData._id) return;
+
+    try {
+      await adminApi.updateCategory(editData._id, { name: editData.name });
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat._id === editData._id ? { ...cat, name: editData.name } : cat
+        )
+      );
+      toast.success("Category updated");
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error("Update failed:", err);
+      toast.error("Failed to update category");
+    }
+  };
+  
 
   return (
     <>
       <Navbar />
       <div className="min-h-screen flex bg-white">
         <Sidebar />
+        <Toaster/>
         <div className="flex-1 p-6">
           {/* Add New Category */}
           <div className="mb-6 flex gap-4 items-center">
@@ -111,19 +139,26 @@ const CategoryManagement = () => {
                     <tr key={idx} className="border-t">
                       <td className="p-3 capitalize">{category.name}</td>
                       <td className="p-3">
-                        {category.isDisabled ? "Disabled" : "Active"}
+                        {category.isBlocked ? "Disabled" : "Active"}
                       </td>
                       <td className="p-3">
                         <Button
                           size="sm"
                           className={`text-white ${
-                            category.isDisabled ? "bg-green-600" : "bg-red-500"
+                            category.isBlocked ? "bg-green-600" : "bg-red-500"
                           } hover:opacity-90`}
                           onClick={() =>
                             toggleDisable(idx + (currentPage - 1) * rowsPerPage)
                           }
                         >
-                          {category.isDisabled ? "Enable" : "Disable"}
+                          {category.isBlocked ? "Enable" : "Disable"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="ml-3 bg-yellow-500 text-white hover:opacity-90"
+                          onClick={() => handleEdit(category)}
+                        >
+                          Edit
                         </Button>
                       </td>
                     </tr>
@@ -168,6 +203,37 @@ const CategoryManagement = () => {
           )}
         </div>
       </div>
+      {isEditModalOpen && (
+        <div className="fixed inset-0  backdrop-blur-xs z-50 flex justify-center items-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold mb-4">Edit Category</h2>
+
+            <Input
+              value={editData.name}
+              onChange={(e) =>
+                setEditData({ ...editData, name: e.target.value })
+              }
+              placeholder="Category name"
+              className="mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateCategory}
+                className="bg-indigo-600 text-white"
+              >
+                Update
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

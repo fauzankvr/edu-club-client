@@ -1,6 +1,5 @@
 export interface ProfileData {
-  firstName?: string;
-  lastName?: string;
+  fullName?: string;
   phone?: string | null;
   linkedInId?: string | null;
   githubId?: string | null;

@@ -14,6 +14,9 @@ import Wishlist from "@/Pages/Students/Wishlist";
 import MyLearning from "@/Pages/Students/MyLearning";
 import ProtectedRoute from "@/Middleware/ProtectedRouteStd";
 import VideoCallApp from "@/Pages/Students/VideoCall";
+import Plans from "@/Pages/Students/Plans";
+import PlanCheckout from "@/Pages/Students/PlanCheckout";
+import AboutUs from "@/Pages/Students/aboutUs";
 
 const StudentRoute = () => {
   return (
@@ -26,6 +29,7 @@ const StudentRoute = () => {
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/details/:id" element={<CourseDetails />} />
+      <Route path="/about" element={<AboutUs />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
@@ -39,6 +43,8 @@ const StudentRoute = () => {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/mylearning" element={<MyLearning />} />
         <Route path="/video-call" element={<VideoCallApp />} />
+        <Route path="/plans" element={<Plans />} />
+        <Route path="/plans/checkout/:id" element={ <PlanCheckout/>} />
       </Route>
     </Routes>
   );

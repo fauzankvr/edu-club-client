@@ -22,7 +22,7 @@ const Wishlist = () => {
   const fetchWishlist = async () => {
     try {
       const response = await studentAPI.getWishlist();
-      setWishlistItems(response.data.wishlist);
+      setWishlistItems(response.data.data.wishlist);
     } catch (error) {
       console.error("Failed to fetch wishlist:", error);
     } finally {
@@ -59,12 +59,30 @@ const Wishlist = () => {
         </h1>
 
         {loading ? (
-          <div className="text-center py-10 text-gray-500">
-            Loading wishlist...
+          <div className="text-center py-10 text-indigo-600 flex flex-col items-center justify-center animate-pulse">
+          
+            <p className="text-lg font-medium">Loading your wishlist...</p>
+            <p className="text-sm text-indigo-400 mt-1">
+              Just a moment, we’re bringing your favorites.
+            </p>
           </div>
         ) : wishlistItems.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
-            Your wishlist is empty.
+          <div className="text-center py-10 text-gray-600">
+            <p className="text-lg font-semibold mb-2">
+              Your wishlist is currently empty.
+            </p>
+            <p className="text-base">
+              Discover courses that match your passion — add them to your
+              wishlist and never miss out!
+            </p>
+            <p className="mt-4">
+              <span
+                onClick={() => navigate("/courses")}
+                className="text-blue-600 font-medium cursor-pointer hover:underline"
+              >
+                Browse courses now & start learning!
+              </span>
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">

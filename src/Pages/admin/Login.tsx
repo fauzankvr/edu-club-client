@@ -30,9 +30,10 @@ export default function Login() {
     onSubmit: async (values) => {
       try {
         const res = await adminApi.login(values);
+        console.log(res.data.success)
         if (res && res.data.success) {
-          dispatch(setStudent(res.data.accessToken));
-          localStorage.setItem("accessTokenAdmin", res.data.accessToken);
+          dispatch(setStudent(res.data.data.accessToken));
+          localStorage.setItem("accessTokenAdmin", res.data.data.accessToken);
           successToast();
           navigate("/admin/dashboard");
         } else {

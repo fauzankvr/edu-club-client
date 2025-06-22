@@ -5,7 +5,7 @@ import { Icon } from "@iconify/react";
 import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 interface Language {
   _id?: string;
@@ -18,6 +18,8 @@ const LanguageManagement = () => {
   const [newLanguage, setNewLanguage] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editData, setEditData] = useState<Language>({name:""})
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const rowsPerPage = 5;
   const totalPages = Math.ceil(languages.length / rowsPerPage);
@@ -33,7 +35,7 @@ const LanguageManagement = () => {
   const fetchLanguages = async () => {
     try {
         const res = await adminApi.getAllLanguages();
-      setLanguages(res.data);
+      setLanguages(res.data.data);
     } catch (err) {
       console.error("Failed to fetch languages:", err);
     } finally {
@@ -45,7 +47,7 @@ const LanguageManagement = () => {
     if (!newLanguage.trim()) return;
     try {
       const res = await adminApi.addLanguage({ name: newLanguage });
-      setLanguages((prev) => [...prev, res.data]);
+      setLanguages((prev) => [...prev, res.data.data]);
       setNewLanguage("");
       toast.success("Language added successfully");
     } catch (err) {
@@ -66,12 +68,35 @@ const LanguageManagement = () => {
       toast.error("Action failed");
     }
   };
+  const handleEdit = (language: Language) => {
+    setEditData(language);
+    setIsEditModalOpen(true);
+  };
+    const handleUpdateLanguage = async () => {
+      if (!editData.name.trim() || !editData._id) return;
+  
+      try {
+        await adminApi.updateLanguage(editData._id, { name: editData.name });
+        setLanguages((prev) =>
+          prev.map((cat) =>
+            cat._id === editData._id ? { ...cat, name: editData.name } : cat
+          )
+        );
+        toast.success("Category updated");
+        setIsEditModalOpen(false);
+      } catch (err) {
+        console.error("Update failed:", err);
+        toast.error("Failed to update category");
+      }
+    };
+    
 
   return (
     <>
       <Navbar />
       <div className="min-h-screen flex bg-white">
         <Sidebar />
+        <Toaster/>
         <div className="flex-1 p-6">
           {/* Add New Language */}
           <div className="mb-6 flex gap-4 items-center">
@@ -125,6 +150,13 @@ const LanguageManagement = () => {
                         >
                           {language.isBlocked ? "Unblock" : "Block"}
                         </Button>
+                         <Button
+                          size="sm"
+                          className="ml-3 bg-yellow-500 text-white hover:opacity-90"
+                          onClick={() => handleEdit(language)}
+                           >
+                            Edit
+                          </Button>
                       </td>
                     </tr>
                   ))}
@@ -168,6 +200,37 @@ const LanguageManagement = () => {
           )}
         </div>
       </div>
+      {isEditModalOpen && (
+              <div className="fixed inset-0  backdrop-blur-xs z-50 flex justify-center items-center">
+                <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+                  <h2 className="text-lg font-semibold mb-4">Edit Category</h2>
+      
+                  <Input
+                    value={editData.name}
+                    onChange={(e) =>
+                      setEditData({ ...editData, name: e.target.value })
+                    }
+                    placeholder="Category name"
+                    className="mb-4"
+                  />
+      
+                  <div className="flex justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditModalOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleUpdateLanguage}
+                      className="bg-indigo-600 text-white"
+                    >
+                      Update
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
     </>
   );
 };

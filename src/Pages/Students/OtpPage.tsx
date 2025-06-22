@@ -3,22 +3,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
-// import {  LoginValues, verifyOtp } from "@/API/authapi";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState} from "@/features/student/redux/store"
 import { ToastContainer, toast } from "react-toastify";
-// import { AxiosError } from "axios";
 import studentAPi from "@/API/StudentApi";
-import { setAccessToken } from "@/features/student/redux/studentSlce";
 import instructorAPI from "@/API/InstructorApi";
+import { AxiosError } from "axios";
 
 
 export default function OTPVerification() {
   const location = useLocation()
-  const Email = useSelector((state: RootState) => state.student.email);
-  const Password = useSelector((state: RootState) => state.student.password);
-  const dispatch = useDispatch()
-   const access = useSelector((state: RootState) => state.student.accessToken);
+  const {email, password} = location.state
+
 
   const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -49,20 +43,19 @@ export default function OTPVerification() {
     }
 
     try {
-      // Make POST request to resend OTP
       if (location.pathname == "/instructor/otpVerify") {
-        await instructorAPI.resendOtp({ email: Email });
+      await instructorAPI.resendOtp(email);
       } else {
-        await studentAPi.resendOtp({ email: Email });
+      await studentAPi.resendOtp(email);
       }
       setTimer(120);
       localStorage.setItem("otp_timer", "120");
       toast.success("A new OTP has been sent to your email.");
-    } catch (error: any) {
-      console.error("Resend OTP failed:", error);
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
       toast.error(
-        error.response?.data?.message ||
-          "Failed to resend OTP. Please try again."
+      axiosError.response?.data?.message ||
+        "Failed to resend OTP. Please try again."
       );
     }
   };
@@ -72,11 +65,11 @@ export default function OTPVerification() {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
     if (value && index < 5) {
       (document.getElementById(`otp-${index + 1}`) as HTMLElement).focus();
     }
-  };
+  };  
+
   const handleKeyDown = (
     index: number,
     event: React.KeyboardEvent<HTMLInputElement>
@@ -93,38 +86,26 @@ export default function OTPVerification() {
    try {
      let response;
      if (location.pathname == "/instructor/otpVerify") {
-       response = await instructorAPI.verifyOtp(loginValues) 
-        if (response.data.accessToken) {
-          const { accessToken } = response.data;
-          console.log("acc", accessToken);
-          dispatch(setAccessToken({ AccessToken: accessToken }));
-          localStorage.setItem("InstructorToken", accessToken);
-          console.log("access in redux", access);
-          toast.success("Your OTP is successful");
-          navigate("/instructor/home");
-        } else {
-          toast.error("Invalid response from server");
-        }
+       response = await instructorAPI.verifyOtp(loginValues);
+       if (response.data.success) {
+         toast.success("Your OTP is successful");
+         navigate("/instructor/login")
+       }
      } else {
         response = await studentAPi.verifyOtp(loginValues);
        console.log("Response:", response);
-        if (response.data.accessToken) {
-          const { accessToken } = response.data;
-          console.log("acc", accessToken);
-          dispatch(setAccessToken({ AccessToken: accessToken }));
-          localStorage.setItem("studentToken", accessToken);
-          console.log("access in redux", access);
-          toast.success("Your OTP is successful");
-          navigate("/");
+       if (response.data.success) {
+        toast.success("Your OTP is successful");
+          navigate("/login");
         } else {
           toast.error("Invalid response from server");
         }
      }
        
-   } catch (error:any) {
-     console.error("OTP verification failed:", error);
+   } catch (error) {
+     const errorMessage = error as AxiosError<{message?:string}>
      toast.error(
-       error.response?.data?.message ||
+       errorMessage.response?.data?.message ||
          "Something went wrong while verifying OTP"
      );
    }
@@ -138,7 +119,7 @@ export default function OTPVerification() {
         <Card className="p-6 w-full max-w-md text-center border rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-gray-800">Enter OTP</h2>
           <p className="text-gray-600 mt-2">
-            We sent a six-digit code to your email {Email}
+            We sent a six-digit code to your email {email}
           </p>
           <div className="flex justify-center gap-2 my-4">
             {otp.map((digit, index) => (
@@ -175,14 +156,14 @@ export default function OTPVerification() {
             )}
           </p>
           <Button
-            onClick={() => OtpManage(otp, Email, Password)}
-            className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white"
+            onClick={() => OtpManage(otp, email, password)}
+            className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer"
           >
             Verify OTP
           </Button>
           <button
             onClick={() => navigate(-1)}
-            className="mt-4 text-indigo-600 underline"
+            className="mt-4 text-indigo-600 underline cursor-pointer"
           >
             Go Back
           </button>

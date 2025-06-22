@@ -201,8 +201,8 @@ const Courses = () => {
                           className="w-full md:w-52 h-32 md:h-36 object-cover rounded-md"
                         />
                         <div
-                          className="flex-1 flex flex-col justify-between cursor-pointer"
-                          onClick={() => handleCardClick(item._id,item)}
+                          className="flex-1 flex flex-col justify-between"
+                         
                         >
                           <div>
                             <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded font-medium">
@@ -254,11 +254,11 @@ const Courses = () => {
                               {/* <div className="flex items-center gap-1">
                                 <Icon icon="mdi:clock-outline" />
                               </div> */}
-                              {/* <div className="flex items-center gap-1">
+                            {/* <div className="flex items-center gap-1">
                                 <Icon icon="mdi:account-multiple-outline" />
                                 Students {item.students.length}+
                               </div>
-                            </div> */} 
+                            </div> */}
                           </div>
                           <div className="flex items-center justify-between mt-4 flex-wrap gap-4">
                             <div className="flex items-center gap-2">
@@ -272,8 +272,8 @@ const Courses = () => {
                               </span>
                             </div>
                             <button
-                              className="flex items-center gap-1 rounded-full px-4 py-1 text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
-                              onClick={() => handleCardClick(item._id,item)}
+                              className="flex items-center gap-1 rounded-full px-4 py-1 text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer"
+                              onClick={() => handleCardClick(item._id, item)}
                             >
                               View course
                               <Icon icon="mdi:arrow-right" />
@@ -283,23 +283,24 @@ const Courses = () => {
                       </div>
                     </div>
                   ))}
-
                   {/* Pagination Controls */}
-                  <div className="flex justify-center gap-4 mt-10">
+                  <div className="flex justify-center items-center gap-4 mt-10">
                     <button
                       disabled={page === 1}
                       onClick={handlePrev}
-                      className="px-4 py-2 rounded border bg-white text-indigo-600 border-indigo-600 disabled:opacity-50"
+                      className="p-2 rounded-full border bg-white text-indigo-600 border-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 transition"
                     >
-                      Previous
+                      <Icon icon="mdi:chevron-left" className="text-2xl" />
                     </button>
-                    <span className="px-4 py-2">{`Page ${page} of ${totalPages}`}</span>
+
+                    <span className="px-4 py-2 text-sm text-gray-700 font-medium">{`Page ${page} of ${totalPages}`}</span>
+
                     <button
                       disabled={page === totalPages}
                       onClick={handleNext}
-                      className="px-4 py-2 rounded border bg-white text-indigo-600 border-indigo-600 disabled:opacity-50"
+                      className="p-2 rounded-full border bg-white text-indigo-600 border-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-50 transition"
                     >
-                      Next
+                      <Icon icon="mdi:chevron-right" className="text-2xl" />
                     </button>
                   </div>
                 </>

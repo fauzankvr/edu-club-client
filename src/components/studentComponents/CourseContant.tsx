@@ -21,8 +21,7 @@ const CourseContent: React.FC<CourseContentProps> = ({ courseId }) => {
       studentAPI
         .findCarriculam(courseId)
         .then((response) => {
-          console.log("Course Data:", response.curriculum);
-          const curriculumData = response.curriculum; 
+          const curriculumData = response.data.curriculum;
           if (curriculumData) {
             setCurriculum(curriculumData);
           } else {

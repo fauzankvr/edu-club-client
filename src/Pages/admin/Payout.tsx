@@ -32,7 +32,7 @@ const AdminPayouts: React.FC = () => {
     const fetchPayouts = async () => {
       try {
         const response = await adminApi.getPayoutRequests();
-        setPayouts(response.data.payouts || []);
+        setPayouts(response.data.data || []);
         setLoading(false);
       } catch (err: any) {
         setError(

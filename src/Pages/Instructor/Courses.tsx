@@ -18,8 +18,8 @@ const Courses = () => {
     const fetchCourses = async () => {
       try {
         const response = await instructorAPI.getAllCourses();
-        console.log(response,'tihs isresp')
-        setCourses(response.data.data);
+        console.log(response.data.data,'tihs isresp')
+        setCourses(response.data.data.courses   );
       } catch (error) {
         console.error("Failed to fetch courses:", error);
       }
@@ -36,7 +36,7 @@ const Courses = () => {
         <Sidebar />
         <div className="flex-1 p-4">
           <h1 className="text-center text-xl font-semibold mb-12">Courses</h1>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+          {/* <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
             <Button className="bg-indigo-500 text-white flex items-center gap-2">
               Sort By <ChevronDown size={16} />
             </Button>
@@ -44,7 +44,7 @@ const Courses = () => {
               className="w-full md:w-1/2 border px-4 py-2 rounded-xl"
               placeholder="Search your course.................."
             />
-          </div>
+          </div> */}
 
           {/* Promo Card */}
           <Card className="mb-4">
@@ -91,11 +91,16 @@ const Courses = () => {
 
                 <div className="flex-1">
                   <h4 className="font-semibold text-lg mb-2">{course.title}</h4>
-                  <div className="flex items-center gap-4 text-sm text-gray-700 mb-2">
+                  <p className="text-sm text-gray-600 mb-2">
+                    {course.description.length > 100
+                      ? `${course.description.slice(0, 100)}...`
+                      : course.description}
+                  </p>
+                  {/* <div className="flex items-center gap-4 text-sm text-gray-700 mb-2">
                     <span>Lesson {course.totalLectures || 0}</span>
                     <span>{course.duration || "0h"}</span>
                     <span>Students {course.students?.length || 0}</span>
-                  </div>
+                  </div> */}
                   {/* <div className="flex items-center gap-2 text-sm">
                     <img
                       src={

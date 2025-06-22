@@ -42,7 +42,7 @@ const ReviewCard: React.FC<CourseContentProps> = ({ courseId }) => {
     const loadReviews = async () => {
       try {
         const { data } = await studentAPI.getReviews(courseId);
-        const reviews = data.reviews || [];
+        const reviews = data.data.reviews || [];
 
         // Compute avgRating and ratingCounts if not provided
         const totalReviews = reviews.length;
@@ -82,14 +82,14 @@ const ReviewCard: React.FC<CourseContentProps> = ({ courseId }) => {
 
   const handleReact = async (reviewId: string, type: "like" | "dislike") => {
     try {
-      const { data } = await studentAPI.reactToReview(reviewId, type);
+      const data  = await studentAPI.reactToReview(reviewId, type);
       setReviews((prev) =>
         prev.map((r) =>
           r._id === reviewId
             ? {
                 ...r,
-                likes: data.reviews.likes,
-                dislikes: data.reviews.dislikes,
+                likes: data.data.data.reviews.likes,
+                dislikes: data.data.data.reviews.dislikes,
               }
             : r
         )

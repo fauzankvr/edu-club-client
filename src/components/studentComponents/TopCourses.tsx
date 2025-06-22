@@ -15,7 +15,6 @@ const TopCourses = () => {
       const fetchCourses = async () => {
         try {
           const res = await studentAPI.getAllCourses();
-          console.log(res.courses);
           setCourses(res.courses);
         } catch (error) {
           console.error(error);
@@ -53,7 +52,7 @@ const TopCourses = () => {
 
         {/* Courses Grid - Show Only First 6 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
-          {courses.slice(0, 6).map(
+          {courses.slice(0, 3).map(
             (
               course // Show only first 6 courses
             ) => (

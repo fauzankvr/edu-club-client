@@ -7,6 +7,7 @@ export interface IStudentSingup {
 export interface ISignupResonse {
   result: { message: string};
   success: boolean;
+  message: string
 }
 
 export interface IOtpResponse{

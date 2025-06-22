@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Icon } from "@iconify/react";
 import Navbar from "@/components/studentComponents/Navbar";
 import Footer from "@/components/studentComponents/Footer";
 import loginImg from "@/assets/students/loginimg.jpg";
@@ -11,11 +10,10 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
-import studentApi from "@/API/StudentApi"; // make sure this exists
-import { GoogleLogin } from "@react-oauth/google";
+import studentApi from "@/API/StudentApi";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-
 
 export default function Login() {
   const navigate = useNavigate();
@@ -37,10 +35,10 @@ export default function Login() {
     onSubmit: async (values) => {
       try {
         const res = await studentApi.login(values);
-        console.log("Login response:", res.data.accessToken);
+        console.log("Login response:", res.data);
         if (res && res.data.success) {
-          dispatch(setStudent(res.data.accessToken));
-          localStorage.setItem("studentToken", res.data.accessToken);
+          dispatch(setStudent(res.data.data.accessToken));
+          localStorage.setItem("studentToken", res.data.data.accessToken);
           successToast();
           navigate("/");
         } else {
@@ -53,8 +51,15 @@ export default function Login() {
     },
   });
 
+  const googleClientId = import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID;
+  if (!googleClientId) {
+    console.error(
+      "Google Client ID is missing. Please set VITE_REACT_APP_GOOGLE_CLIENT_ID in your .env file."
+    );
+  }
+
   return (
-    <>
+    <GoogleOAuthProvider clientId={googleClientId || ""}>
       <Navbar />
       <ToastContainer />
       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -88,7 +93,6 @@ export default function Login() {
                   onBlur={formik.handleBlur}
                   className="pr-10"
                 />
-
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -124,46 +128,44 @@ export default function Login() {
               or sign in with
             </div>
             <div className="flex gap-3 justify-center">
-              <GoogleLogin
-                onSuccess={async (credentialResponse) => {
-                  const token = credentialResponse.credential;
-
-                  if (!token) {
-                    toast.error("Google login token is missing.");
-                    return;
-                  }
-
-                  try {
-                    const res = await studentApi.googleLogin({ token }); // ✅ This works now
-
-                    if (res?.data?.success) {
-                      dispatch(setStudent(res.data.accessToken));
-                      localStorage.setItem(
-                        "studentToken",
-                        res.data.accessToken
-                      );
-                      successToast();
-                      navigate("/");
-                    } else {
+              {googleClientId ? (
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    const token = credentialResponse.credential;
+                    if (!token) {
+                      toast.error("Google login token is missing.");
+                      return;
+                    }
+                    try {
+                      const res = await studentApi.googleLogin({ token });
+                      if (res?.data?.success) {
+                        dispatch(setStudent(res.data.data.accessToken));
+                        localStorage.setItem(
+                          "studentToken",
+                          res.data.data.accessToken
+                        );
+                        successToast();
+                        navigate("/");
+                      } else {
+                        failToast();
+                      }
+                    } catch (err) {
+                      console.error("Google login error:", err);
                       failToast();
                     }
-                  } catch (err) {
-                    console.error("Google login error:", err);
-                    failToast();
-                  }
-                }}
-                onError={() => toast.error("Google login failed")}
-              />
-
-              <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="logos:facebook" className="text-xl" />
-                Facebook
-              </Button>
+                  }}
+                  onError={() => toast.error("Google login failed")}
+                />
+              ) : (
+                <div className="text-red-500 text-sm">
+                  Google Login is disabled: Missing Client ID
+                </div>
+              )}
             </div>
 
             <p className="text-center text-gray-500 mt-4">
               Don't have an account?{" "}
-              <a href="/student/signup" className="text-indigo-600">
+              <a href="/signup" className="text-indigo-600">
                 Sign Up
               </a>
             </p>
@@ -180,6 +182,6 @@ export default function Login() {
         </div>
       </div>
       <Footer />
-    </>
+    </GoogleOAuthProvider>
   );
 }

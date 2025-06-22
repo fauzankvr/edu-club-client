@@ -7,6 +7,8 @@ import TeacherManagemnt from "@/Pages/admin/TeacherManagement";
 import CategoryManagement from "@/Pages/admin/CategoryManagement";
 import LanguageManagement from "@/Pages/admin/LanguageManagement";
 import AdminPayouts from "@/Pages/admin/Payout";
+import PlanManagement from "@/Pages/admin/PlanManagment";
+import CourseManagement from "@/Pages/admin/CourseManagement";
 
 const protectedRoutes = [
   { path: "dashboard", element: <Dashboard /> },
@@ -14,7 +16,9 @@ const protectedRoutes = [
   { path: "teachers", element: <TeacherManagemnt /> },
   { path: "categories", element: <CategoryManagement /> },
   { path: "languages", element: <LanguageManagement /> },
+  { path: "courses", element: <CourseManagement /> },
   { path: "payout", element: <AdminPayouts /> },
+  { path: "plans", element: <PlanManagement /> },
 ];
 
 const AdiminRoutes = () => {

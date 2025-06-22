@@ -50,7 +50,7 @@ function Checkout() {
                     quantity: 1,
                   },
                 ]);
-                const orderData = response.data;
+                const orderData = response.data.data;
 
                 // Handle pending or new order
                 if (orderData?.status?.includes("Already Exists")) {
@@ -91,12 +91,11 @@ function Checkout() {
               try {
                 const response = await studentAPI.captureOrder(data.orderID);
                 console.log("Capture response:", response.data);
-                const orderData = response.data;
+                const orderData = response.data.data;
 
                 if (orderData?.orderID1) {
                   toast.success(`Transaction Completed: ${orderData.orderID1}`);
                   console.log("Transaction completed:", orderData);
-                  console.log("Removing from wishlist:", id);
                   if (!id) return;
                   navigate(`/courses/checkout/success/${orderData.orderID1}`);
                   await studentAPI.removeFromWishlist(id);

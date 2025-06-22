@@ -87,10 +87,10 @@ const Carricculam = () => {
       // Fetch curriculum for edit mode
       instructorAPI
         .getCurriculumByCourseId(id)
-        .then((res: { data: CurriculumResponse }) => {
+        .then((res) => {
           console.log("Fetched curriculum:", res);
           const transformed: CurriculumFormValues = {
-            sections: res.data.sections.map((section: SectionResponse) => ({
+            sections: res.sections.map((section: SectionResponse) => ({
               title: section.title,
               lectures: section.lectures.map((lec: LectureResponse) => ({
                 title: lec.title,

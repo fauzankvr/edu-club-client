@@ -50,7 +50,7 @@ const MyLearning = () => {
     try {
       const response = await studentAPI.getEnrolledCourses();
       console.log("Enrolled courses:", response.data);
-      setEnrolledCourses(response.data.enrolledCourses);
+      setEnrolledCourses(response.data.data.enrolledCourses);
     } catch (error) {
       console.error("Error fetching enrolled courses:", error);
     } finally {
@@ -80,8 +80,19 @@ const MyLearning = () => {
             ))}
           </div>
         ) : enrolledCourses.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">
-            You have not enrolled in any courses yet.
+          <div className="text-center py-20 text-gray-600">
+            <p className="text-lg font-semibold mb-2">
+              You haven’t enrolled in any courses yet.
+            </p>
+            <p className="text-base">
+              Start your learning journey today — explore our wide range of
+              expert-led courses.
+            </p>
+            <p className="mt-4">
+              <span onClick={()=>navigate("/courses")} className="text-indigo-600 font-medium cursor-pointer hover:underline">
+                Find your first course and get started!
+              </span>
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -108,7 +119,7 @@ const MyLearning = () => {
                   </p>
 
                   {/* Hardcoded Progress (optional) */}
-                  <div className="mb-4">
+                  {/* <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-1">Progress</p>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
@@ -116,7 +127,7 @@ const MyLearning = () => {
                         style={{ width: "5%" }}
                       ></div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <button
                     onClick={() =>

@@ -50,7 +50,8 @@ const Discussion: React.FC = () => {
       try {
         if (!id) throw new Error("Discussion ID is not defined.");
         const res = await studentAPI.getDiscussion(id);
-        setDiscussions(res.data.data);
+        console.log(res.data.data.data)
+        setDiscussions(res.data.data.data);
       } catch (error) {
         console.error("Failed to fetch discussions:", error);
       }
@@ -66,7 +67,7 @@ const Discussion: React.FC = () => {
 
       const res = await studentAPI.createDiscussion(id, { text: newText });
       console.log('diss',res.data.data)
-      setDiscussions([res.data.data, ...discussions]);
+      setDiscussions([res.data.data.data, ...discussions]);
       setNewText("");
     } catch (error) {
       console.error("Failed to submit discussion:", error);
@@ -81,7 +82,7 @@ const Discussion: React.FC = () => {
       await studentAPI.reactHandle(discussionId, type);
       if (!id) throw new Error("id not provided");
       const updated = await studentAPI.getDiscussion(id);
-      setDiscussions(updated.data.data);
+      setDiscussions(updated.data.data.data);
     } catch (err) {
       console.error("Failed to react:", err);
     }
@@ -100,7 +101,7 @@ const Discussion: React.FC = () => {
       const res = await studentAPI.getReplies(discussionId);
       setDiscussionReplies((prev) => ({
         ...prev,
-        [discussionId]: { replies: res.data, isOpen: true },
+        [discussionId]: { replies: res.data.data.replies, isOpen: true },
       }));
     } catch (err) {
       console.error("Failed to load replies:", err);

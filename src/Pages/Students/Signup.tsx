@@ -12,13 +12,19 @@ import {ToastContainer,toast} from "react-toastify"
 import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import { signup } from "@/API/authapi";
+import { useState } from "react";
+import { AxiosError } from "axios";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import studentAPI from "@/API/StudentApi";
 
 
 export default function Signup() {
   const dispatch = useDispatch()
-   const successTost = () => toast.success("Signup successful!");
-   const faileTost = () => toast.error("Signup failed. Try again.");
+   const successTost = () => toast.success("Signup successful!",{autoClose: 3000});
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
+
   //  Formik Setup
   const formik = useFormik({
     initialValues: {
@@ -53,122 +59,177 @@ export default function Signup() {
     onSubmit: async (values) => {
       try {
         const res = await signup(values);
-        console.log(res);
         if (res && res.success) {
-          console.log("Signup success:", res.result.message);
           dispatch(
             setStudent({ email: values.email, password: values.password })
           );
           successTost();
-          navigate("/otp-verification");
+          navigate("/otp-verification", { state: { email: values.email, password: values.password } });
+
         } else {
-          faileTost();
+          console.log(res)
+          toast.error(res?.message || "Signup failed. Please try again.");
         }
-      } catch (error) {
-        console.log("Signup error:", error);
-        faileTost();
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        toast.error(axiosError.message || "Signup failed. Please try again.");
       }
     },
   });
+  const googleClientId = import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID;
+  if (!googleClientId) {
+    console.error(
+      "Google Client ID is missing. Please set VITE_REACT_APP_GOOGLE_CLIENT_ID in your .env file."
+    );
+  }
 
   return (
     <>
-      <Navbar />
-      <ToastContainer/>
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-        <div className="max-w-4xl w-full grid md:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
-          {/* Left Side: Form */}
-          <Card className="p-6 flex flex-col justify-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              SIGN UP
-            </h2>
+      <GoogleOAuthProvider clientId={googleClientId || ""}>
+        <Navbar />
+        <ToastContainer />
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+          <div className="max-w-4xl w-full grid md:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
+            {/* Left Side: Form */}
+            <Card className="p-6 flex flex-col justify-center">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+                SIGN UP
+              </h2>
 
-            {/* Formik form */}
-            <form onSubmit={formik.handleSubmit} className="space-y-3">
-              <Input
-                type="email"
-                name="email"
-                placeholder="Email *"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.email && formik.errors.email && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.email}
-                </div>
-              )}
-
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password *"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.password && formik.errors.password && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.password}
-                </div>
-              )}
-
-              <Input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password *"
-                value={formik.values.confirmPassword}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.confirmPassword &&
-                formik.errors.confirmPassword && (
+              {/* Formik form */}
+              <form onSubmit={formik.handleSubmit} className="space-y-3">
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email *"
+                  autoComplete="email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.email && formik.errors.email && (
                   <div className="text-red-500 text-sm">
-                    {formik.errors.confirmPassword}
+                    {formik.errors.email}
+                  </div>
+                )}
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password *"
+                    autoComplete="new-password"
+                    value={formik.values.password}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                  <Icon
+                    icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                    className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                </div>
+
+                {formik.touched.password && formik.errors.password && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.password}
                   </div>
                 )}
 
-              <Button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-              >
-                Sign Up
-              </Button>
-            </form>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirm Password *"
+                    autoComplete="new-password"
+                    value={formik.values.confirmPassword}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                  <Icon
+                    icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"}
+                    className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
+                </div>
+                {formik.touched.confirmPassword &&
+                  formik.errors.confirmPassword && (
+                    <div className="text-red-500 text-sm">
+                      {formik.errors.confirmPassword}
+                    </div>
+                  )}
 
-            <div className="text-center text-gray-500 my-4">
-              or sign up with
+                <Button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={formik.isSubmitting}
+                >
+                  {formik.isSubmitting ? "Signing Up..." : "Sign Up"}
+                </Button>
+              </form>
+
+              <div className="text-center text-gray-500 my-4">
+                or sign up with
+              </div>
+              <div className="flex justify-center">
+                {googleClientId ? (
+                  <GoogleLogin
+                    onSuccess={async (credentialResponse) => {
+                      const token = credentialResponse.credential;
+                      if (!token) {
+                        toast.error("Google login token is missing.");
+                        return;
+                      }
+                      try {
+                        const res = await studentAPI.googleLogin({ token });
+                        if (res?.data?.success) {
+                          dispatch(setStudent(res.data.data.accessToken));
+                          localStorage.setItem(
+                            "studentToken",
+                            res.data.data.accessToken
+                          );
+                          toast.success("Google login successful!");
+                          navigate("/");
+                        } else {
+                          toast.error("Google login failed. Please try again.");
+                        }
+                      } catch (err) {
+                        console.error("Google login error:", err);
+                        toast.error("Google login failed. Please try again.");
+                      }
+                    }}
+                    onError={() => toast.error("Google login failed")}
+                  />
+                ) : (
+                  <div className="text-red-500 text-sm">
+                    Google Login is disabled: Missing Client ID
+                  </div>
+                )}
+              </div>
+
+              <p className="text-center text-gray-500 mt-4">
+                Do you have an account?{" "}
+                <a
+                  href="
+              /login"
+                  className="text-indigo-600"
+                >
+                  Log in
+                </a>
+              </p>
+            </Card>
+
+            {/* Right Side: Image */}
+            <div className="hidden md:block">
+              <img
+                src={singupimg}
+                alt="Signup"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="flat-color-icons:google" className="text-xl" /> Sign
-                In With Google
-              </Button>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="logos:facebook" className="text-xl" /> Sign With
-                Facebook
-              </Button>
-            </div>
-
-            <p className="text-center text-gray-500 mt-4">
-              Do you have an account?{" "}
-              <a href="#" className="text-indigo-600">
-                Log in
-              </a>
-            </p>
-          </Card>
-
-          {/* Right Side: Image */}
-          <div className="hidden md:block">
-            <img
-              src={singupimg}
-              alt="Signup"
-              className="w-full h-full object-cover"
-            />
           </div>
         </div>
-      </div>
-      <Footer />
+        <Footer />
+      </GoogleOAuthProvider>
     </>
   );
 }

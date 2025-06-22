@@ -28,6 +28,28 @@ interface ProfileResponse {
   profile: ProfileData & { email: string };
 }
 
+// New reusable ProfileImage component with error handling fallback
+function ProfileImage({ src }: { src: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  return (
+    <>
+      {!imageError && src ? (
+        <img
+          src={src}
+          alt="Profile Image"
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-300">
+          <Icon icon="mdi:account" width={35} className="text-white" />
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const navigate = useNavigate();
@@ -52,7 +74,6 @@ export default function ProfilePage() {
         const res = (await studentAPi.getProfile()) as ProfileResponse;
         const profileData = res.profile;
         setEmail(profileData.email);
-        console.log(profileData);
         dispatch(setProfile({ profile: profileData }));
 
         setFormData({
@@ -150,28 +171,18 @@ export default function ProfilePage() {
         <aside className="w-full md:w-64 bg-gray-50 border-r p-4">
           <div className="flex flex-col items-center">
             <div className="w-16 h-16 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white text-xl">
-              {formData.profileImage ? (
-                <img
-                  src={
-                    formData.profileImage.startsWith("data:")
-                      ? formData.profileImage // base64 preview
-                      : imageUrl
-                  }
-                  alt="Profile Preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Icon
-                  icon="mdi:account"
-                  width={25}
-                  className="text-white mx-auto"
-                />
-              )}
+              <ProfileImage
+                src={
+                  formData.profileImage.startsWith("data:")
+                    ? formData.profileImage
+                    : imageUrl
+                }
+              />
             </div>
             <p className="mt-2 font-semibold">{displayName}</p>
           </div>
           <nav className="mt-6 flex flex-col gap-2">
-            {["My Profile", "My Courses", "Class Room", "Class Room"].map(
+            {["My Profile"].map(
               (item, idx) => (
                 <button
                   key={idx}
@@ -187,23 +198,13 @@ export default function ProfilePage() {
         <main className="flex-1 p-4 sm:p-6 bg-white">
           <Card className="mb-6 p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 shadow-sm">
             <div className="ml-4 w-30 h-30 rounded-full bg-primary overflow-hidden flex items-center justify-center">
-              {formData.profileImage ? (
-                <img
-                  src={
-                    formData.profileImage.startsWith("data:")
-                      ? formData.profileImage // base64 preview
-                      : imageUrl
-                  }
-                  alt="Profile Preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Icon
-                  icon="mdi:account"
-                  width={35}
-                  className="text-white mx-auto"
-                />
-              )}
+              <ProfileImage
+                src={
+                  formData.profileImage.startsWith("data:")
+                    ? formData.profileImage
+                    : imageUrl
+                }
+              />
             </div>
             <div className="text-center sm:text-left ml-6 mt-3">
               <h2 className="text-lg font-semibold">{displayName}</h2>

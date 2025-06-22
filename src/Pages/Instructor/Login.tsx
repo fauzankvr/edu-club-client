@@ -9,13 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
-import studentApi from "@/API/StudentApi"; // make sure this exists
 import Navbar from "@/components/InstructorCompontents/Navbar";
 import Footer from "@/components/InstructorCompontents/Footer";
+import instructorAPI from "@/API/InstructorApi";
+import { useState } from "react";
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+   const [showPassword, setShowPassword] = useState(false);
 
   const successToast = () => toast.success("Login successful!");
   const failToast = () => toast.error("Login failed");
@@ -31,7 +33,7 @@ export default function Login() {
     }),
     onSubmit: async (values) => {
       try {
-        const res = await studentApi.login(values);
+        const res = await instructorAPI.login(values);
         console.log("Login response:", res);
         if (res && res.data.success) {
           dispatch(setStudent(res.data.accessToken));
@@ -74,15 +76,21 @@ export default function Login() {
                   {formik.errors.email}
                 </div>
               )}
-
-              <Input
-                type="password"
-                name="password"
-                placeholder="Password *"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password *"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <Icon
+                  icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                  className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                />
+              </div>
               {formik.touched.password && formik.errors.password && (
                 <div className="text-red-500 text-sm">
                   {formik.errors.password}
@@ -114,15 +122,15 @@ export default function Login() {
                 <Icon icon="flat-color-icons:google" className="text-xl" />
                 Google
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              {/* <Button variant="outline" className="flex items-center gap-2">
                 <Icon icon="logos:facebook" className="text-xl" />
                 Facebook
-              </Button>
+              </Button> */}
             </div>
 
             <p className="text-center text-gray-500 mt-4">
               Don't have an account?{" "}
-              <a href="/student/signup" className="text-indigo-600">
+              <a href="/instructor/signup" className="text-indigo-600">
                 Sign Up
               </a>
             </p>

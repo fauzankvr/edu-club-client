@@ -25,7 +25,7 @@ function CourseSuccessCard() {
         setLoading(true);
         const response = await studentAPI.findCoursByid(courseId);
         console.log("Fetched course:", response.data);
-        setCourse(response.data.course);
+        setCourse(response.data.data.course);
       } catch (error) {
         console.error("Error fetching course:", error);
         setCourse(null);
@@ -67,8 +67,8 @@ function CourseSuccessCard() {
                     className="text-green-500 w-8 h-8"
                   />
                   <p className="text-gray-700 font-medium">
-                    Great choice,{" "}
-                    <span className="font-semibold">Muhammed Fauzan!</span>
+                    Great choice, Go Ahead{" "}
+                    {/* <span className="font-semibold">Muhammed Fauzan!</span> */}
                   </p>
                 </div>
                 <button
@@ -99,11 +99,12 @@ function CourseSuccessCard() {
                       {course?.title}
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
-                      By Jonas Schmedtmann
+                      <span className="font-semibold">Instructor: </span>{" "}
+                      {course?.instructorDetails.fullName}
                     </p>
 
                     {/* Progress */}
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                       <p className="text-sm text-gray-500 mb-1">
                         Your progress
                       </p>
@@ -113,7 +114,7 @@ function CourseSuccessCard() {
                           style={{ width: "5%" }}
                         ></div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Start Course Button */}

@@ -28,8 +28,7 @@ const TeacherManagement = () => {
     const fetchTeachers = async () => {
       try {
         const res = await adminApi.getAllTeachers(); 
-        console.log(res)
-        setTeachers(res?.data?.teachersData || []);
+        setTeachers(res?.data?.data || []);
       } catch (error) {
         console.error("Failed to fetch teachers:", error);
       }

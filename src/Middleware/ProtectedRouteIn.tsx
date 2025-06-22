@@ -10,7 +10,6 @@ const ProtectedRoute = () => {
     const fetchUser = async () => {
       try {
         const response = await instructorAPI.getProfile();
-        console.log("API response:", response);
         setUser(response.profile); // adjust this line to match your response shape
       } catch (error) {
         console.error("Error fetching profile:", error);

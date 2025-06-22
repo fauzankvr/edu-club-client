@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Button } from "../ui/button";
+import { useLocation, Link } from "react-router-dom";
 
 const menuItems = [
   { label: "Dash Board", icon: "mdi:view-dashboard", path: "/admin/dashboard" },
@@ -13,6 +14,8 @@ const menuItems = [
 ];
 
 const Sidebar = () => {
+  const location = useLocation();
+
   return (
     <aside className="w-64 h-screen bg-white border border-indigo-200 rounded-xl m-4 p-4 flex flex-col justify-between shadow-sm">
       <div className="space-y-4">
@@ -20,17 +23,25 @@ const Sidebar = () => {
           Admin Panel
         </h2>
         <ul className="space-y-2">
-          {menuItems.map(({ label, icon, path }) => (
-            <li
-              key={label}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-100 text-gray-800 cursor-pointer transition-all duration-150"
-            >
-              <Icon icon={icon} className="text-xl text-indigo-600" />
-              <a href={path} className="flex-1">
-                {label}
-              </a>
-            </li>
-          ))}
+          {menuItems.map(({ label, icon, path }) => {
+            const isActive = location.pathname === path;
+
+            return (
+              <li
+                key={label}
+                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-150 ${
+                  isActive
+                    ? "bg-indigo-200 font-semibold text-indigo-900"
+                    : "hover:bg-indigo-100 text-gray-800"
+                }`}
+              >
+                <Icon icon={icon} className="text-xl text-indigo-600" />
+                <Link to={path} className="flex-1">
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

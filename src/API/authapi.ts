@@ -19,7 +19,8 @@ export const signup = async (
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      throw new Error(error.response.data.message || "Signup failed");
+      console.log(error.response.data.error);
+      throw new Error(error.response.data.error || "Signup failed");
     } else if (error instanceof Error) {
       throw new Error(error.message);
     } else {

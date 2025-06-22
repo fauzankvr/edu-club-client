@@ -30,9 +30,8 @@ const StudentManagemnt = () => {
     const fetchStudents = async () => {
       try {
         const res = await adminApi.findStudentDatas();
-        console.log("API Response:", res.data);
         // Adjust based on response format
-        setStudents(res.data.studentsData || res.data);
+        setStudents(res.data.data.studentsData || res.data);
       } catch (err) {
         console.error("Failed to fetch students:", err);
       } finally {

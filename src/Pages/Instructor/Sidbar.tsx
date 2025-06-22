@@ -20,20 +20,30 @@ const Sidebar = () => {
 
   const links = [
     {
+      name: "Dashboard",
+      path: "/Instructor/dashboard",
+      icon: "mdi:view-dashboard",
+    },
+    {
       name: "Courses",
       path: "/Instructor/dashboard/courses",
       icon: "mdi:book-open-variant",
     },
     {
       name: "My Details",
-      path: "/Instructor/dashboard/details",
+      path: "/instructor/profile",
       icon: "mdi:account-details",
     },
     {
-      name: "Live Class",
-      path: "/Instructor/dashboard/video-call",
+      name: "Video Calls",
+      path: "/Instructor/dashboard/call-history",
       icon: "mdi:video",
     },
+    // {
+    //   name: "Live Class",
+    //   path: "/Instructor/dashboard/video-call",
+    //   icon: "mdi:video",
+    // },
     {
       name: "Chats",
       path: "/Instructor/dashboard/chatlist",
@@ -42,7 +52,7 @@ const Sidebar = () => {
     {
       name: "Wallet",
       path: "/Instructor/dashboard/wallet",
-      icon: "mdi:wallet", // Material Design Icons wallet icon
+      icon: "mdi:wallet",
     },
   ];
 
@@ -54,28 +64,47 @@ const Sidebar = () => {
     >
       {!isMobile && <h2 className="text-sm mb-6">{pathname.slice(1)}</h2>}
       <div className="flex flex-col space-y-3">
-        {links.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className={`flex items-center ${
-              isMobile ? "justify-center" : "justify-start"
-            } py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-              pathname === link.path ? "bg-indigo-300" : "hover:bg-indigo-100"
-            }`}
-          >
-            <Icon
-              icon={link.icon}
-              className={`${pathname === link.path ? "text-indigo-700" : ""}`}
-              width={24}
-              height={24}
-            />
-            {!isMobile && <span className="ml-3">{link.name}</span>}
-          </Link>
-        ))}
+        {links.map((link) => {
+          const isActive = pathname === link.path;
+          const commonClasses = `flex items-center ${
+            isMobile ? "justify-center" : "justify-start"
+          } py-2 px-2 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+            isActive ? "bg-indigo-300" : "hover:bg-indigo-100"
+          }`;
+
+          return  (
+            <Link key={link.path} to={link.path} className={commonClasses}>
+              <Icon
+                icon={link.icon}
+                className={`${isActive ? "text-indigo-700" : ""}`}
+                width={24}
+                height={24}
+              />
+              {!isMobile && <span className="ml-3">{link.name}</span>}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default Sidebar;
+
+// link.name === "Live Class" ? (
+//   <a
+//     key={link.path}
+//     href={link.path}
+//     target="_blank"
+//     rel="noopener noreferrer"
+//     className={commonClasses}
+//   >
+//     <Icon
+//       icon={link.icon}
+//       className={`${isActive ? "text-indigo-700" : ""}`}
+//       width={24}
+//       height={24}
+//     />
+//     {!isMobile && <span className="ml-3">{link.name}</span>}
+//   </a>
+// ) :
