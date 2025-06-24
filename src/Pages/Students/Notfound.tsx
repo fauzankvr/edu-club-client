@@ -1,16 +1,16 @@
 import { Link } from "react-router-dom";
-import animatedImage from "../../assets/404.gif";
 
 const NotFoundPage = () => {
-  console.log("iam ;fsdklf;")
   return (
-    <div className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+    <div className="flex items-center justify-center min-h-screenx-4">
       <div className="text-center">
-        <img
-          src={animatedImage}
-          alt="404 Not Found"
-          className="w-72 h-72 mx-auto mb-6"
-        />
+        <div
+          className="w-140 h-122 mx-auto bg-center bg-no-repeat bg-cover"
+          style={{
+            backgroundImage:
+              "url('https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif')",
+          }}
+        ></div>
         <h1 className="text-4xl font-bold text-indigo-800 mb-2">
           Oops! Page not found
         </h1>

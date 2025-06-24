@@ -401,6 +401,7 @@ export default function SingleCourse() {
                     section.lectures.map((lesson, i) => {
                       const lessonId = `${idx}-${i}`;
                       const done = completedLessons.has(lessonId);
+                      console.log("don",done)
                       return (
                         <div
                           key={i}
