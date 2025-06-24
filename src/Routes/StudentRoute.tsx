@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import Home from "../Pages/Students/Home";
 import Signup from "@/Pages/Students/Signup";
 import Login from "@/Pages/Students/Login";
-import ForgotPassword from "@/Pages/Students/ForgottPass";
 import OTPVerification from "@/Pages/Students/OtpPage";
 import ProfilePage from "@/Pages/Students/ProfilePage";
 import Courses from "@/Pages/Students/Courses";
@@ -17,6 +16,9 @@ import VideoCallApp from "@/Pages/Students/VideoCall";
 import Plans from "@/Pages/Students/Plans";
 import PlanCheckout from "@/Pages/Students/PlanCheckout";
 import AboutUs from "@/Pages/Students/AboutUs"; 
+import ResetPassword from "@/Pages/Students/ResetPassword";
+import ForgotPassword from "@/Pages/Students/ForgotPassword";
+import NotFoundPage from "@/Pages/Students/Notfound";
 
 const StudentRoute = () => {
   return (
@@ -25,11 +27,13 @@ const StudentRoute = () => {
       <Route path="/" element={<Home />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/forgotten" element={<ForgotPassword />} />
+      <Route path="/resetPassword" element={<ResetPassword />} />
+      <Route path="/forgetPassword" element={<ForgotPassword />} />
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/courses/details/:id" element={<CourseDetails />} />
       <Route path="/about" element={<AboutUs />} />
+      <Route path="*" element={<NotFoundPage />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
@@ -44,7 +48,7 @@ const StudentRoute = () => {
         <Route path="/mylearning" element={<MyLearning />} />
         <Route path="/video-call" element={<VideoCallApp />} />
         <Route path="/plans" element={<Plans />} />
-        <Route path="/plans/checkout/:id" element={ <PlanCheckout/>} />
+        <Route path="/plans/checkout/:id" element={<PlanCheckout />} />
       </Route>
     </Routes>
   );

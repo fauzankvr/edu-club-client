@@ -96,7 +96,7 @@ export default function Login() {
                   {formik.errors.password}
                 </div>
               )}
-
+            {/* 
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <a href="#" className="text-indigo-600">
                   Forgot Password?
@@ -104,7 +104,7 @@ export default function Login() {
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2" /> Remember me
                 </label>
-              </div>
+              </div> */}
 
               <Button
                 type="submit"
