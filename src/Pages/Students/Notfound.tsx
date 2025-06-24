@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import animatedImage from "../../assets/404.gif";
+import AnimatedImage from "../../assets/404.gif";
 
 const NotFoundPage = () => {
   console.log("iam ;fsdklf;")
@@ -7,7 +7,7 @@ const NotFoundPage = () => {
     <div className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
       <div className="text-center">
         <img
-          src={animatedImage}
+          src={AnimatedImage}
           alt="404 Not Found"
           className="w-72 h-72 mx-auto mb-6"
         />
