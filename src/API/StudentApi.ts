@@ -63,6 +63,16 @@ const studentAPI = {
     return axiosInstance.post("/student/verifyotp", formData);
   },
 
+  ForgotverifyOtp: (formData: object) => {
+    return axiosInstance.post("/student/forgotVerifyOtp", formData);
+  },
+  sendOtp: (email:string) => {
+    return axiosInstance.post("/student/sendOtp", {email});
+  },
+  resetPassword:(newPassword: string,email:string) =>{
+    return axiosInstance.post("/student/resetPassword", { newPassword ,email});
+  },
+
   fetchCourse: (
     query1?: string,
     query2?: string,
@@ -90,10 +100,10 @@ const studentAPI = {
       // window.location.href = "/student/login";
     }
   },
- resendOtp: async (email: string) => {
-    console.log(email)
-    return await axiosInstance.post("/student/resendOtp", {email} );
-  }, 
+  resendOtp: async (email: string) => {
+    console.log(email);
+    return await axiosInstance.post("/student/resendOtp", { email });
+  },
   updateProfile: async (data: ProfileData) => {
     try {
       console.log("Updating profile with data:", data);
@@ -131,7 +141,7 @@ const studentAPI = {
         page,
         limit,
         sort,
-        ...filters, 
+        ...filters,
       };
 
       // Flatten filters

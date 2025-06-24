@@ -92,14 +92,26 @@ export default function OTPVerification() {
          navigate("/instructor/login")
        }
      } else {
+       if (!loginValues.password) {
+         const res = await studentAPi.ForgotverifyOtp(loginValues)
+         if (res.data.success) {
+           toast.success("otp verified success")
+             navigate("/resetPassword",{state:{email:email}})
+           
+         } else {
+           toast.error("otp not valid")
+         }
+       } else {
         response = await studentAPi.verifyOtp(loginValues);
-       console.log("Response:", response);
-       if (response.data.success) {
-        toast.success("Your OTP is successful");
+        console.log("Response:", response);
+        if (response.data.success) {
+          toast.success("Your OTP is successful");
           navigate("/login");
         } else {
           toast.error("Invalid response from server");
         }
+       }
+     
      }
        
    } catch (error) {

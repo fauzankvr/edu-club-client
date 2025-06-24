@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 interface WishlistItem {
   _id: string;
@@ -48,11 +49,42 @@ const Wishlist = () => {
   useEffect(() => {
     fetchWishlist();
   }, []);
+  function confirmDelete(id: string) { 
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <p>Are you sure you want to delete?</p>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => {
+                handleRemove(id);
+                closeToast();
+              }}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              Yes
+            </button>
+            <button
+              onClick={closeToast}
+              className="bg-gray-300 px-2 py-1 rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        autoClose: false,
+        closeOnClick: false,
+        closeButton: false,
+      }
+    );
+  }
 
   return (
     <>
       <Navbar />
-
+      <ToastContainer/>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-10 text-center">
           Your Wishlist
@@ -137,7 +169,7 @@ const Wishlist = () => {
                       className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm font-semibold"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleRemove(item.course._id);
+                        confirmDelete(item.course._id);
                       }}
                     >
                       Remove

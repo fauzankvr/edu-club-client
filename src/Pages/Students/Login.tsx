@@ -108,7 +108,7 @@ export default function Login() {
               )}
 
               <div className="flex items-center justify-between text-sm text-gray-600">
-                <a href="#" className="text-indigo-600">
+                <a href="/forgetPassword" className="text-indigo-600">
                   Forgot Password?
                 </a>
                 <label className="flex items-center">

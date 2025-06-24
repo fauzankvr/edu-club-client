@@ -408,7 +408,7 @@ export default function SingleCourse() {
                           className="flex justify-between items-center px-6 py-3 text-gray-700 text-sm hover:bg-gray-50 cursor-pointer"
                         >
                           <div className="flex items-center gap-2">
-                            <div
+                            {/* <div
                               className={`w-5 h-5 rounded-full flex items-center justify-center border ${
                                 done
                                   ? "bg-indigo-500 border-indigo-500"
@@ -421,7 +421,7 @@ export default function SingleCourse() {
                                   className="text-white text-sm"
                                 />
                               )}
-                            </div>
+                            </div> */}
                             <span>{lesson.title}</span>
                           </div>
                         </div>

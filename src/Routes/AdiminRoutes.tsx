@@ -9,6 +9,7 @@ import LanguageManagement from "@/Pages/admin/LanguageManagement";
 import AdminPayouts from "@/Pages/admin/Payout";
 import PlanManagement from "@/Pages/admin/PlanManagment";
 import CourseManagement from "@/Pages/admin/CourseManagement";
+import NotFoundPage from "@/Pages/Students/Notfound";
 
 const protectedRoutes = [
   { path: "dashboard", element: <Dashboard /> },
@@ -32,6 +33,7 @@ const AdiminRoutes = () => {
           element={<ProtectedRoute>{element}</ProtectedRoute>}
         />
       ))}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

@@ -72,6 +72,7 @@ const instructorAPI = {
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/instructor/verifyotp", formData);
   },
+  
 
   fetchCourse: (
     query1?: string,
