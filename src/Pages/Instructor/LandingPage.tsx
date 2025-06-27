@@ -102,7 +102,10 @@ const LandingPage = () => {
         }
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        toast.error("Failed to load course data or options");
+        toast.error("This Course is Blocked Contact Admin");
+        setTimeout(() => {
+          navigate("/Instructor/dashboard/courses");
+        },3000)
       }
     };
 

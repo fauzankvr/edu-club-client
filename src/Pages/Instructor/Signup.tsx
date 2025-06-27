@@ -59,7 +59,9 @@ export default function Signup() {
             setStudent({ email: values.email, password: values.password })
           );
           successTost();
-          navigate("/instructor/otpVerify");
+          navigate("/instructor/otpVerify", {
+            state: { email: values.email, password: values.password },
+          });
         } else {
           faileTost();
         }

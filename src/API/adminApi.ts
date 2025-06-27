@@ -1,5 +1,6 @@
 import { Plan } from "@/Pages/admin/PlanManagment";
 import { axiosInstance } from "./axiosInstance";
+import { DashboardParams, ReportParams } from "@/Pages/admin/Dashboard";
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -113,9 +114,9 @@ const adminApi = {
   togglePlanStatus: (id: string) =>
     axiosInstance.patch(`/admin/plans/${id}/toggle`),
   findPlan: (id: string) => axiosInstance.get(`/admin/plan/${id}`),
-  getDashboard: (params: any) =>
+  getDashboard: (params: DashboardParams) =>
     axiosInstance.get("/admin/dashboard", { params }),
-  getReport: (params: any) =>
+  getReport: (params: ReportParams) =>
     axiosInstance.get("/admin/report", { params, responseType: "blob" }),
 
   findCourseDatas: () => {
@@ -123,7 +124,7 @@ const adminApi = {
   },
   blockCourse: (courseId: string) => {
     return axiosInstance.patch(`/admin/course/${courseId}/block`);
-  }
+  },
 };
 
 export default adminApi;

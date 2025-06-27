@@ -20,6 +20,8 @@ const CourseDetails = () => {
   const location = useLocation();
   console.log("state", location.state.course);
   const state = location.state?.course;
+  const [showFullDescription, setShowFullDescription] = useState(false);
+
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -30,6 +32,7 @@ const CourseDetails = () => {
         setCourse(res.data.course);
       } catch (error) {
         console.log(error);
+        navigate("/")
       }
     };
 
@@ -62,11 +65,29 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
                 <h1 className="text-3xl md:text-4xl font-bold text-white leading-snug mb-2">
                   {course.title}
                 </h1>
-                <p className="text-lg text-indigo-100 mb-4 max-w-3xl">
+                {/* <p className="text-lg text-indigo-100 mb-4 max-w-3xl">
                   Learn web design in 1 hour with 25+ simple-to-use rules and
                   guidelines – tons of amazing web design resources included!
-                </p>
-
+                </p> */}
+                {course.description && (
+                  <div className="text-lg text-indigo-100 mb-4 max-w-3xl">
+                    <p
+                      className={`${showFullDescription ? "" : "line-clamp-2"}`}
+                    >
+                      {course.description}
+                    </p>
+                    {course.description.length > 120 && (
+                      <button
+                        onClick={() =>
+                          setShowFullDescription(!showFullDescription)
+                        }
+                        className="text-sm text-white font-semibold underline mt-1"
+                      >
+                        {showFullDescription ? "See less" : "See more"}
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-3 text-sm text-indigo-100 mb-4">
                   <span className="flex items-center font-semibold text-yellow-300">
                     {(state?.averageRating ?? 0).toFixed(1)}
@@ -75,9 +96,9 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
                       className="text-yellow-400 ml-1 mr-0.5"
                     />
                   </span>
-                  <span>{course.students?.length ?? 0} students</span>
+                  {/* <span>{course.students?.length ?? 0} students</span> */}
                   <span>
-                    Created by {" "}
+                    Created by{" "}
                     <span className="font-medium text-white">
                       {state?.instructor?.name ?? "Unknown"}
                     </span>
