@@ -17,6 +17,7 @@ import { useInView } from "react-intersection-observer";
 import { getSocket } from "@/services/socketService";
 import { debounce } from "lodash";
 import { FixedSizeList as List } from "react-window";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Chat {
   _id: string;
@@ -82,7 +83,7 @@ const MessageItem: React.FC<{
   }, 500);
 
   const { ref } = useInView({
-    threshold: 0.5,
+    threshold: 0.6,
     onChange: (inView) => {
       if (
         inView &&
@@ -96,25 +97,25 @@ const MessageItem: React.FC<{
     },
   });
 
+  const isSender = msg.sender === studentId;
+
   return (
     <div
       ref={ref}
-      className={`flex ${
-        msg.sender === studentId ? "justify-end" : "justify-start"
-      }`}
+      className={`flex mb-4 px-2 ${isSender ? "justify-end" : "justify-start"}`}
     >
       <div
-        className={`px-4 py-2 rounded-lg max-w-xs ${
-          msg.sender === studentId
-            ? "bg-indigo-200 text-indigo-900"
-            : "bg-gray-200 text-gray-800"
+        className={`relative px-4 py-2 max-w-xs text-sm shadow-md rounded-2xl ${
+          isSender
+            ? "bg-indigo-200 text-indigo-900 rounded-tl-2xl rounded-bl-2xl rounded-br-sm"
+            : "bg-gray-200 text-gray-800 rounded-tr-2xl rounded-br-2xl rounded-bl-sm"
         }`}
       >
-        {msg.text}
+        <div className="whitespace-pre-line break-words">{msg.text}</div>
         <div
-          className={`text-xs flex items-center space-x-1 ${
-            msg.sender === studentId ? "text-indigo-400" : "text-gray-500"
-          } mt-1`}
+          className={`flex items-center space-x-1 mt-1 text-xs ${
+            isSender ? "text-indigo-500 justify-end" : "text-gray-500"
+          }`}
         >
           <span>
             {new Date(msg.createdAt).toLocaleTimeString([], {
@@ -122,7 +123,7 @@ const MessageItem: React.FC<{
               minute: "2-digit",
             })}
           </span>
-          {msg.sender === studentId && (
+          {isSender && (
             <Icon
               icon="mdi:check-all"
               className={`w-4 h-4 ${getTickColor(msg)}`}
@@ -143,7 +144,6 @@ const MessageList: React.FC<MessageListProps> = ({
   markMessagesAsSeen,
 }) => {
   useEffect(() => {
-    // Mark visible messages as seen on initial load
     markMessagesAsSeen(messages);
   }, [messages, markMessagesAsSeen]);
 
@@ -187,8 +187,6 @@ export default function ChatWithTeacher({
   studentId,
   instructorId,
   setUnseenCount,
-  // instructorStatus,
-  // instructorLastSeen,
   isInstructorBlocked,
   socket,
 }: ChatTutorInterfaceProps): JSX.Element {
@@ -202,7 +200,7 @@ export default function ChatWithTeacher({
 
   const getTickColor = useCallback(
     (msg: Message) =>
-      msg.seenBy.includes(instructorId) ? "text-blue-600" : "text-brown-600",
+      msg.seenBy.includes(instructorId) ? "text-blue-400" : "text-gray-400",
     [instructorId]
   );
 
@@ -244,20 +242,21 @@ export default function ChatWithTeacher({
   }, []);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
+    setTimeout(() => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      }
+    }, 100);
   }, [chatMessages]);
 
   useEffect(() => {
-    // Clear seenMessagesRef when chat changes
     seenMessagesRef.current.clear();
-    // Mark initial messages as seen
     markMessagesAsSeen(chatMessages);
   }, [chat?._id, chatMessages, markMessagesAsSeen]);
+
   useEffect(() => {
     setUnseenCount(0);
-  },[])
+  }, []);
 
   const handleTyping = useCallback(() => {
     if (!studentId || !chat?._id || isInstructorBlocked || !message.trim()) {
@@ -312,7 +311,7 @@ export default function ChatWithTeacher({
   };
 
   return (
-    <div className="mx-auto bg-gray-100 shadow-lg rounded-lg overflow-hidden flex flex-col h-[90vh]">
+    <div className=" bg-gray-100 shadow-lg rounded-lg overflow-hidden flex flex-col h-[90vh]">
       {error && (
         <div className="bg-red-100 text-red-700 p-2 text-center">{error}</div>
       )}
@@ -378,34 +377,31 @@ export default function ChatWithTeacher({
           {isInstructorBlocked && (
             <span className="text-red-500 text-sm ml-2">(Blocked)</span>
           )}
-          {/* <p className="text-sm text-muted-foreground">
-            {instructorStatus === "online"
-              ? "Online"
-              : instructorLastSeen
-              ? `Last seen: ${new Date(instructorLastSeen).toLocaleString([], {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}`
-              : "Unknown"}
-          </p> */}
         </div>
       </div>
-      <div className="p-4 flex-1 overflow-y-auto flex flex-col space-y-3">
-        <MessageList
-          messages={chatMessages}
-          studentId={studentId}
-          getTickColor={getTickColor}
-          seenMessagesRef={seenMessagesRef}
-          scrollAreaRef={scrollAreaRef}
-          markMessagesAsSeen={markMessagesAsSeen}
-        />
-        {chat?.isTyping && (
-          <div className="text-sm text-gray-500">Instructor is typing...</div>
-        )}
-      </div>
+      {!chat ? (
+        <div className="flex items-center justify-center h-full text-muted-foreground">
+          Select a chat to start messaging.
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
+            <MessageList
+              messages={chatMessages}
+              studentId={studentId}
+              getTickColor={getTickColor}
+              seenMessagesRef={seenMessagesRef}
+              scrollAreaRef={scrollAreaRef}
+              markMessagesAsSeen={markMessagesAsSeen}
+            />
+            {chat?.isTyping && (
+              <div className="text-sm text-gray-500">
+                Instructor is typing...
+              </div>
+            )}
+          </ScrollArea>
+        </div>
+      )}
       <div className="p-3 border-t border-gray-300 flex">
         <input
           type="text"
