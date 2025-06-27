@@ -64,10 +64,6 @@ const DashboardOverview = () => {
     fetchData();
   }, [filterType, startDate, endDate]);
 
-  // if (loading) {
-  //   return <div>Loading...</div>;
-  // }
-
 
   return (
     <>

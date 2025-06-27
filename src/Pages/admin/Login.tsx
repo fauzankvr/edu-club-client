@@ -9,11 +9,13 @@ import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import loginImg from "@/assets/students/loginimg.jpg";
 import adminApi from "@/API/adminApi";
+import { useState } from "react";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+  const [showPassword,setShowPassword]=useState(false)
 
   const successToast = () => toast.success("Login successful!");
   const failToast = () => toast.error("Login failed");
@@ -83,14 +85,19 @@ export default function Login() {
                 )}
               </div>
 
-              <div>
+              <div className="relative">
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Password"
                   value={formik.values.password}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                />
+                <Icon
+                  icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                  className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
                 />
                 {formik.touched.password && formik.errors.password && (
                   <p className="text-red-500 text-sm mt-1">
