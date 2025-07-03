@@ -40,11 +40,11 @@ interface Message {
 interface ChatTutorInterfaceProps {
   chat: Chat | null;
   chatMessages: Message[];
-  setChatMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  setChatMessages:(messages: Message[]) => void;
   studentId: string;
   instructorId: string;
   unseenCount: number;
-  setUnseenCount: React.Dispatch<React.SetStateAction<number>>;
+  setUnseenCount:(count: number) => void;
   instructorStatus: string;
   instructorLastSeen: string;
   isInstructorBlocked: boolean;

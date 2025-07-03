@@ -12,7 +12,7 @@ import {ToastContainer,toast} from "react-toastify"
 import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import { signup } from "@/API/authapi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AxiosError } from "axios";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import studentAPI from "@/API/StudentApi";
@@ -25,30 +25,55 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
 
+   useEffect(() => {
+          const token = localStorage.getItem("studentToken");
+          if (token) {
+            navigate("/", { replace: true });
+          }
+        }, [navigate]);
+
   //  Formik Setup
   const formik = useFormik({
     initialValues: {
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
     },
     validationSchema: Yup.object({
+      firstName: Yup.string()
+        .trim("Cannot be only spaces")
+        .strict(true)
+        .matches(
+          /^[A-Za-z\s\-']+$/,
+          "Only letters, spaces, hyphens, and apostrophes allowed"
+        )
+        .min(2, "Too short")
+        .max(30, "Too long")
+        .required("First name is required"),
+      lastName: Yup.string()
+        .trim("Cannot be only spaces")
+        .strict(true)
+        .max(30, "Too long")
+        .required("Last name is required"),
       email: Yup.string()
         .trim("Cannot be only spaces")
         .strict(true)
         .email("Invalid email")
-        .required("Required"),
+        .required("Email Required"),
 
       password: Yup.string()
         .trim("Cannot be only spaces")
         .strict(true)
         .min(6, "Minimum 6 characters")
+        .max(30, "Password must not exceed 30 characters")
         .matches(/[A-Za-z]/, "Password must contain at least one letter")
         .matches(
           /[^A-Za-z0-9]/,
           "Password must contain at least one special character"
         )
-        .required("Required"),
+        .required("Password Required"),
 
       confirmPassword: Yup.string()
         .trim("Cannot be only spaces")
@@ -61,13 +86,13 @@ export default function Signup() {
         const res = await signup(values);
         if (res && res.success) {
           dispatch(
-            setStudent({ email: values.email, password: values.password })
+            setStudent({  email: values.email, password: values.password })
           );
           successTost();
-          navigate("/otp-verification", { state: { email: values.email, password: values.password } });
-
+          navigate("/otp-verification", {
+            state: { firstName:values.firstName ,lastName:values.lastName , email: values.email, password: values.password },
+          });
         } else {
-          console.log(res)
           toast.error(res?.message || "Signup failed. Please try again.");
         }
       } catch (error: unknown) {
@@ -98,6 +123,32 @@ export default function Signup() {
 
               {/* Formik form */}
               <form onSubmit={formik.handleSubmit} className="space-y-3">
+                <Input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formik.values.firstName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.firstName && formik.errors.firstName && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.firstName}
+                  </div>
+                )}
+                <Input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formik.values.lastName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                {formik.touched.lastName && formik.errors.lastName && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.lastName}
+                  </div>
+                )}
                 <Input
                   type="email"
                   name="email"
@@ -180,7 +231,7 @@ export default function Signup() {
                         return;
                       }
                       try {
-                        const res = await studentAPI.googleLogin({ token });
+                        const res = await studentAPI.googleLogin({ token ,role:"student"});
                         if (res?.data?.success) {
                           dispatch(setStudent(res.data.data.accessToken));
                           localStorage.setItem(
@@ -188,7 +239,7 @@ export default function Signup() {
                             res.data.data.accessToken
                           );
                           toast.success("Google login successful!");
-                          navigate("/");
+                          navigate("/",{replace:true});
                         } else {
                           toast.error("Google login failed. Please try again.");
                         }

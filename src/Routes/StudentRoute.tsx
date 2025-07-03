@@ -19,6 +19,7 @@ import AboutUs from "@/Pages/Students/AboutUs";
 import ResetPassword from "@/Pages/Students/ResetPassword";
 import ForgotPassword from "@/Pages/Students/ForgotPassword";
 import NotFoundPage from "@/Pages/Students/Notfound";
+import ProfileCard from "@/Pages/Students/InstructorProfile";
 
 const StudentRoute = () => {
   return (
@@ -38,6 +39,7 @@ const StudentRoute = () => {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/instructor-profile/:id" element={<ProfileCard />} />
         <Route path="/courses/checkout/:id" element={<CheckoutPage />} />
         <Route
           path="/courses/checkout/success/:id"

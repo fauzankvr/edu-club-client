@@ -77,14 +77,14 @@ const CheckoutPage = () => {
               </div>
 
               {/* Razorpay Section */}
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
+              {/* <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
                 <Icon icon="simple-icons:razorpay" className="w-10 h-10" />
                 <span className="text-sm text-gray-700">Pay with Razorpay</span>
-              </div>
+              </div> */}
             </div>
 
             {/* Payment Form */}
-            <form className="space-y-4 mt-6">
+            {/* <form className="space-y-4 mt-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Name on Card
@@ -131,19 +131,19 @@ const CheckoutPage = () => {
               </div>
 
               {/* Save Info */}
-              <label className="flex items-center mt-2 text-sm text-gray-600">
+              {/* <label className="flex items-center mt-2 text-sm text-gray-600">
                 <input type="checkbox" className="mr-2" />
                 Save my information for faster checkout
-              </label>
+              </label> */}
 
               {/* Confirm Button */}
-              <button
+              {/* <button
                 type="submit"
                 className="w-full bg-indigo-600 text-white py-2 rounded-lg text-lg hover:bg-indigo-700 transition"
               >
                 Confirm
               </button>
-            </form>
+            </form>  */}
           </div>
 
           {/* Right: Summary Section */}

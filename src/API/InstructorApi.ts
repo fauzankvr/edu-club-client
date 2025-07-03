@@ -1,8 +1,6 @@
 import { clearStudent, setAccessToken } from "@/features/student/redux/studentSlce";
 import { axiosInstance } from "./axiosInstance";
 import { store } from "@/features/student/redux/store"; 
-import { ProfileData } from "@/Pages/types/student";
-
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -72,8 +70,13 @@ const instructorAPI = {
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/instructor/verifyotp", formData);
   },
-  
+  sendOtp: (email: string)=>{
+    return axiosInstance.post("/instructor/sendOtp", {email});
+  },
 
+  resetPassword:(newPassword: string,email:string) =>{
+    return axiosInstance.post("/instructor/resetPassword", { newPassword ,email});
+  },
   fetchCourse: (
     query1?: string,
     query2?: string,
@@ -105,7 +108,7 @@ const instructorAPI = {
   resendOtp: async (email: object) => {
     return await axiosInstance.post("/instructor/resendOtp", email);
   },
-  updateProfile: async (data: ProfileData) => {
+  updateProfile: async (data: FormData) => {
     try {
       console.log("Updating profile with data:", data);
       const response = await axiosInstance.put("/instructor/profile", data, {

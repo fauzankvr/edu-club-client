@@ -205,14 +205,14 @@ const [filterType, setFilterType] =
                   </div>
 
                   <p className="text-2xl font-bold text-black">
-                    ${data.totalRevenue.toFixed(2)}
+                    ₹{data.totalRevenue.toFixed(2)}
                   </p>
 
                   {/* ✅ New: Total Share (20% of Total Revenue) */}
                   <p className="mb-4 text-base font-medium text-gray-700">
                     Total Share (15%):{" "}
                     <span className="font-semibold text-black">
-                      $
+                      ₹
                       {(data.totalRevenue - data.totalRevenue * 0.85).toFixed(
                         2
                       )}
@@ -256,7 +256,7 @@ const [filterType, setFilterType] =
                                               Student: {order.studentName}
                                             </p>
                                             <p className="text-sm text-gray-600">
-                                              Price: ${order.price.toFixed(2)}
+                                              Price: ₹{order.price.toFixed(2)}
                                             </p>
                                             <p className="text-sm text-gray-600">
                                               Date: {new Date(order.date).toLocaleDateString()}

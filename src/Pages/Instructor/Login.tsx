@@ -12,7 +12,9 @@ import { setStudent } from "@/features/student/redux/studentSlce";
 import Navbar from "@/components/InstructorCompontents/Navbar";
 import Footer from "@/components/InstructorCompontents/Footer";
 import instructorAPI from "@/API/InstructorApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import studentAPI from "@/API/StudentApi";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,6 +23,14 @@ export default function Login() {
 
   const successToast = () => toast.success("Login successful!");
   const failToast = () => toast.error("Login failed");
+
+  useEffect(() => {
+    const token = localStorage.getItem("InstructorToken");
+
+    if (token) {
+      navigate("/instructor/home", { replace: true });
+    }
+  }, [navigate]);
 
   const formik = useFormik({
     initialValues: {
@@ -39,7 +49,7 @@ export default function Login() {
           dispatch(setStudent(res.data.accessToken));
           localStorage.setItem("InstructorToken", res.data.accessToken);
           successToast();
-          navigate("/instructor/home");
+          navigate("/instructor/home", { replace: true });
         } else {
           failToast();
         }
@@ -50,103 +60,146 @@ export default function Login() {
     },
   });
 
+  const googleClientId = import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID;
+  if (!googleClientId) {
+    console.error(
+      "Google Client ID is missing. Please set VITE_REACT_APP_GOOGLE_CLIENT_ID in your .env file."
+    );
+  }
+
   return (
     <>
-      <Navbar />
-      <ToastContainer />
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-        <div className="max-w-4xl w-full grid md:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
-          {/* Left Side: Form */}
-          <Card className="p-6 flex flex-col justify-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
-              INSTRUCTOR LOGIN
-            </h2>
+      <GoogleOAuthProvider clientId={googleClientId || ""}>
+        <Navbar />
+        <ToastContainer />
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+          <div className="max-w-4xl w-full grid md:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
+            {/* Left Side: Form */}
+            <Card className="p-6 flex flex-col justify-center">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4 text-center">
+                INSTRUCTOR LOGIN
+              </h2>
 
-            <form onSubmit={formik.handleSubmit} className="space-y-3">
-              <Input
-                type="email"
-                name="email"
-                placeholder="Email *"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.email && formik.errors.email && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.email}
-                </div>
-              )}
-              <div className="relative">
+              <form onSubmit={formik.handleSubmit} className="space-y-3">
                 <Input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password *"
-                  value={formik.values.password}
+                  type="email"
+                  name="email"
+                  placeholder="Email *"
+                  value={formik.values.email}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-                <Icon
-                  icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
-                  className="absolute right-3 top-3 cursor-pointer text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                />
-              </div>
-              {formik.touched.password && formik.errors.password && (
-                <div className="text-red-500 text-sm">
-                  {formik.errors.password}
+                {formik.touched.email && formik.errors.email && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.email}
+                  </div>
+                )}
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password *"
+                    value={formik.values.password}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                  <Icon
+                    icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                    className="absolute right-3 top-3 cursor-pointer text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
                 </div>
-              )}
-            {/* 
-              <div className="flex items-center justify-between text-sm text-gray-600">
-                <a href="#" className="text-indigo-600">
-                  Forgot Password?
-                </a>
-                <label className="flex items-center">
+                {formik.touched.password && formik.errors.password && (
+                  <div className="text-red-500 text-sm">
+                    {formik.errors.password}
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <a
+                    onClick={() =>
+                      navigate("/forgetPassword", {
+                        state: { role: "instructor" },
+                      })
+                    }
+                    className="text-indigo-600 cursor-pointer"
+                  >
+                    Forgot Password?
+                  </a>
+                  {/* <label className="flex items-center">
                   <input type="checkbox" className="mr-2" /> Remember me
-                </label>
-              </div> */}
+                </label> */}
+                </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-              >
-                Log In
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  Log In
+                </Button>
+              </form>
 
-            <div className="text-center text-gray-500 my-4">
-              or sign in with
+              <div className="text-center text-gray-500 my-4">
+                or sign in with
+              </div>
+              <div className="flex gap-3 justify-center">
+                {googleClientId ? (
+                  <GoogleLogin
+                    onSuccess={async (credentialResponse) => {
+                      const token = credentialResponse.credential;
+                      if (!token) {
+                        toast.error("Google login token is missing.");
+                        return;
+                      }
+                      try {
+                        const res = await studentAPI.googleLogin({
+                          token,
+                          role: "instructor",
+                        });
+                        if (res?.data?.success) {
+                          dispatch(setStudent(res.data.data.accessToken));
+                          localStorage.setItem(
+                            "InstructorToken",
+                            res.data.data.accessToken
+                          );
+                          successToast();
+                          navigate("/Instructor/home", { replace: true });
+                        } else {
+                          failToast();
+                        }
+                      } catch (err) {
+                        console.error("Google login error:", err);
+                        failToast();
+                      }
+                    }}
+                    onError={() => toast.error("Google login failed")}
+                  />
+                ) : (
+                  <div className="text-red-500 text-sm">
+                    Google Login is disabled: Missing Client ID
+                  </div>
+                )}
+              </div>
+
+              <p className="text-center text-gray-500 mt-4">
+                Don't have an account?{" "}
+                <a href="/instructor/signup" className="text-indigo-600">
+                  Sign Up
+                </a>
+              </p>
+            </Card>
+
+            {/* Right Side: Image */}
+            <div className="hidden md:block">
+              <img
+                src={loginImg}
+                alt="Login"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="flat-color-icons:google" className="text-xl" />
-                Google
-              </Button>
-              {/* <Button variant="outline" className="flex items-center gap-2">
-                <Icon icon="logos:facebook" className="text-xl" />
-                Facebook
-              </Button> */}
-            </div>
-
-            <p className="text-center text-gray-500 mt-4">
-              Don't have an account?{" "}
-              <a href="/instructor/signup" className="text-indigo-600">
-                Sign Up
-              </a>
-            </p>
-          </Card>
-
-          {/* Right Side: Image */}
-          <div className="hidden md:block">
-            <img
-              src={loginImg}
-              alt="Login"
-              className="w-full h-full object-cover"
-            />
           </div>
         </div>
-      </div>
-      <Footer />
+        <Footer />
+      </GoogleOAuthProvider>
     </>
   );
 }

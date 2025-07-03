@@ -9,72 +9,81 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import instructorApi from "@/API/InstructorApi";
-import { ProfileData } from "../types/student";
 
-// Toast on successful profile update
+interface ProfileData {
+  email: string;
+  fullName: string;
+  phone: string;
+  nationality?: string;
+  dateOfBirth?: string;
+  eduQulification?: string;
+  paypalEmail?: string;
+  Biography?: string;
+  profileImage?: string;
+}
+
 const successToast = () => toast.success("Profile updated successfully");
 
-// Validation schema
 const ProfileSchema = Yup.object().shape({
   fullName: Yup.string().required("Full name is required"),
   phone: Yup.string()
     .required("Phone number is required")
     .matches(/^[0-9]{10}$/, "Phone must be 10 digits"),
-  linkedInId: Yup.string().nullable(),
-  githubId: Yup.string().nullable(),
+  nationality: Yup.string().nullable(),
+  dateOfBirth: Yup.date().nullable(),
+  eduQulification: Yup.string().nullable(),
+  paypalEmail: Yup.string().email("Invalid email").nullable(),
+  Biography: Yup.string().nullable(),
 });
-
-
 
 const Profile = () => {
   const [image, setImage] = useState<File | null | string>(null);
   const [initialValues, setInitialValues] = useState<ProfileData>({
+    email: "",
     fullName: "",
     phone: "",
-    linkedInId: "",
-    githubId: "",
+    nationality: "",
+    dateOfBirth: "",
+    eduQulification: "",
+    paypalEmail: "",
+    Biography: "",
     profileImage: "",
   });
-  
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await instructorApi.getProfile();
         const profileData = res.profile;
-
         setInitialValues({
+          email: profileData.email,
           fullName: profileData.fullName || "",
           phone: profileData.phone?.toString() || "",
-          linkedInId: profileData.linkedInId || "",
-          githubId: profileData.githubId || "",
+          nationality: profileData.nationality || "",
+          dateOfBirth: profileData.dateOfBirth?.split("T")[0] || "",
+          eduQulification: profileData.eduQulification || "",
+          paypalEmail: profileData.paypalEmail || "",
+          Biography: profileData.Biography || "",
           profileImage: profileData.profileImage || "",
         });
-        
-        if (profileData.profileImage) {
-          setImage(profileData.profileImage);
-        }
+        if (profileData.profileImage) setImage(profileData.profileImage);
       } catch (err) {
         console.error("Profile fetch failed:", err);
       }
     };
-
     fetchProfile();
   }, []);
 
   const handleSubmit = async (values: ProfileData) => {
     try {
       const formData = new FormData();
-      formData.append("fullName", values.fullName || "");
-      formData.append("phone", values.phone || "");
-      formData.append("linkedInId", values.linkedInId || "");
-      formData.append("githubId", values.githubId || "");
-
+      Object.entries(values).forEach(([key, val]) => {
+        if (val) formData.append(key, val);
+      });
       if (image && typeof image !== "string") {
         formData.append("profileImage", image);
       }
-
-      await instructorApi.updateProfile(formData as ProfileData);
+      await instructorApi.updateProfile(formData);
       successToast();
     } catch (error) {
       console.error("Failed to update profile:", error);
@@ -94,10 +103,9 @@ const Profile = () => {
           validationSchema={ProfileSchema}
           onSubmit={handleSubmit}
         >
-          {({ errors, touched, setFieldValue }) => (
+          {({ errors, touched, setFieldValue, dirty }) => (
             <Form>
               <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
-                {/* Image Preview */}
                 <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
                   {image ? (
                     <img
@@ -113,7 +121,6 @@ const Profile = () => {
                     <Icon icon="mdi:account" className="w-16 h-16 text-white" />
                   )}
                 </div>
-
                 <div className="flex flex-col gap-2">
                   <input
                     id="profileImage"
@@ -123,12 +130,7 @@ const Profile = () => {
                       if (e.target.files && e.target.files[0]) {
                         const file = e.target.files[0];
                         setImage(file);
-
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFieldValue("profileImage", reader.result);
-                        };
-                        reader.readAsDataURL(file);
+                        setFieldValue("profileImage", file);
                       }
                     }}
                     className="hidden"
@@ -145,73 +147,58 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Form Fields */}
               <div className="space-y-4">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="fullName" className="font-semibold">
-                      Full Name
+                {[
+                  { name: "fullName", label: "Full Name" },
+                  { name: "phone", label: "Phone Number" },
+                  { name: "nationality", label: "Nationality" },
+                  { name: "dateOfBirth", label: "Date of Birth", type: "date" },
+                  {
+                    name: "eduQulification",
+                    label: "Educational Qualification",
+                  },
+                  { name: "paypalEmail", label: "PayPal Email" },
+                ].map(({ name, label, type = "text" }) => (
+                  <div key={name}>
+                    <Label htmlFor={name} className="font-semibold">
+                      {label}
                     </Label>
                     <Field
                       as={Input}
-                      name="fullName"
-                      placeholder="Enter full name"
+                      name={name}
+                      type={type}
+                      placeholder={label}
                       className="mt-1 border border-indigo-500"
                     />
-                    {errors.fullName && touched.fullName && (
-                      <div className="text-red-500 text-sm">
-                        {errors.fullName}
-                      </div>
-                    )}
+                    {errors[name as keyof typeof errors] &&
+                      touched[name as keyof typeof touched] && (
+                        <div className="text-red-500 text-sm">
+                          {errors[name as keyof typeof errors] as string}
+                        </div>
+                      )}
                   </div>
+                ))}
 
-                  <div className="flex-1">
-                    <Label htmlFor="phone" className="font-semibold">
-                      Phone Number
-                    </Label>
-                    <Field
-                      as={Input}
-                      name="phone"
-                      placeholder="Enter 10-digit phone number"
-                      className="mt-1 border border-indigo-500"
-                    />
-                    {errors.phone && touched.phone && (
-                      <div className="text-red-500 text-sm">{errors.phone}</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="linkedInId" className="font-semibold">
-                      LinkedIn ID
-                    </Label>
-                    <Field
-                      as={Input}
-                      name="linkedInId"
-                      placeholder="LinkedIn profile URL"
-                      className="mt-1 border border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <Label htmlFor="githubId" className="font-semibold">
-                      GitHub ID
-                    </Label>
-                    <Field
-                      as={Input}
-                      name="githubId"
-                      placeholder="GitHub profile URL"
-                      className="mt-1 border border-indigo-500"
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="Biography" className="font-semibold">
+                    Biography
+                  </Label>
+                  <Field
+                    as="textarea"
+                    name="Biography"
+                    placeholder="Write something about yourself"
+                    className="mt-1 border border-indigo-500 w-full h-24"
+                  />
                 </div>
               </div>
 
               <div className="mt-6 text-right">
                 <Button
                   type="submit"
-                  className="bg-indigo-600 text-white px-10"
+                  className={`bg-indigo-600 text-white px-10 ${
+                    !dirty ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={!dirty}
                 >
                   Save
                 </Button>
