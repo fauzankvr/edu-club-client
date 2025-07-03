@@ -31,12 +31,14 @@ export interface ICourseData {
 }
 
 export interface ILecture {
+  _id: string;
   title: string;
   videoPath?: string;
   pdfPath?: string;
 }
 
 export interface ISection {
+  _id: string;
   title: string;
   lectures: ILecture[];
 }
@@ -58,3 +60,19 @@ export interface CourseQueryParams {
   [key: string]: string | number | undefined; 
 }
 
+
+export interface IProgress {
+  _id: string;
+  studentId: string;
+  courseId: string;
+  sections: {
+    sectionId: string;
+    lectures: { lectureId: string; progress: string; _id: string }[];
+    completed: boolean;
+    _id: string;
+  }[];
+  completed: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}

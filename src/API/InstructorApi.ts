@@ -72,8 +72,13 @@ const instructorAPI = {
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/instructor/verifyotp", formData);
   },
-  
+  sendOtp: (email: string)=>{
+    return axiosInstance.post("/instructor/sendOtp", {email});
+  },
 
+  resetPassword:(newPassword: string,email:string) =>{
+    return axiosInstance.post("/instructor/resetPassword", { newPassword ,email});
+  },
   fetchCourse: (
     query1?: string,
     query2?: string,

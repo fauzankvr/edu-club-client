@@ -1,31 +1,24 @@
-import Footer from "@/components/studentComponents/Footer";
-import Navbar from "@/components/studentComponents/Navbar";
-import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef } from "react";
-import FeedbackSection from "./FeedbackSection";
 import { useParams } from "react-router-dom";
+import Navbar from "@/components/studentComponents/Navbar";
+import Footer from "@/components/studentComponents/Footer";
 import studentAPI from "@/API/StudentApi";
-import { ICarriculam, ICourseData } from "@/Interface/CourseData";
-import AiChat from "./AiChat";
-import Discussion from "./Discussion";
-import ChatTutorInterface from "./ChatWithTeacher";
-import { MediaPlayer, MediaProvider } from "@vidstack/react";
-import {
-  defaultLayoutIcons,
-  DefaultVideoLayout,
-} from "@vidstack/react/player/layouts/default";
-import NotesApp from "./Notebook";
 import { getSocket } from "@/services/socketService";
+import CourseContent from "@/components/studentComponents/CourseContent";
+import MediaViewer from "@/components/studentComponents/MediaView";
+import CourseTabs from "@/components/studentComponents/CourseTab";
+import SkeletonLoader from "@/components/studentComponents/SingleCourseSkelton";
+import {
+  ICourseData,
+  ICarriculam,
+  ILecture,
+  IProgress,
+} from "@/Interface/CourseData";
+import CertificateModal from "@/components/studentComponents/CertificateModal";
 
-const TABS = [
-  "Overview",
-  "Not Book",
-  "Reviews",
-  "Discussion",
-  "Contact Tutor",
-  "Ai Chat",
-] as const;
-type Tab = (typeof TABS)[number];
+import backgroundImage from "../../assets/students/cetificate.jpg";
+import signatureImage from "../../assets/students/signature.png";
+
 
 interface Chat {
   _id: string;
@@ -45,23 +38,24 @@ interface Message {
   seenBy: string[];
 }
 
-interface ILesson {
-  title: string;
-  videoPath?: string;
-  pdfPath?: string;
-}
+type Tab =
+  | "Overview"
+  | "Not Book"
+  | "Reviews"
+  | "Discussion"
+  | "Contact Tutor"
+  | "Ai Chat";
 
 export default function SingleCourse() {
   const [openSection, setOpenSection] = useState<number | null>(0);
-  const [completedLessons, setCompletedLessons] = useState<Set<string>>(
-    new Set()
-  );
   const [currentTab, setCurrentTab] = useState<Tab>("Overview");
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<ICourseData | undefined>();
   const [carriculam, setCarriculam] = useState<ICarriculam | undefined>();
+  const [progress, setProgress] = useState<IProgress | null>(null);
   const [unseenCount, setUnseenCount] = useState<number>(0);
   const [studentId, setStudentId] = useState<string>("");
+  const [studentName, setStudentName] = useState<string>("");
   const [instructorId, setInstructorId] = useState<string>("");
   const [chat, setChat] = useState<Chat | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -70,31 +64,84 @@ export default function SingleCourse() {
   const [isInstructorBlocked, setIsInstructorBlocked] =
     useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [currentLesson, setCurrentLesson] = useState<ILesson | null>(null);
+  const [currentLesson, setCurrentLesson] = useState<ILecture | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [overallProgress, setOverallProgress] = useState<number>(0);
+  const [showModal, setShowModal] = useState(false);
   const chatJoinedRef = useRef<string | null>(null);
+  const sentThresholdsRef = useRef<{ [lectureId: string]: number[] }>({});
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const student = await studentAPI.getProfile();
+        setStudentName(`${student.profile.firstName} ${student.profile.lastName}`);
         if (student?.profile?._id) setStudentId(student.profile._id);
         else throw new Error("Student profile not found");
         if (!id) throw new Error("Course ID not provided");
-        const course = await studentAPI.findCoursByid(id);
-        if (course.data?.data?.course?.instructorDetails?._id)
-          setInstructorId(course.data.data.course.instructorDetails._id);
+
+        const courseResponse = await studentAPI.findFullCourse(id);
+        const courseData = courseResponse.data.data.course;
+        const curriculum = courseResponse.data.data.curriculum;
+
+        const courseId = courseData?._id;
+        if (!courseId || !student?.profile?._id)
+          throw new Error("Missing course ID or student ID");
+
+        const progressResponse = await studentAPI.getProgress(
+          student.profile._id,
+          courseId
+        );
+        setCourse(courseData);
+        setCarriculam(curriculum);
+        setProgress(progressResponse.data.data.progress || null);
+        setCurrentLesson(curriculum?.sections[0]?.lectures[0] || null);
+
+        if (courseData?.instructorDetails?._id)
+          setInstructorId(courseData.instructorDetails._id);
         else throw new Error("Instructor not found for course");
       } catch (error: unknown) {
-        console.error(error);
+        console.error("Fetch Error:", error);
         setError(
           error instanceof Error
             ? error.message
             : "Failed to load profile or course"
         );
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (progress?.sections) {
+      const totalLectures = progress.sections.reduce(
+        (sum, section) => sum + section.lectures.length,
+        0
+      );
+      const completedLectures = progress.sections.reduce(
+        (sum, section) =>
+          sum +
+          section.lectures.filter((lecture) => parseInt(lecture.progress) >= 95)
+            .length,
+        0
+      );
+      setOverallProgress(
+        totalLectures > 0 ? (completedLectures / totalLectures) * 100 : 0
+      );
+    } else {
+      setOverallProgress(0);
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    if (progress?.completed) {
+      setShowModal(true);
+    }
+  }, [progress]);
 
   useEffect(() => {
     if (!studentId || !instructorId) return;
@@ -237,50 +284,81 @@ export default function SingleCourse() {
     };
   }, [studentId, instructorId, chat?._id, currentTab]);
 
-  useEffect(() => {
-    if (id) {
-      studentAPI
-        .findFullCourse(id)
-        .then((response) => {
-          setCourse(response.data.data.course);
-          setCarriculam(response.data.data.curriculum);
-          setCurrentLesson(
-            response.data.data.curriculum?.sections[0]?.lectures[0]
+  const updateLessonProgress = async (
+    sectionId: string,
+    lectureId: string,
+    progressValue: number,
+    // totalSeconds: number,
+    // actualSecondsWatched: number
+  ) => {
+    try {
+      if (!studentId || !course?._id) {
+        throw new Error("Missing studentId or courseId");
+      }
+      const roundedProgress = Math.round(progressValue);
+      if (
+        (roundedProgress % 5 === 0 && roundedProgress <= 95) ||
+        roundedProgress === 100
+      ) {
+        if (!sentThresholdsRef.current[lectureId]?.includes(roundedProgress)) {
+          const response = await studentAPI.updateProgress(
+            studentId,
+            course._id,
+            sectionId,
+            lectureId,
+            roundedProgress.toString()
+            // Pass totalSeconds and actualSecondsWatched if API supports them
           );
-        })
-        .catch(() => setError("Failed to fetch course"));
+          if (response.data.data.updated) {
+            setProgress(response.data.data.updated);
+            sentThresholdsRef.current[lectureId] = [
+              ...(sentThresholdsRef.current[lectureId] || []),
+              roundedProgress,
+            ];
+          } else {
+            setError("Failed to update progress: Invalid response from server");
+          }
+        }
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update lesson progress"
+      );
     }
-  }, [id]);
+  };
 
-  useEffect(() => {
-    const saved = localStorage.getItem("completedLessons");
-    if (saved) setCompletedLessons(new Set(JSON.parse(saved)));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(
-      "completedLessons",
-      JSON.stringify(Array.from(completedLessons))
-    );
-  }, [completedLessons]);
+  const handleLessonClick = (lesson: ILecture, sectionId: string) => {
+    setCurrentLesson(lesson);
+    if (lesson._id !== currentLesson?._id) {
+      sentThresholdsRef.current[lesson._id] = [];
+    }
+    if (lesson.pdfPath && !lesson.videoPath && studentId) {
+      const sectionProgress = progress?.sections?.find(
+        (sec) => sec.sectionId === sectionId
+      );
+      const lectureProgress = sectionProgress?.lectures.find(
+        (lec) => lec.lectureId === lesson._id
+      );
+      if (lectureProgress && parseInt(lectureProgress.progress) < 5) {
+        updateLessonProgress(sectionId, lesson._id, 5);
+      }
+    }
+  };
 
   const toggleSection = (i: number) =>
     setOpenSection(openSection === i ? null : i);
-  const toggleLessonCompleted = (lessonId: string) => {
-    setCompletedLessons((prev) => {
-      const next = new Set(prev);
-      if (next.has(lessonId)) {
-        next.delete(lessonId);
-      } else {
-        next.add(lessonId);
-      }
-      return next;
-    });
-  };
-  const handleLessonClick = (lesson: ILesson, lessonId: string) => {
-    setCurrentLesson(lesson);
-    toggleLessonCompleted(lessonId);
-  };
+
+  if (isLoading || !carriculam || !progress) {
+    return (
+      <>
+        <Navbar />
+        <SkeletonLoader />
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -293,148 +371,76 @@ export default function SingleCourse() {
         )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center relative">
-              {currentLesson ? (
-                currentLesson.videoPath ? (
-                  <MediaPlayer
-                    title="Sprite Fight"
-                    src={currentLesson.videoPath}
-                  >
-                    <MediaProvider />
-                    <DefaultVideoLayout
-                      thumbnails={currentLesson.videoPath}
-                      icons={defaultLayoutIcons}
-                    />
-                  </MediaPlayer>
-                ) : currentLesson.pdfPath ? (
-                  <iframe
-                    src={currentLesson.pdfPath}
-                    className="w-full h-full"
-                    title="PDF Viewer"
-                  />
-                ) : (
-                  <p className="text-white">No media available</p>
-                )
-              ) : (
-                <p className="text-white">Select a lesson</p>
-              )}
-            </div>
-            <div className="flex space-x-12 mt-6 border-b">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setCurrentTab(tab)}
-                  className={`py-2 text-lg font-medium transition ${
-                    tab === currentTab
-                      ? "text-indigo-600 border-b-2 border-indigo-600"
-                      : "text-gray-700 border-b-2 border-transparent hover:text-indigo-600 hover:border-indigo-600"
-                  }`}
-                >
-                  <span>{tab}</span>
-                  {tab === "Contact Tutor" && unseenCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {unseenCount}
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              {currentLesson?.title || "Select a Lesson"}
+            </h3>
+            <MediaViewer
+              currentLesson={currentLesson}
+              carriculam={carriculam}
+              studentId={studentId}
+              courseId={course?._id}
+              updateLessonProgress={updateLessonProgress}
+            />
+            <div className="mt-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Course Progress</h2>
+                <div className="text-sm font-medium text-indigo-600">
+                  {Math.round(overallProgress)}% Complete
+                  {progress.completed && (
+                    <span className="ml-2 text-green-600">
+                      ✓ Course Completed
                     </span>
                   )}
-                </button>
-              ))}
-            </div>
-            <div className="mt-6">
-              {currentTab === "Overview" && (
-                <>
-                  <h1 className="text-2xl font-bold mb-4">{course?.title}</h1>
-                  <p className="text-gray-700 leading-relaxed mb-4">
-                    {course?.description}
-                  </p>
-                </>
-              )}
-              {currentTab === "Reviews" && (
-                <FeedbackSection courseId={course?._id ?? ""} />
-              )}
-              {currentTab === "Discussion" && <Discussion />}
-              {currentTab === "Contact Tutor" && (
-                <ChatTutorInterface
-                  chat={chat}
-                  chatMessages={chatMessages}
-                  setChatMessages={setChatMessages}
-                  studentId={studentId}
-                  instructorId={instructorId}
-                  unseenCount={unseenCount}
-                  setUnseenCount={setUnseenCount}
-                  instructorStatus={instructorStatus}
-                  instructorLastSeen={instructorLastSeen}
-                  isInstructorBlocked={isInstructorBlocked}
-                  socket={getSocket(studentId)}
-                />
-              )}
-              {currentTab === "Not Book" && <NotesApp course={course} />}
-              {currentTab === "Ai Chat" && <AiChat courseId={course?._id ?? ""} />}
-            </div>
-          </div>
-          <div className="bg-white border rounded-xl p-6 w-full max-w-md mx-auto">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              Course content
-            </h2>
-            <div className="space-y-3">
-              {carriculam?.sections.map((section, idx) => (
-                <div key={idx} className="border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => toggleSection(idx)}
-                    className={`w-full flex justify-between items-center p-4 text-sm font-medium transition ${
-                      openSection === idx
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "bg-indigo-50 text-indigo-600"
-                    }`}
-                  >
-                    {section.title}
-                    <Icon
-                      icon={
-                        openSection === idx
-                          ? "mdi:chevron-up"
-                          : "mdi:chevron-down"
-                      }
-                      className="text-lg"
-                    />
-                  </button>
-                  {openSection === idx &&
-                    section.lectures.length > 0 &&
-                    section.lectures.map((lesson, i) => {
-                      const lessonId = `${idx}-${i}`;
-                      const done = completedLessons.has(lessonId);
-                      console.log("don",done)
-                      return (
-                        <div
-                          key={i}
-                          onClick={() => handleLessonClick(lesson, lessonId)}
-                          className="flex justify-between items-center px-6 py-3 text-gray-700 text-sm hover:bg-gray-50 cursor-pointer"
-                        >
-                          <div className="flex items-center gap-2">
-                            {/* <div
-                              className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-                                done
-                                  ? "bg-indigo-500 border-indigo-500"
-                                  : "border-gray-400"
-                              }`}
-                            >
-                              {done && (
-                                <Icon
-                                  icon="mdi:check"
-                                  className="text-white text-sm"
-                                />
-                              )}
-                            </div> */}
-                            <span>{lesson.title}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
                 </div>
-              ))}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                <div
+                  className="bg-indigo-600 h-2.5 rounded-full"
+                  style={{ width: `${overallProgress}%` }}
+                ></div>
+              </div>
             </div>
+            <CourseTabs
+              currentTab={currentTab}
+              setCurrentTab={setCurrentTab}
+              course={course}
+              chat={chat}
+              chatMessages={chatMessages}
+              setChatMessages={setChatMessages}
+              studentId={studentId}
+              instructorId={instructorId}
+              unseenCount={unseenCount}
+              setUnseenCount={setUnseenCount}
+              instructorStatus={instructorStatus}
+              instructorLastSeen={instructorLastSeen}
+              isInstructorBlocked={isInstructorBlocked}
+              socket={getSocket(studentId)}
+            />
           </div>
+          <CourseContent
+            carriculam={carriculam}
+            progress={progress}
+            openSection={openSection}
+            currentLesson={currentLesson}
+            toggleSection={toggleSection}
+            handleLessonClick={handleLessonClick}
+          />
         </div>
       </div>
       <Footer />
+      {showModal && (
+        <CertificateModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          studentName={studentName}
+          courseName={course?.title || "basic React"}
+          instructorName={course?.instructorDetails.fullName || "Jhone"}
+          issuedDate={progress.updatedAt.split("T")[0]}
+          certificateId="EDU-123456"
+          logoUrl={backgroundImage}
+          signatureUrl={signatureImage}
+        />
+      )}
     </>
   );
 }

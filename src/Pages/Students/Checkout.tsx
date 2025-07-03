@@ -66,9 +66,10 @@ function Checkout() {
 
                 return orderData.orderId;
               } catch (err) {
-                const error = err as AxiosError;
+                console.log(err)
+                const error = err as AxiosError<{error:string}>;
                 const message =
-                  (error.response?.data as any) ||
+                  (error.response?.data?.error) ||
                   "Could not initiate PayPal Checkout.";
                 toast.error(
                   typeof message === "string"
@@ -104,12 +105,12 @@ function Checkout() {
                 }
               } catch (error) {
                 console.error("Capture error:", error);
-                toast.error("Transaction failed. Please try again.");
+                // toast.error("Transaction failed. Please try again.");
               }
             }}
             onError={(err) => {
               console.error("PayPal Buttons error:", err);
-              toast.error("An error occurred with PayPal. Please try again.");
+              // toast.error("An error occurred with PayPal. Please try again.");
             }}
           />
         </PayPalScriptProvider>

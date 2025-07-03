@@ -128,7 +128,7 @@ const DashboardOverview = () => {
                   <div>
                     <p className="text-sm font-medium">Total Revenue</p>
                     <p className="text-lg font-bold text-indigo-600">
-                      ${data.totalRevenue.toFixed(2)}
+                      ₹{data.totalRevenue.toFixed(2)}
                     </p>
                   </div>
                   <div>
@@ -146,7 +146,7 @@ const DashboardOverview = () => {
                   <div>
                     <p className="text-sm font-medium">Pending Payout</p>
                     <p className="text-lg font-bold text-indigo-600">
-                      ${data.payoutSummary.pendingPayout.toFixed(2)}
+                      ₹{data.payoutSummary.pendingPayout.toFixed(2)}
                     </p>
                   </div>
                 </CardContent>
@@ -191,7 +191,7 @@ const DashboardOverview = () => {
                               Student: {order.studentName}
                             </p>
                             <p className="text-sm text-gray-600">
-                              Price: ${order.price.toFixed(2)}
+                              Price: ₹{order.price.toFixed(2)}
                             </p>
                             <p className="text-sm text-gray-600">
                               Date: {new Date(order.date).toLocaleDateString()}

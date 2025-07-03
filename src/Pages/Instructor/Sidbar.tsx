@@ -30,20 +30,10 @@ const Sidebar = () => {
       icon: "mdi:book-open-variant",
     },
     {
-      name: "My Details",
-      path: "/instructor/profile",
-      icon: "mdi:account-details",
-    },
-    {
       name: "Video Calls",
       path: "/Instructor/dashboard/call-history",
       icon: "mdi:video",
     },
-    // {
-    //   name: "Live Class",
-    //   path: "/Instructor/dashboard/video-call",
-    //   icon: "mdi:video",
-    // },
     {
       name: "Chats",
       path: "/Instructor/dashboard/chatlist",

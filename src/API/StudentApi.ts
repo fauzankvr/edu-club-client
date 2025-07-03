@@ -56,8 +56,8 @@ const studentAPI = {
   login: (formdata: object) => {
     return axiosInstance.post("/student/login", formdata);
   },
-  googleLogin: ({ token }: { token: string }) => {
-    return axiosInstance.post("/student/googleLogin", { token });
+  googleLogin: ({ token ,role}: { token: string,role:string }) => {
+    return axiosInstance.post("/student/googleLogin", { token ,role});
   },
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/student/verifyotp", formData);
@@ -118,6 +118,7 @@ const studentAPI = {
       throw error;
     }
   },
+
   getStudent: async () => {
     try {
       const response = await axiosInstance.get("/student");
@@ -180,12 +181,21 @@ const studentAPI = {
       throw error;
     }
   },
+  getProgress: async (studentId: string, courseId: string) => {
+    return axiosInstance.get(`/student/getProgress/${studentId}/${courseId}`);
+  },
+  updateProgress: async (studentId:string,courseId: string,sectionId:string, lectureId: string, progress: string) => {
+    return axiosInstance.patch("/student/updateProgress", { studentId, courseId, sectionId,lectureId, progress });
+  },
   createOrder: (cart: object) => {
     return axiosInstance.post("/student/orders", { cart });
   },
 
   captureOrder: (orderID: string) => {
     return axiosInstance.post(`/student/orders/capture/${orderID}`);
+  },
+  getPurchaseHistory: () => {
+    return axiosInstance.get("/student/orders");
   },
   findCoursByid: (id: string) => {
     return axiosInstance.get(`/student/order/success/${id}`);

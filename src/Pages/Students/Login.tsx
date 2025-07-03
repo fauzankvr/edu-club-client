@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 import { setStudent } from "@/features/student/redux/studentSlce";
 import studentApi from "@/API/StudentApi";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
@@ -22,6 +22,13 @@ export default function Login() {
 
   const successToast = () => toast.success("Login successful!");
   const failToast = () => toast.error("Login failed");
+
+    useEffect(() => {
+        const token = localStorage.getItem("studentToken");
+        if (token) {
+          navigate("/", { replace: true });
+        }
+      }, [navigate]);
 
   const formik = useFormik({
     initialValues: {
@@ -40,7 +47,7 @@ export default function Login() {
           dispatch(setStudent(res.data.data.accessToken));
           localStorage.setItem("studentToken", res.data.data.accessToken);
           successToast();
-          navigate("/");
+          navigate("/", { replace: true });
         } else {
           failToast();
         }
@@ -108,12 +115,15 @@ export default function Login() {
               )}
 
               <div className="flex items-center justify-between text-sm text-gray-600">
-                <a href="/forgetPassword" className="text-indigo-600">
+                <a
+                  onClick={() => navigate("/forgetPassword",{state:{role:"student"}})}
+                  className="text-indigo-600 cursor-pointer"
+                >
                   Forgot Password?
                 </a>
-                <label className="flex items-center">
+                {/* <label className="flex items-center">
                   <input type="checkbox" className="mr-2" /> Remember me
-                </label>
+                </label> */}
               </div>
 
               <Button
@@ -137,7 +147,7 @@ export default function Login() {
                       return;
                     }
                     try {
-                      const res = await studentApi.googleLogin({ token });
+                      const res = await studentApi.googleLogin({ token ,role:"student" });
                       if (res?.data?.success) {
                         dispatch(setStudent(res.data.data.accessToken));
                         localStorage.setItem(
@@ -145,7 +155,7 @@ export default function Login() {
                           res.data.data.accessToken
                         );
                         successToast();
-                        navigate("/");
+                        navigate("/", { replace: true });
                       } else {
                         failToast();
                       }

@@ -12,12 +12,14 @@ import { RootState } from "@/features/student/redux/store";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
+import { Purchase } from "@/Interface/Purchase";    
+import PurchaseHistory from "./PurchaseHistory";
 
 // Define the ProfileData interface
 interface ProfileData {
   firstName: string;
   lastName: string;
-  phone: string; // Changed to string to match Input component and API
+  phone: string;
   linkedInId: string;
   githubId: string;
   profileImage: string;
@@ -52,13 +54,16 @@ function ProfileImage({ src }: { src: string }) {
 
 export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [activeSection, setActiveSection] = useState<"profile" | "purchases">(
+    "profile"
+  );
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const profile = useSelector(
     (state: RootState) => state.student.profile as ProfileData | null
   );
   const [email, setEmail] = useState<string>("user@email.com");
-
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [formData, setFormData] = useState<ProfileData>({
     firstName: "",
     lastName: "",
@@ -99,6 +104,16 @@ export default function ProfilePage() {
       }
     };
 
+    const fetchPurchases = async () => {
+      try {
+        const res = await studentAPi.getPurchaseHistory();
+        setPurchases(res.data.data.purchases || []);
+      } catch (err) {
+        console.error("Purchase history fetch failed:", err);
+        toast.error("Failed to fetch purchase history.");
+      }
+    };
+
     if (!profile) {
       fetchProfile();
     } else {
@@ -107,10 +122,11 @@ export default function ProfilePage() {
         lastName: profile.lastName ?? "",
         profileImage: profile.profileImage ?? "",
         phone: profile.phone ?? "",
-        linkedInId: profile.linkedInId ?? "",
+        linkedInId: profile.lastName ?? "",
         githubId: profile.githubId ?? "",
       });
     }
+    fetchPurchases();
   }, [profile, dispatch, navigate]);
 
   const handleChange = <K extends keyof ProfileData>(
@@ -156,7 +172,7 @@ export default function ProfilePage() {
     reader.onloadend = () => {
       setFormData((prev) => ({
         ...prev,
-        profileImage: reader.result as string, // For preview only
+        profileImage: reader.result as string,
       }));
     };
     reader.readAsDataURL(file);
@@ -184,102 +200,124 @@ export default function ProfilePage() {
             <p className="mt-2 font-semibold">{displayName}</p>
           </div>
           <nav className="mt-6 flex flex-col gap-2">
-            {["My Profile"].map(
-              (item, idx) => (
-                <button
-                  key={idx}
-                  className="text-left px-4 py-2 rounded-md hover:bg-indigo-200 transition border"
-                >
-                  {item}
-                </button>
-              )
-            )}
+            {["My Profile", "Purchase History"].map((item, idx) => (
+              <button
+                key={idx}
+                className={`text-left px-4 py-2 rounded-md transition border ${
+                  (item === "My Profile" && activeSection === "profile") ||
+                  (item === "Purchase History" && activeSection === "purchases")
+                    ? "bg-indigo-200 text-indigo-800"
+                    : "hover:bg-indigo-200"
+                }`}
+                onClick={() =>
+                  setActiveSection(
+                    item === "My Profile" ? "profile" : "purchases"
+                  )
+                }
+              >
+                {item}
+              </button>
+            ))}
           </nav>
         </aside>
 
         <main className="flex-1 p-4 sm:p-6 bg-white">
-          <Card className="mb-6 p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 shadow-sm">
-            <div className="ml-4 w-30 h-30 rounded-full bg-primary overflow-hidden flex items-center justify-center">
-              <ProfileImage
-                src={
-                  formData.profileImage.startsWith("data:")
-                    ? formData.profileImage
-                    : imageUrl
-                }
-              />
-            </div>
-            <div className="text-center sm:text-left ml-6 mt-3">
-              <h2 className="text-lg font-semibold">{displayName}</h2>
-              <p className="text-sm text-gray-500">{email}</p>
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                id="upload-profile"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleImageChange(e.target.files[0]);
-                  }
-                }}
-              />
-              <button
-                className="text-primary text-xs mt-1 underline cursor-pointer"
-                onClick={() =>
-                  document.getElementById("upload-profile")?.click()
-                }
-              >
-                Edit Profile
-              </button>
-            </div>
-          </Card>
-
-          <Card className="p-4 sm:p-6 shadow-md">
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">Basics:</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    placeholder="Enter your First name"
-                    value={formData.firstName}
-                    onChange={(e) => handleChange("firstName", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Enter your Last name"
-                    value={formData.lastName}
-                    onChange={(e) => handleChange("lastName", e.target.value)}
-                  />
-                  <Input
-                    placeholder="Enter your Phone Number"
-                    value={formData.phone}
-                    className="sm:col-span-2"
-                    onChange={(e) => handleChange("phone", e.target.value)}
+          {activeSection === "profile" ? (
+            <>
+              <Card className="mb-6 p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 shadow-sm">
+                <div className="ml-4 w-30 h-30 rounded-full bg-primary overflow-hidden flex items-center justify-center">
+                  <ProfileImage
+                    src={
+                      formData.profileImage.startsWith("data:")
+                        ? formData.profileImage
+                        : imageUrl
+                    }
                   />
                 </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Links:</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <Input
-                    placeholder="Enter your LinkedIn Url"
-                    value={formData.linkedInId}
-                    onChange={(e) => handleChange("linkedInId", e.target.value)}
+                <div className="text-center sm:text-left ml-6 mt-3">
+                  <h2 className="text-lg font-semibold">{displayName}</h2>
+                  <p className="text-sm text-gray-500">{email}</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    id="upload-profile"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleImageChange(e.target.files[0]);
+                      }
+                    }}
                   />
-                  <Input
-                    placeholder="Enter your Github Url"
-                    value={formData.githubId}
-                    onChange={(e) => handleChange("githubId", e.target.value)}
-                  />
+                  <button
+                    className="text-primary text-xs mt-1 underline cursor-pointer"
+                    onClick={() =>
+                      document.getElementById("upload-profile")?.click()
+                    }
+                  >
+                    Edit Profile
+                  </button>
                 </div>
-              </div>
+              </Card>
 
-              <div className="text-right">
-                <Button onClick={handleSave} className="text-white px-6">
-                  Save
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="p-4 sm:p-6 shadow-md">
+                <CardContent className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold mb-2">Basics:</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input
+                        placeholder="Enter your First name"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          handleChange("firstName", e.target.value)
+                        }
+                      />
+                      <Input
+                        placeholder="Enter your Last name"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          handleChange("lastName", e.target.value)
+                        }
+                      />
+                      <Input
+                        placeholder="Enter your Phone Number"
+                        value={formData.phone}
+                        className="sm:col-span-2"
+                        onChange={(e) => handleChange("phone", e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Links:</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      <Input
+                        placeholder="Enter your LinkedIn Url"
+                        value={formData.linkedInId}
+                        onChange={(e) =>
+                          handleChange("linkedInId", e.target.value)
+                        }
+                      />
+                      <Input
+                        placeholder="Enter your Github Url"
+                        value={formData.githubId}
+                        onChange={(e) =>
+                          handleChange("githubId", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <Button onClick={handleSave} className="text-white px-6">
+                      Save
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <PurchaseHistory purchases={purchases} />
+          )}
         </main>
       </div>
       <Footer />

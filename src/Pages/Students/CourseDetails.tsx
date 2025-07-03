@@ -37,7 +37,7 @@ const CourseDetails = () => {
     };
 
     fetchCourse();
-  }, [id]);
+  }, [id,navigate]);
 
   const handleBuyNow = async(id:string) => {
     navigate(`/courses/checkout/${id}`);

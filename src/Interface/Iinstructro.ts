@@ -7,4 +7,5 @@ export interface Instructor {
   nationality: string;
   phone: number;
   profileImage: string;
+  Biography: string;
 }
