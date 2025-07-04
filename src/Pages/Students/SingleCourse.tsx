@@ -288,8 +288,8 @@ export default function SingleCourse() {
     sectionId: string,
     lectureId: string,
     progressValue: number,
-    // totalSeconds: number,
-    // actualSecondsWatched: number
+    totalSeconds: number,
+    actualSecondsWatched: number
   ) => {
     try {
       if (!studentId || !course?._id) {
@@ -342,7 +342,7 @@ export default function SingleCourse() {
         (lec) => lec.lectureId === lesson._id
       );
       if (lectureProgress && parseInt(lectureProgress.progress) < 5) {
-        updateLessonProgress(sectionId, lesson._id, 5);
+        updateLessonProgress(sectionId, lesson._id, 5,0,0);
       }
     }
   };
