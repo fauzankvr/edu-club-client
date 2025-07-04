@@ -18,6 +18,7 @@ import { getSocket } from "@/services/socketService";
 import { debounce } from "lodash";
 import { FixedSizeList as List } from "react-window";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Socket } from "socket.io-client";
 
 interface Chat {
   _id: string;
@@ -48,7 +49,7 @@ interface ChatTutorInterfaceProps {
   instructorStatus: string;
   instructorLastSeen: string;
   isInstructorBlocked: boolean;
-  socket: any;
+  socket: Socket;
 }
 
 interface Plan {
@@ -256,7 +257,7 @@ export default function ChatWithTeacher({
 
   useEffect(() => {
     setUnseenCount(0);
-  }, []);
+  });
 
   const handleTyping = useCallback(() => {
     if (!studentId || !chat?._id || isInstructorBlocked || !message.trim()) {

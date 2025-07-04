@@ -8,7 +8,7 @@ import Profile from "@/Pages/Instructor/Profile";
 import Login from "@/Pages/Instructor/Login";
 import Signup from "@/Pages/Instructor/Signup";
 import OTPVerification from "@/Pages/Students/OtpPage";
-import ChatApp from "@/Pages/Instructor/Chatlist";
+import ChatApp from "@/Pages/Instructor/ChaApp";
 import ProtectedRoute from "@/Middleware/ProtectedRouteIn";
 import VideoCallApp from "@/Pages/Instructor/VideoList";
 import Wallet from "@/Pages/Instructor/Wallet";

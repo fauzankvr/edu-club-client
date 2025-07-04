@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Icon } from "@iconify/react";
 import Navbar from "@/components/studentComponents/Navbar";
 import Footer from "@/components/studentComponents/Footer";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 import studentAPi from "@/API/StudentApi";
 import { useDispatch, useSelector } from "react-redux";
 import { setProfile } from "@/features/student/redux/studentSlce";
@@ -54,14 +54,11 @@ function ProfileImage({ src }: { src: string }) {
 
 export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [activeSection, setActiveSection] = useState<"profile" | "purchases">(
-    "profile"
-  );
+  const [activeSection, setActiveSection] = useState<"profile" | "purchases">("profile");
+  const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const profile = useSelector(
-    (state: RootState) => state.student.profile as ProfileData | null
-  );
+  const profile = useSelector((state: RootState) => state.student.profile as ProfileData | null);
   const [email, setEmail] = useState<string>("user@email.com");
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [formData, setFormData] = useState<ProfileData>({
@@ -72,6 +69,7 @@ export default function ProfilePage() {
     githubId: "",
     profileImage: "",
   });
+  const [initialFormData, setInitialFormData] = useState<ProfileData | null>(null);
 
   const imageUrl = formData.profileImage;
 
@@ -83,14 +81,17 @@ export default function ProfilePage() {
         setEmail(profileData.email);
         dispatch(setProfile({ profile: profileData }));
 
-        setFormData({
+        const newFormData = {
           firstName: profileData.firstName ?? "",
           lastName: profileData.lastName ?? "",
           profileImage: profileData.profileImage ?? "",
           phone: profileData.phone ?? "",
           linkedInId: profileData.linkedInId ?? "",
           githubId: profileData.githubId ?? "",
-        });
+        };
+
+        setFormData(newFormData);
+        setInitialFormData(newFormData); // Store initial data for comparison
       } catch (err) {
         const error = err as AxiosError;
         console.error("Profile fetch failed:", error);
@@ -117,17 +118,31 @@ export default function ProfilePage() {
     if (!profile) {
       fetchProfile();
     } else {
-      setFormData({
+      const newFormData = {
         firstName: profile.firstName ?? "",
         lastName: profile.lastName ?? "",
         profileImage: profile.profileImage ?? "",
         phone: profile.phone ?? "",
-        linkedInId: profile.lastName ?? "",
+        linkedInId: profile.linkedInId ?? "",
         githubId: profile.githubId ?? "",
-      });
+      };
+      setFormData(newFormData);
+      setInitialFormData(newFormData); // Store initial data for comparison
     }
     fetchPurchases();
   }, [profile, dispatch, navigate]);
+
+  // Check for changes whenever formData or selectedImage changes
+  useEffect(() => {
+    if (initialFormData) {
+      const hasFormChanges = Object.keys(formData).some(
+        (key) =>
+          formData[key as keyof ProfileData] !==
+          initialFormData[key as keyof ProfileData]
+      );
+      setHasChanges(hasFormChanges || !!selectedImage);
+    }
+  }, [formData, selectedImage, initialFormData]);
 
   const handleChange = <K extends keyof ProfileData>(
     field: K,
@@ -159,6 +174,9 @@ export default function ProfilePage() {
 
       const res = await studentAPi.updateProfile(profileData);
       toast.success("Profile Updated Successfully");
+      setInitialFormData(formData); // Update initial data after successful save
+      setSelectedImage(null); // Reset selected image
+      dispatch(setProfile({ profile: profileData }));
       console.log("Update success:", res);
     } catch (error) {
       console.error("Failed to update profile:", error);
@@ -308,7 +326,11 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="text-right">
-                    <Button onClick={handleSave} className="text-white px-6">
+                    <Button 
+                      onClick={handleSave} 
+                      className="text-white px-6"
+                      disabled={!hasChanges}
+                    >
                       Save
                     </Button>
                   </div>
