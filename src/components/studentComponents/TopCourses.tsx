@@ -85,23 +85,23 @@ const TopCourses = () => {
                         <span className=" text-gray-400 ml-2 line-through  text-xl">
                           ₹{course.price + 200}
                         </span>
-                        <span className="text-indigo-600 font-bold ml-2 text-xl" >
+                        <span className="text-indigo-600 font-bold ml-2 text-xl">
                           ₹{course.price}
                         </span>
                       </div>
                     </div>
                     <h3 className="text-lg font-semibold">{course.title}</h3>
-                    <div className="flex items-center text-gray-600 text-sm mt-3">
+                    {/* <div className="flex items-center text-gray-600 text-sm mt-3">
                       <Icon icon="mdi:book-open" className="mr-2" />
-                      {/* <span>{course.lessons} Lessons</span> */}
+                      <span>{course.lessons} Lessons</span>
                       <Icon
                         icon="mdi:clock-time-three-outline"
                         className="ml-4 mr-2"
                       />
-                      {/* <span>{course.duration}</span> */}
+                      <span>{course.duration}</span>
                       <Icon icon="mdi:account-group" className="ml-4 mr-2" />
                       <span>{course.students} Students</span>
-                    </div>
+                    </div> */}
                     <div className="flex items-center justify-between mt-4">
                       <div className="flex items-center">
                         <Avatar>
@@ -112,7 +112,15 @@ const TopCourses = () => {
                         </Avatar>
                         <span className="ml-2">{course.instructor.name}</span>
                       </div>
-                      <Button>Enroll</Button>
+                      <Button className="cursor-pointer"
+                        onClick={() =>
+                          navigate(`/courses/details/${course._id}`, {
+                            state: { course }
+                          })
+                        }
+                      >
+                        Enroll
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

@@ -20,6 +20,7 @@ import ResetPassword from "@/Pages/Students/ResetPassword";
 import ForgotPassword from "@/Pages/Students/ForgotPassword";
 import NotFoundPage from "@/Pages/Students/Notfound";
 import ProfileCard from "@/Pages/Students/InstructorProfile";
+import Notifications from "@/Pages/Students/Notification";
 
 const StudentRoute = () => {
   return (
@@ -47,6 +48,7 @@ const StudentRoute = () => {
         />
         <Route path="/courses/singlecourse/:id" element={<SingleCourse />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/mylearning" element={<MyLearning />} />
         <Route path="/video-call" element={<VideoCallApp />} />
         <Route path="/plans" element={<Plans />} />

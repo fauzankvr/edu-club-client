@@ -1,45 +1,31 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button"; 
+import { Button } from "@/components/ui/button";
 import studentAPI from "@/API/StudentApi";
 import { NavLink } from "react-router-dom";
 
-// import { useSelector } from "react-redux";
-// import { RootState } from "@/features/student/redux/store";
-
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate()
-  const token = localStorage.getItem("studentToken"); 
+  const navigate = useNavigate();
+  const token = localStorage.getItem("studentToken");
 
   const handleProfile = async () => {
-    // try {
-    //   const response = await studentAPI.getStudent(); 
-    //   const student = response.data;
-
-    //   if (student.isBlocked) {
-    //     alert("You are blocked. Access to profile is restricted.");
-    //   } else {
-    //     navigate("/profile");
-    //   }
-    // } catch (error) {
-    //   console.log("Error fetching student data", error);
-    // }
     navigate("/profile");
   };
+
   const handleWishlist = async () => {
-  navigate("/wishlist")
-}
-  const handileLogout = async() => {
+    navigate("/wishlist");
+  };
+
+  const handleLogout = async () => {
     try {
-      console.log('logout')
-       await studentAPI.logout()
-    }catch(error){
+      console.log("logout");
+      await studentAPI.logout();
+    } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -117,7 +103,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {/* Wishlist Button */}
             <button
-              onClick={() => handleWishlist()} // 👉 You can define this function
+              onClick={handleWishlist}
               className="p-2 rounded-full hover:bg-gray-100 transition"
             >
               <Icon
@@ -126,16 +112,27 @@ const Navbar = () => {
               />
             </button>
 
+            {/* Notification Button */}
+            <button
+              onClick={() => navigate("/notifications")}
+              className="p-2 rounded-full hover:bg-gray-100 transition"
+            >
+              <Icon
+                icon="mdi:bell-outline"
+                className="w-7 h-7 text-yellow-500"
+              />
+            </button>
+
             {/* Profile Button */}
             <button
-              onClick={() => handleProfile()}
+              onClick={handleProfile}
               className="p-2 rounded-full hover:bg-gray-100 transition"
             >
               <Icon icon="mdi:account" className="w-7 h-7 text-indigo-600" />
             </button>
 
             {/* Logout Button */}
-            <Button variant="outline" onClick={handileLogout}>
+            <Button variant="outline" onClick={handleLogout}>
               Logout
             </Button>
           </div>

@@ -33,7 +33,10 @@ const LookingFor = () => {
                 </p>
               </div>
               <div className="flex justify-between items-center mt-6">
-                <Button onClick={() => navigate("/instructor/home")} className="bg-yellow-400 text-black hover:bg-yellow-500 ml-4">
+                <Button
+                  onClick={() => navigate("/instructor/home")}
+                  className="cursor-pointer bg-yellow-400 text-black hover:bg-yellow-500 ml-4"
+                >
                   Get Start <Icon icon="mdi:arrow-right" className="ml-2" />
                 </Button>
                 <img
@@ -58,7 +61,10 @@ const LookingFor = () => {
                 </p>
               </div>
               <div className="flex justify-between items-center mt-6">
-                <Button className="bg-purple-500 text-white hover:bg-purple-600">
+                <Button
+                  onClick={() => navigate("/courses")}
+                  className="cursor-pointer bg-purple-500 text-white hover:bg-purple-600"
+                >
                   Enroll Now <Icon icon="mdi:arrow-right" className="ml-2" />
                 </Button>
                 <img

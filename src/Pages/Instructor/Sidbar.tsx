@@ -44,6 +44,11 @@ const Sidebar = () => {
       path: "/Instructor/dashboard/wallet",
       icon: "mdi:wallet",
     },
+    {
+      name: "Notification",
+      path: "/Instructor/dashboard/notification",
+      icon: "mdi:bell",
+    },
   ];
 
   return (

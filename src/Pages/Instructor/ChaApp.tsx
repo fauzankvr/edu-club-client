@@ -28,15 +28,6 @@ const SkeletonChatItem: React.FC = () => (
   </div>
 );
 
-const SkeletonMessageItem: React.FC = () => (
-  <div className="flex mb-4 px-2 animate-pulse">
-    <div className="px-4 py-2 max-w-xs bg-gray-200 rounded-2xl">
-      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-      <div className="h-3 bg-gray-300 rounded w-1/4"></div>
-    </div>
-  </div>
-);
-
 dayjs.extend(relativeTime);
 
 const baseUri = import.meta.env.VITE_BASE_URL;
@@ -54,7 +45,6 @@ interface Message {
   chatId: string;
   createdAt: string;
   seenBy: string[];
-  isPending?: boolean; // Added to track optimistic updates
 }
 
 interface ChatContact {
@@ -114,8 +104,7 @@ const MessageItem: React.FC<MessageItemProps> = memo(
             "px-4 py-2 max-w-xs relative text-sm shadow-md rounded-2xl transition-colors duration-200",
             msg.sender === instructorId
               ? "bg-indigo-100 text-indigo-900"
-              : "bg-gray-100 text-gray-800",
-            msg.isPending && "opacity-70" // Visual feedback for pending messages
+              : "bg-gray-100 text-gray-800"
           )}
         >
           {msg.text}
@@ -183,6 +172,7 @@ const MessageList: React.FC<MessageListProps> = ({
       itemCount={messages.length}
       itemSize={60}
       width="100%"
+      className="message-list"
       outerRef={scrollAreaRef}
     >
       {Row}
@@ -199,12 +189,12 @@ const ChatApp: React.FC = () => {
   const [instructorId, setInstructorId] = useState<string>("");
   const [isTyping, setIsTyping] = useState<{ [chatId: string]: boolean }>({});
   const [error, setError] = useState<string>("");
-  const [isChatListLoading, setIsChatListLoading] = useState<boolean>(true); // Separate state for chat list
-  const [isMessagesLoading, setIsMessagesLoading] = useState<boolean>(false); // Separate state for messages
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const seenMessagesRef = useRef<Set<string>>(new Set());
   const joinedChatsRef = useRef<Set<string>>(new Set());
   const isTypingRef = useRef<boolean>(false);
+  const sentMessagesRef = useRef<Map<string, Message>>(new Map());
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -216,7 +206,6 @@ const ChatApp: React.FC = () => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        setIsChatListLoading(true);
         const instructor = await instructorAPI.getProfile();
         setInstructorId(instructor.profile._id);
         socket.emit("set-role", {
@@ -279,7 +268,7 @@ const ChatApp: React.FC = () => {
       } catch {
         setError("Failed to load chats");
       } finally {
-        setIsChatListLoading(false);
+        setIsInitialLoading(false);
       }
     };
 
@@ -315,17 +304,73 @@ const ChatApp: React.FC = () => {
       }
     );
     socket.on("newMessage", (message: Message) => {
+      // Check if this is a server confirmation of a sent message
+      const tempMessage = Array.from(sentMessagesRef.current.entries()).find(
+        ([, msg]) =>
+          msg.chatId === message.chatId &&
+          msg.text === message.text &&
+          msg.sender === message.sender &&
+          Math.abs(
+            new Date(msg.createdAt).getTime() -
+              new Date(message.createdAt).getTime()
+          ) < 1000 // Messages within 1 second of each other
+      );
+
+      if (tempMessage) {
+        const [tempId] = tempMessage;
+        sentMessagesRef.current.delete(tempId);
+
+        // Replace the temporary message with the server-confirmed one
+        setContacts((prev) =>
+          prev
+            .map((contact) =>
+              contact.id === message.chatId
+                ? {
+                    ...contact,
+                    messages: contact.messages.map((msg) =>
+                      msg.id === tempId ? message : msg
+                    ),
+                    lastMessage: message.text,
+                    lastMessageTime: message.createdAt,
+                  }
+                : contact
+            )
+            .sort((a, b) => {
+              const aTime = a.lastMessageTime
+                ? new Date(a.lastMessageTime).getTime()
+                : 0;
+              const bTime = b.lastMessageTime
+                ? new Date(b.lastMessageTime).getTime()
+                : 0;
+              return bTime - aTime;
+            })
+        );
+
+        if (selectedContact?.id === message.chatId) {
+          setSelectedContact((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  messages: prev.messages.map((msg) =>
+                    msg.id === tempId ? message : msg
+                  ),
+                  lastMessage: message.text,
+                  lastMessageTime: message.createdAt,
+                }
+              : prev
+          );
+        }
+        return;
+      }
+
+      // Handle incoming messages from other users
       setContacts((prev) =>
         prev
           .map((contact) =>
             contact.id === message.chatId
               ? {
                   ...contact,
-                  messages: contact.messages.some(
-                    (msg) => msg.id === message.id
-                  )
-                    ? contact.messages
-                    : [...contact.messages, { ...message, isPending: false }],
+                  messages: [...contact.messages, message],
                   lastMessage: message.text,
                   lastMessageTime: message.createdAt,
                 }
@@ -346,9 +391,9 @@ const ChatApp: React.FC = () => {
           prev
             ? {
                 ...prev,
-                messages: prev.messages.some((msg) => msg.id === message.id)
-                  ? prev.messages
-                  : [...prev.messages, { ...message, isPending: false }],
+                messages: [...prev.messages, message],
+                lastMessage: message.text,
+                lastMessageTime: message.createdAt,
               }
             : prev
         );
@@ -361,9 +406,7 @@ const ChatApp: React.FC = () => {
             ? {
                 ...contact,
                 messages: contact.messages.map((msg) =>
-                  msg.id === updatedMessage.id
-                    ? { ...updatedMessage, isPending: false }
-                    : msg
+                  msg.id === updatedMessage.id ? updatedMessage : msg
                 ),
               }
             : contact
@@ -375,9 +418,7 @@ const ChatApp: React.FC = () => {
             ? {
                 ...prev,
                 messages: prev.messages.map((msg) =>
-                  msg.id === updatedMessage.id
-                    ? { ...updatedMessage, isPending: false }
-                    : msg
+                  msg.id === updatedMessage.id ? updatedMessage : msg
                 ),
               }
             : prev
@@ -408,7 +449,6 @@ const ChatApp: React.FC = () => {
           setIsTyping((prev) => ({ ...prev, [chatId]: false }));
       }
     );
-
     socket.on(
       "chatUpdated",
       ({
@@ -455,7 +495,6 @@ const ChatApp: React.FC = () => {
 
   const handleContactClick = useCallback(async (contact: ChatContact) => {
     try {
-      setIsMessagesLoading(true);
       if (!joinedChatsRef.current.has(contact.id)) {
         socket.emit("joinChat", contact.id);
         joinedChatsRef.current.add(contact.id);
@@ -476,15 +515,12 @@ const ChatApp: React.FC = () => {
         sender: msg.sender,
         createdAt: msg.createdAt,
         seenBy: msg.seenBy || [],
-        isPending: false,
       }));
 
       setSelectedContact({ ...contact, messages: formattedMessages });
       setError("");
     } catch {
       setError("Failed to load messages");
-    } finally {
-      setIsMessagesLoading(false);
     }
   }, []);
 
@@ -524,7 +560,6 @@ const ChatApp: React.FC = () => {
       return;
     }
 
-    // Optimistic update: Add the message locally before server response
     const tempMessageId = `temp-${Date.now()}`;
     const newMsg: Message = {
       id: tempMessageId,
@@ -533,8 +568,10 @@ const ChatApp: React.FC = () => {
       sender: instructorId,
       createdAt: new Date().toISOString(),
       seenBy: [instructorId],
-      isPending: true,
     };
+
+    // Store message in sentMessagesRef to prevent duplicates
+    sentMessagesRef.current.set(tempMessageId, newMsg);
 
     setSelectedContact((prev) =>
       prev
@@ -580,7 +617,6 @@ const ChatApp: React.FC = () => {
       setError("");
     } catch {
       setError("Failed to send message");
-      // Optionally, remove the optimistic message if the server fails
       setSelectedContact((prev) =>
         prev
           ? {
@@ -589,6 +625,7 @@ const ChatApp: React.FC = () => {
             }
           : prev
       );
+      sentMessagesRef.current.delete(tempMessageId);
     }
   }, [newMessage, selectedContact, instructorId, handleStopTyping]);
 
@@ -607,7 +644,7 @@ const ChatApp: React.FC = () => {
         <Sidebar />
         <Card className="w-1/3 border-r bg-white">
           <CardContent className="p-2 h-full overflow-y-auto">
-            {isChatListLoading ? (
+            {isInitialLoading ? (
               <div className="space-y-2">
                 {Array(5)
                   .fill(0)
@@ -676,15 +713,7 @@ const ChatApp: React.FC = () => {
             <>
               <CardContent className="flex-1 p-4 overflow-y-auto">
                 <ScrollArea className="h-full pr-2" ref={scrollAreaRef}>
-                  {isMessagesLoading ? (
-                    <div className="space-y-2">
-                      {Array(5)
-                        .fill(0)
-                        .map((_, index) => (
-                          <SkeletonMessageItem key={index} />
-                        ))}
-                    </div>
-                  ) : selectedContact.messages.length === 0 ? (
+                  {selectedContact.messages.length === 0 ? (
                     <div className="text-center text-gray-500 py-4">
                       No messages yet. Start the conversation!
                     </div>

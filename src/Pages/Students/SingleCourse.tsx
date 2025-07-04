@@ -288,8 +288,6 @@ export default function SingleCourse() {
     sectionId: string,
     lectureId: string,
     progressValue: number,
-    // totalSeconds: number,
-    // actualSecondsWatched: number
   ) => {
     try {
       if (!studentId || !course?._id) {
