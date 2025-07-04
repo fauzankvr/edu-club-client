@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import Footer from "@/components/studentComponents/Footer";
 import Navbar from "@/components/studentComponents/Navbar";
-import RelatedCourses from "@/components/studentComponents/TopRelated";
+// import RelatedCourses from "@/components/studentComponents/TopRelated";
 import CourseContent from "@/components/studentComponents/CourseContant";
 import ReviewCard from "@/components/studentComponents/RiviewView";
 import InstructorProfile from "@/components/studentComponents/InstructorProfile";
@@ -252,7 +252,7 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
               </div>
             </div>
           </div>
-          <RelatedCourses />
+          {/* <RelatedCourses /> */}
           <Footer />
         </>
       ) : (
