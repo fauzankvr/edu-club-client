@@ -310,6 +310,17 @@ const studentAPI = {
   getPlan: async () => {
     return await axiosInstance.get("/student/plan");
   },
+
+  getNotifications: async () => {
+    return await axiosInstance.get("/student/notifications");
+  },
+  markNotificationAsRead: async (notificationId: string) => {
+    return await axiosInstance.patch(`/student/notifications/${notificationId}`);
+  },
+  clearNotifications: async () => {
+    return await axiosInstance.delete("/student/notifications");
+  },
+  
   checkout: (data: {
     userId: string;
     planId: string;

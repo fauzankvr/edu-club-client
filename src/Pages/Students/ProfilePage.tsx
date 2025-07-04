@@ -12,7 +12,7 @@ import { RootState } from "@/features/student/redux/store";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
-import { Purchase } from "@/Interface/Purchase";    
+import { Purchase } from "@/Interface/Purchase";   
 import PurchaseHistory from "./PurchaseHistory";
 
 // Define the ProfileData interface

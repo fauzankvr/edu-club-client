@@ -70,12 +70,15 @@ const instructorAPI = {
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/instructor/verifyotp", formData);
   },
-  sendOtp: (email: string)=>{
-    return axiosInstance.post("/instructor/sendOtp", {email});
+  sendOtp: (email: string) => {
+    return axiosInstance.post("/instructor/sendOtp", { email });
   },
 
-  resetPassword:(newPassword: string,email:string) =>{
-    return axiosInstance.post("/instructor/resetPassword", { newPassword ,email});
+  resetPassword: (newPassword: string, email: string) => {
+    return axiosInstance.post("/instructor/resetPassword", {
+      newPassword,
+      email,
+    });
   },
   fetchCourse: (
     query1?: string,
@@ -258,8 +261,11 @@ const instructorAPI = {
     return axiosInstance.get(`/instructor/getCallhistory/${instructorId}`);
   },
   getDashboard: (params: any) => {
-    return axiosInstance.get("/instructor/dashboard",{params});
+    return axiosInstance.get("/instructor/dashboard", { params });
   },
+  createNotification: (data: any) => {
+    return axiosInstance.post("/instructor/createNotification", data);
+  }
 };
 
 export default instructorAPI;

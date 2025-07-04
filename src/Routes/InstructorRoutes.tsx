@@ -14,6 +14,7 @@ import VideoCallApp from "@/Pages/Instructor/VideoList";
 import Wallet from "@/Pages/Instructor/Wallet";
 import CallHistory from "@/Pages/Instructor/CallHistory";
 import NotFoundPage from "@/Pages/Students/Notfound";
+import CreateNotification from "@/Pages/Instructor/CreateNotification";
 
 const InstructorRoutes = () => {
   return (
@@ -47,6 +48,7 @@ const InstructorRoutes = () => {
         <Route path="dashboard/video-call" element={<VideoCallApp />} />
         <Route path="dashboard/call-history" element={<CallHistory />} />
         <Route path="dashboard/wallet" element={<Wallet />} />
+        <Route path="dashboard/notification" element={<CreateNotification />} />
       </Route>
     </Routes>
   );
