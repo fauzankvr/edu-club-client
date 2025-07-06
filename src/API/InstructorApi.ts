@@ -265,7 +265,11 @@ const instructorAPI = {
   },
   createNotification: (data: any) => {
     return axiosInstance.post("/instructor/createNotification", data);
-  }
+  },
+  getNotifications: async () => {
+    const res = await axiosInstance.get("/instructor/notifications");
+    return res.data;
+  },
 };
 
 export default instructorAPI;

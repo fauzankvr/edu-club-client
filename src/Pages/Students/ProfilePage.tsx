@@ -12,8 +12,11 @@ import { RootState } from "@/features/student/redux/store";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { AxiosError } from "axios";
-import { Purchase } from "@/Interface/Purchase";   
+import { Purchase } from "@/Interface/Purchase";
 import PurchaseHistory from "./PurchaseHistory";
+import Certificates from "./Certificates"; 
+import backgroundImage from "../../assets/students/cetificate.jpg";
+import signatureImage from "../../assets/students/signature.png";
 
 // Define the ProfileData interface
 interface ProfileData {
@@ -28,6 +31,27 @@ interface ProfileData {
 // Define the API response type
 interface ProfileResponse {
   profile: ProfileData & { email: string };
+}
+
+// Define the Progress interface based on provided data
+export interface Progress {
+  _id: string;
+  studentId: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  courseId: {
+    _id: string;
+    title: string;
+    instructor: {
+      fullName: string;
+      email: string;
+    };
+  };
+  completed: boolean;
+  updatedAt: string;
 }
 
 // New reusable ProfileImage component with error handling fallback
@@ -54,13 +78,18 @@ function ProfileImage({ src }: { src: string }) {
 
 export default function ProfilePage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [activeSection, setActiveSection] = useState<"profile" | "purchases">("profile");
+  const [activeSection, setActiveSection] = useState<
+    "profile" | "purchases" | "certificate"
+  >("profile");
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const profile = useSelector((state: RootState) => state.student.profile as ProfileData | null);
+  const profile = useSelector(
+    (state: RootState) => state.student.profile as ProfileData | null
+  );
   const [email, setEmail] = useState<string>("user@email.com");
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [progressData, setProgressData] = useState<Progress[]>([]);
   const [formData, setFormData] = useState<ProfileData>({
     firstName: "",
     lastName: "",
@@ -69,7 +98,9 @@ export default function ProfilePage() {
     githubId: "",
     profileImage: "",
   });
-  const [initialFormData, setInitialFormData] = useState<ProfileData | null>(null);
+  const [initialFormData, setInitialFormData] = useState<ProfileData | null>(
+    null
+  );
 
   const imageUrl = formData.profileImage;
 
@@ -91,7 +122,7 @@ export default function ProfilePage() {
         };
 
         setFormData(newFormData);
-        setInitialFormData(newFormData); // Store initial data for comparison
+        setInitialFormData(newFormData);
       } catch (err) {
         const error = err as AxiosError;
         console.error("Profile fetch failed:", error);
@@ -102,6 +133,16 @@ export default function ProfilePage() {
         } else {
           toast.error("Failed to fetch profile.");
         }
+      }
+    };
+
+    const fetchProgress = async () => {
+      try {
+        const res = await studentAPi.getAllProgress();
+        setProgressData(res.data.data.progress || []);
+      } catch (err) {
+        console.error("Progress fetch failed:", err);
+        toast.error("Failed to fetch progress data.");
       }
     };
 
@@ -127,12 +168,12 @@ export default function ProfilePage() {
         githubId: profile.githubId ?? "",
       };
       setFormData(newFormData);
-      setInitialFormData(newFormData); // Store initial data for comparison
+      setInitialFormData(newFormData);
     }
+    fetchProgress();
     fetchPurchases();
   }, [profile, dispatch, navigate]);
 
-  // Check for changes whenever formData or selectedImage changes
   useEffect(() => {
     if (initialFormData) {
       const hasFormChanges = Object.keys(formData).some(
@@ -174,8 +215,8 @@ export default function ProfilePage() {
 
       const res = await studentAPi.updateProfile(profileData);
       toast.success("Profile Updated Successfully");
-      setInitialFormData(formData); // Update initial data after successful save
-      setSelectedImage(null); // Reset selected image
+      setInitialFormData(formData);
+      setSelectedImage(null);
       dispatch(setProfile({ profile: profileData }));
       console.log("Update success:", res);
     } catch (error) {
@@ -218,24 +259,32 @@ export default function ProfilePage() {
             <p className="mt-2 font-semibold">{displayName}</p>
           </div>
           <nav className="mt-6 flex flex-col gap-2">
-            {["My Profile", "Purchase History"].map((item, idx) => (
-              <button
-                key={idx}
-                className={`text-left px-4 py-2 rounded-md transition border ${
-                  (item === "My Profile" && activeSection === "profile") ||
-                  (item === "Purchase History" && activeSection === "purchases")
-                    ? "bg-indigo-200 text-indigo-800"
-                    : "hover:bg-indigo-200"
-                }`}
-                onClick={() =>
-                  setActiveSection(
-                    item === "My Profile" ? "profile" : "purchases"
-                  )
-                }
-              >
-                {item}
-              </button>
-            ))}
+            {["My Profile", "Purchase History", "Certificates"].map(
+              (item, idx) => (
+                <button
+                  key={idx}
+                  className={`text-left px-4 py-2 rounded-md transition border ${
+                    (item === "My Profile" && activeSection === "profile") ||
+                    (item === "Purchase History" &&
+                      activeSection === "purchases") ||
+                    (item === "Certificates" && activeSection === "certificate")
+                      ? "bg-indigo-200 text-indigo-800"
+                      : "hover:bg-indigo-200"
+                  }`}
+                  onClick={() =>
+                    setActiveSection(
+                      item === "My Profile"
+                        ? "profile"
+                        : item === "Purchase History"
+                        ? "purchases"
+                        : "certificate"
+                    )
+                  }
+                >
+                  {item}
+                </button>
+              )
+            )}
           </nav>
         </aside>
 
@@ -326,8 +375,8 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="text-right">
-                    <Button 
-                      onClick={handleSave} 
+                    <Button
+                      onClick={handleSave}
                       className="text-white px-6"
                       disabled={!hasChanges}
                     >
@@ -337,8 +386,15 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
             </>
-          ) : (
+          ) : activeSection === "purchases" ? (
             <PurchaseHistory purchases={purchases} />
+          ) : (
+            <Certificates
+              progressData={progressData}
+              studentName={displayName}
+              backgroundImage={backgroundImage}
+              signatureImage={signatureImage}
+            />
           )}
         </main>
       </div>

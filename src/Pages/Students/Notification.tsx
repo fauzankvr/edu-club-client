@@ -4,6 +4,8 @@ import Footer from "@/components/studentComponents/Footer";
 import { Icon } from "@iconify/react";
 import studentAPI from "@/API/StudentApi";
 import { toast, ToastContainer } from "react-toastify";
+import { getSocket } from "@/services/socketService"; 
+import { Socket } from "socket.io-client";
 
 interface Notification {
   _id: string;
@@ -21,7 +23,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await studentAPI.getNotifications(); // Assumes API endpoint
+      const response = await studentAPI.getNotifications();
       setNotifications(response.data.data.notifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -31,9 +33,61 @@ const Notifications = () => {
     }
   };
 
+  useEffect(() => {
+    let socketInstance: Socket;
+
+    const initialize = async () => {
+      try {
+        const student = await studentAPI.getProfile();
+        socketInstance = getSocket(student.profile._id);
+
+        // Remove previous listener (if any) before adding a new one
+        socketInstance.off("newNotification");
+
+        socketInstance.on("connect", () => {
+          console.log(
+            `Socket connected for student ${student.profile._id}: ${socketInstance.id}`
+          );
+        });
+
+        socketInstance.emit("set-role", {
+          role: "student",
+          userId: student.profile._id,
+        });
+
+        socketInstance.on("newNotification", (notification: Notification) => {
+          console.log("New notification:", notification);
+          setNotifications((prev) => [notification, ...prev]);
+          toast.info(`New notification: ${notification.title}`);
+        });
+
+        socketInstance.on("error", ({ error }) => {
+          console.error("Socket error:", error);
+          toast.error(error);
+        });
+
+        fetchNotifications();
+      } catch (error) {
+        console.error("Initialization error:", error);
+        toast.error("Failed to initialize");
+      }
+    };
+
+    initialize();
+
+    return () => {
+      // Proper cleanup
+      if (socketInstance) {
+        socketInstance.off("newNotification");
+        socketInstance.disconnect();
+      }
+    };
+  }, []);
+  
+
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      await studentAPI.markNotificationAsRead(notificationId); // Assumes API endpoint
+      await studentAPI.markNotificationAsRead(notificationId);
       setNotifications((prev) =>
         prev.map((notification) =>
           notification._id === notificationId
@@ -47,21 +101,6 @@ const Notifications = () => {
       toast.error("Failed to mark notification");
     }
   };
-
-  const handleClearAll = async () => {
-    try {
-      await studentAPI.clearNotifications(); // Assumes API endpoint
-      setNotifications([]);
-      toast.success("All notifications cleared");
-    } catch (error) {
-      console.error("Failed to clear notifications:", error);
-      toast.error("Failed to clear notifications");
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
 
   return (
     <>
@@ -141,14 +180,6 @@ const Notifications = () => {
                 )}
               </div>
             ))}
-            <div className="mt-6 text-center">
-              <button
-                onClick={handleClearAll}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition text-sm font-semibold"
-              >
-                Clear All Notifications
-              </button>
-            </div>
           </div>
         )}
       </div>
