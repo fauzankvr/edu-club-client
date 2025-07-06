@@ -138,7 +138,7 @@ const Wallet: React.FC = () => {
           {/* Metrics */}
           <div className="bg-white shadow-md rounded-lg p-6 mb-8">
             <h2 className="text-xl font-semibold">Pending Earnings</h2>
-            <p className="text-2xl text-blue-600">${totalPending.toFixed(2)}</p>
+            <p className="text-2xl text-blue-600">₹{totalPending.toFixed(2)}</p>
           </div>
 
           {/* PayPal Email Form */}
@@ -173,7 +173,7 @@ const Wallet: React.FC = () => {
               disabled={totalPending <= 0 || !paypalEmail}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg disabled:bg-gray-400"
             >
-              Redeem ${totalPending.toFixed(2)}
+              Redeem ₹{totalPending.toFixed(2)}
             </button>
           </div>
 
@@ -213,7 +213,7 @@ const Wallet: React.FC = () => {
                           {`${txn.student.firstName} ${txn.student.lastName}`}
                         </td>
                         <td className="px-4 py-2 text-right">
-                          ${txn.instructorShare.toFixed(2)}
+                          ₹{txn.instructorShare.toFixed(2)}
                         </td>
                         <td className="px-4 py-2">
                           <span

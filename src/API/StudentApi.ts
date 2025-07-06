@@ -56,8 +56,8 @@ const studentAPI = {
   login: (formdata: object) => {
     return axiosInstance.post("/student/login", formdata);
   },
-  googleLogin: ({ token ,role}: { token: string,role:string }) => {
-    return axiosInstance.post("/student/googleLogin", { token ,role});
+  googleLogin: ({ token, role }: { token: string; role: string }) => {
+    return axiosInstance.post("/student/googleLogin", { token, role });
   },
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/student/verifyotp", formData);
@@ -66,11 +66,11 @@ const studentAPI = {
   ForgotverifyOtp: (formData: object) => {
     return axiosInstance.post("/student/forgotVerifyOtp", formData);
   },
-  sendOtp: (email:string) => {
-    return axiosInstance.post("/student/sendOtp", {email});
+  sendOtp: (email: string) => {
+    return axiosInstance.post("/student/sendOtp", { email });
   },
-  resetPassword:(newPassword: string,email:string) =>{
-    return axiosInstance.post("/student/resetPassword", { newPassword ,email});
+  resetPassword: (newPassword: string, email: string) => {
+    return axiosInstance.post("/student/resetPassword", { newPassword, email });
   },
 
   fetchCourse: (
@@ -181,11 +181,26 @@ const studentAPI = {
       throw error;
     }
   },
+  getAllProgress: async () => {
+    return axiosInstance.get("/student/getAllProgress");
+  },
   getProgress: async (studentId: string, courseId: string) => {
     return axiosInstance.get(`/student/getProgress/${studentId}/${courseId}`);
   },
-  updateProgress: async (studentId:string,courseId: string,sectionId:string, lectureId: string, progress: string) => {
-    return axiosInstance.patch("/student/updateProgress", { studentId, courseId, sectionId,lectureId, progress });
+  updateProgress: async (
+    studentId: string,
+    courseId: string,
+    sectionId: string,
+    lectureId: string,
+    progress: string
+  ) => {
+    return axiosInstance.patch("/student/updateProgress", {
+      studentId,
+      courseId,
+      sectionId,
+      lectureId,
+      progress,
+    });
   },
   createOrder: (cart: object) => {
     return axiosInstance.post("/student/orders", { cart });
@@ -315,12 +330,14 @@ const studentAPI = {
     return await axiosInstance.get("/student/notifications");
   },
   markNotificationAsRead: async (notificationId: string) => {
-    return await axiosInstance.patch(`/student/notifications/${notificationId}`);
+    return await axiosInstance.patch(
+      `/student/notifications/${notificationId}`
+    );
   },
   clearNotifications: async () => {
     return await axiosInstance.delete("/student/notifications");
   },
-  
+
   checkout: (data: {
     userId: string;
     planId: string;

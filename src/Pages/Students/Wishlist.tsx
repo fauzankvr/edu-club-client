@@ -43,12 +43,13 @@ const Wishlist = () => {
   };
 
   const handleCardClick = (courseId: string) => {
-    navigate(`/courses/${courseId}`); // or detail page
+    navigate(`/courses/${courseId}`); 
   };
 
   useEffect(() => {
     fetchWishlist();
   }, []);
+
   function confirmDelete(id: string) { 
     toast(
       ({ closeToast }) => (
