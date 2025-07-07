@@ -32,8 +32,14 @@ export default function MediaViewer({
 }: MediaViewerProps) {
   const playerRef = useRef<MediaPlayerInstance | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const sentThresholdsRef = useRef<number[]>([]); // Track sent progress thresholds for the current lesson
 
-  // Handle PDF load error (e.g., invalid PDF URL)
+  // Reset sentThresholdsRef when currentLesson changes
+  useEffect(() => {
+    sentThresholdsRef.current = [];
+  }, [currentLesson?._id]);
+
+  // Handle PDF load error
   const handlePdfError = useCallback(() => {
     setPdfError("Failed to load PDF. Please try again.");
   }, []);
@@ -45,33 +51,53 @@ export default function MediaViewer({
         const currentTime = playerRef.current.currentTime;
         const duration = playerRef.current.duration;
         if (duration > 0) {
-          const progressValue = Math.min((currentTime / duration) * 100);
-          updateLessonProgress(
-            sectionId,
-            currentLesson._id,
-            progressValue,
-            duration,
-            currentTime
-          );
+          const progressValue = Math.min((currentTime / duration) * 100, 100);
+          const roundedProgress = Math.round(progressValue / 5) * 5; // Round to nearest 5%
+
+          // Only call updateLessonProgress if this threshold hasn't been sent yet
+          if (
+            roundedProgress > 0 &&
+            roundedProgress % 5 === 0 &&
+            !sentThresholdsRef.current.includes(roundedProgress)
+          ) {
+            updateLessonProgress(
+              sectionId,
+              currentLesson._id,
+              roundedProgress,
+              duration,
+              currentTime
+            );
+            sentThresholdsRef.current.push(roundedProgress); // Mark this threshold as sent
+          }
         }
       }
     },
-    [currentLesson?.videoPath, studentId, updateLessonProgress]
+    [
+      currentLesson?.videoPath,
+      currentLesson?._id,
+      studentId,
+      updateLessonProgress,
+    ]
   );
 
   // Mark lesson complete
   const markLessonComplete = useCallback(
     (sectionId: string, lectureId: string) => {
-      updateLessonProgress(sectionId, lectureId, 100, 0, 0);
+      if (!sentThresholdsRef.current.includes(100)) {
+        updateLessonProgress(sectionId, lectureId, 100, 0, 0);
+        sentThresholdsRef.current.push(100); // Mark 100% as sent
+      }
     },
     [updateLessonProgress]
   );
 
-  // Handle PDF view tracking (basic implementation)
+  // Handle PDF view tracking
   const handlePdfView = useCallback(
     (sectionId: string, lectureId: string) => {
-      // For simplicity, assume 50% progress when PDF is loaded, 100% when marked complete
-      updateLessonProgress(sectionId, lectureId, 50, 0, 0);
+      if (!sentThresholdsRef.current.includes(50)) {
+        updateLessonProgress(sectionId, lectureId, 50, 0, 0);
+        sentThresholdsRef.current.push(50); // Mark 50% as sent
+      }
     },
     [updateLessonProgress]
   );
@@ -85,7 +111,12 @@ export default function MediaViewer({
         )?._id || "";
       handlePdfView(sectionId, currentLesson._id);
     }
-  }, [currentLesson?.pdfPath, carriculam.sections, handlePdfView]);
+  }, [
+    currentLesson?.pdfPath,
+    currentLesson?._id,
+    carriculam.sections,
+    handlePdfView,
+  ]);
 
   return (
     <div className="bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center relative">

@@ -192,7 +192,9 @@ const studentAPI = {
     courseId: string,
     sectionId: string,
     lectureId: string,
-    progress: string
+    progress: string,
+    totalSeconds: number,
+    actualSecondsWatched: number
   ) => {
     return axiosInstance.patch("/student/updateProgress", {
       studentId,
@@ -200,6 +202,8 @@ const studentAPI = {
       sectionId,
       lectureId,
       progress,
+      totalSeconds,
+      actualSecondsWatched
     });
   },
   createOrder: (cart: object) => {

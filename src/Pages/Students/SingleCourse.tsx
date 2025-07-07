@@ -288,35 +288,26 @@ export default function SingleCourse() {
     sectionId: string,
     lectureId: string,
     progressValue: number,
+    totalSeconds: number,
+    actualSecondsWatched: number
   ) => {
     try {
       if (!studentId || !course?._id) {
         throw new Error("Missing studentId or courseId");
       }
-      const roundedProgress = Math.round(progressValue);
-      if (
-        (roundedProgress % 5 === 0 && roundedProgress <= 95) ||
-        roundedProgress === 100
-      ) {
-        if (!sentThresholdsRef.current[lectureId]?.includes(roundedProgress)) {
-          const response = await studentAPI.updateProgress(
-            studentId,
-            course._id,
-            sectionId,
-            lectureId,
-            roundedProgress.toString()
-            // Pass totalSeconds and actualSecondsWatched if API supports them
-          );
-          if (response.data.data.updated) {
-            setProgress(response.data.data.updated);
-            sentThresholdsRef.current[lectureId] = [
-              ...(sentThresholdsRef.current[lectureId] || []),
-              roundedProgress,
-            ];
-          } else {
-            setError("Failed to update progress: Invalid response from server");
-          }
-        }
+      const response = await studentAPI.updateProgress(
+        studentId,
+        course._id,
+        sectionId,
+        lectureId,
+        progressValue.toString(),
+        totalSeconds,
+        actualSecondsWatched
+      );
+      if (response.data.data.updated) {
+        setProgress(response.data.data.updated);
+      } else {
+        setError("Failed to update progress: Invalid response from server");
       }
     } catch (error) {
       setError(
@@ -340,7 +331,7 @@ export default function SingleCourse() {
         (lec) => lec.lectureId === lesson._id
       );
       if (lectureProgress && parseInt(lectureProgress.progress) < 5) {
-        updateLessonProgress(sectionId, lesson._id, 5);
+        updateLessonProgress(sectionId, lesson._id, 5,0,0);
       }
     }
   };
