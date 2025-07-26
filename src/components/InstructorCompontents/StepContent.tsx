@@ -5,11 +5,11 @@ import AccountInformation from "./steps/AccountInformation";
 import ProfessionalDetails from "./steps/ProfessionalDetails"; 
 import ContactLocation from "./steps/ContactLocation";
 import SocialMedia from "./steps/SocialMedia";
-import { FormData } from "@/Pages/types/instructor";
+import { InstructorFormData } from "@/Pages/types/instructor";
 
 interface StepContentProps {
   currentStep: number;
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 export default function StepContent({ currentStep, formik }: StepContentProps) {

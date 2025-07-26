@@ -2,10 +2,10 @@
 import { FormikProps } from "formik";
 import { Input } from "@/components/ui/input";
 import { Icon } from "@iconify/react";
-import { FormData } from "@/Pages/types/instructor";
+import { InstructorFormData } from "@/Pages/types/instructor";
 
 interface AccountInformationProps {
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 export default function AccountInformation({

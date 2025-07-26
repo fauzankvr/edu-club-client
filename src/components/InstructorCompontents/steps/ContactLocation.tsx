@@ -8,12 +8,12 @@ import {
   SelectValue,
 } from "../select";
 import { Icon } from "@iconify/react";
-import { FormData } from "@/Pages/types/instructor";
+import { InstructorFormData } from "@/Pages/types/instructor";
 import { countries } from "@/utils/constants";
 import { FormikProps } from "formik";
 
 interface ContactLocationProps {
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 export default function ContactLocation({ formik }: ContactLocationProps) {

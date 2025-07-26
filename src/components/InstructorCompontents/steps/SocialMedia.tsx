@@ -3,15 +3,15 @@ import { FormikProps } from "formik";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
-import { FormData } from "@/Pages/types/instructor"; 
+import { InstructorFormData } from "@/Pages/types/instructor"; 
 
 interface SocialMediaProps {
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 interface SocialPlatform {
   name: string;
-  key: keyof FormData["socialMedia"];
+  key: keyof InstructorFormData["socialMedia"];
   icon: string;
   placeholder: string;
   color: string;
@@ -92,7 +92,7 @@ export default function SocialMedia({ formik }: SocialMediaProps) {
   ];
 
   const getFieldError = (
-    fieldName: keyof FormData["socialMedia"]
+    fieldName: keyof InstructorFormData["socialMedia"]
   ): string | undefined => {
     return formik.touched.socialMedia?.[fieldName] &&
       formik.errors.socialMedia?.[fieldName]

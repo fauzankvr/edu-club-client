@@ -11,11 +11,11 @@ import {
   SelectValue,
 } from "../select";
 import { Icon } from "@iconify/react";
-import { FormData } from "@/Pages/types/instructor";
+import { InstructorFormData } from "@/Pages/types/instructor";
 import { languages } from "@/utils/constants";
 
 interface EducationalDetailsProps {
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 interface CertificationFile {
@@ -54,7 +54,7 @@ export default function EducationalDetails({
     }
   }, [formik.values.certificateFiles]);
 
-  const addToArray = (fieldName: keyof FormData, value: string) => {
+  const addToArray = (fieldName: keyof InstructorFormData, value: string) => {
     const currentArray = formik.values[fieldName] as string[];
     if (value.trim() && !currentArray.includes(value.trim())) {
       formik.setFieldValue(fieldName, [...currentArray, value.trim()]);
@@ -64,7 +64,10 @@ export default function EducationalDetails({
     }
   };
 
-  const removeFromArray = (fieldName: keyof FormData, index: number) => {
+  const removeFromArray = (
+    fieldName: keyof InstructorFormData,
+    index: number
+  ) => {
     const currentArray = formik.values[fieldName] as string[];
     const newArray = currentArray.filter((_, i) => i !== index);
     formik.setFieldValue(fieldName, newArray);

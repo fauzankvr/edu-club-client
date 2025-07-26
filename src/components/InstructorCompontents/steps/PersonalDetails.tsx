@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { Icon } from "@iconify/react";
-import { FormData } from "@/Pages/types/instructor";
+import { InstructorFormData } from "@/Pages/types/instructor";
 
 
 interface PersonalDetailsProps {
-  formik: FormikProps<FormData>;
+  formik: FormikProps<InstructorFormData>;
 }
 
 export default function PersonalDetails({ formik }: PersonalDetailsProps) {
