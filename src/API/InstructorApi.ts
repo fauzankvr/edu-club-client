@@ -1,6 +1,7 @@
 import { clearStudent, setAccessToken } from "@/features/student/redux/studentSlce";
 import { axiosInstance } from "./axiosInstance";
 import { store } from "@/features/student/redux/store"; 
+import type { InstructorFormData, Teacher } from "@/Pages/types/instructor";
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -57,10 +58,64 @@ axiosInstance.interceptors.response.use(
 );
 
 
+const buildFormData = (data: Teacher) => {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (key === "profileImage" && value instanceof File) {
+      formData.append("profileImage", value);
+    } else if (Array.isArray(value)) {
+      formData.append(key, JSON.stringify(value));
+    } else if (typeof value === "object") {
+      // Nested objects: address, socialMedia …
+      formData.append(key, JSON.stringify(value));
+    } else {
+      // Primitive (string | number | boolean)
+      formData.append(key, value.toString());
+    }
+  });
+
+  return formData;
+};
+
+
 // Student API Methods
 const instructorAPI = {
-  signup: (formData: object) => {
-    return axiosInstance.post("/instructor/signup", formData);
+  // In your API file
+  signup: async (data: InstructorFormData) => {
+    const formData = new FormData();
+
+    // Add regular form fields
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "profileImage" && value instanceof File) {
+        formData.append("profileImage", value);
+      } else if (key === "certificateFiles" && Array.isArray(value)) {
+        // Backend expects field name "certificates"
+        value.forEach((file: File) => {
+          formData.append("certificates", file);
+        });
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        // Handle nested objects like address and socialMedia
+        formData.append(key, JSON.stringify(value));
+      } else if (Array.isArray(value)) {
+        // For arrays like expertise, languages, certifications
+        formData.append(key, JSON.stringify(value));
+      } else if (typeof value === "string" || typeof value === "number") {
+        formData.append(key, value.toString());
+      }
+    });
+
+    return axiosInstance.post("/instructor/signup", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   },
 
   login: (formdata: object) => {
@@ -78,6 +133,12 @@ const instructorAPI = {
     return axiosInstance.post("/instructor/resetPassword", {
       newPassword,
       email,
+    });
+  },
+  changePassword: (currentPassword: string, newPassword: string) => {
+    return axiosInstance.post("/instructor/changePassword", {
+      currentPassword,
+      newPassword,
     });
   },
   fetchCourse: (
@@ -108,23 +169,13 @@ const instructorAPI = {
       // window.location.href = "/student/login";
     }
   },
-  resendOtp: async (email: object) => {
-    return await axiosInstance.post("/instructor/resendOtp", email);
+  resendOtp: async (email: string) => {
+    return await axiosInstance.post("/instructor/resendOtp", { email });
   },
-  updateProfile: async (data: FormData) => {
-    try {
-      console.log("Updating profile with data:", data);
-      const response = await axiosInstance.put("/instructor/profile", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log(response);
-      return response.data;
-    } catch (error) {
-      console.error("Profile update failed:", error);
-      throw error; // rethrow so caller can handle it too
-    }
+  updateProfile: async (data: Teacher) => {
+    const formData = buildFormData(data);
+    const res = await axiosInstance.put("/instructor/profile", formData);
+    return res.data;
   },
   getCourseById: async (id: string) => {
     try {

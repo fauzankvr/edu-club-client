@@ -15,6 +15,7 @@ import instructorAPI from "@/API/InstructorApi";
 import { useEffect, useState } from "react";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import studentAPI from "@/API/StudentApi";
+import { AxiosError } from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -53,10 +54,23 @@ export default function Login() {
         } else {
           failToast();
         }
-      } catch (error) {
+      } catch (err) {
+        const error = err as AxiosError<{ message: string }>;
+
         console.error("Login error:", error);
-        failToast();
+
+        const errorMessage =
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.";
+        if (errorMessage == "Please reset your password") {
+           navigate("/resetPassword", {
+             state: { email: values.email, role: "Instructor" },
+             replace: true,
+           });
+          }
+            toast.error(errorMessage);
       }
+
     },
   });
 

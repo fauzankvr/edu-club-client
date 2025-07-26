@@ -49,7 +49,7 @@ function PlanCheckout() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false); // For free plan and PayPal
+  const [isProcessing, setIsProcessing] = useState(false); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,7 +153,7 @@ function PlanCheckout() {
           Checkout: {plan.name}
         </h2>
         <p className="text-lg text-gray-700 mb-6 text-center">
-          Amount: {CURRENCY} {plan.price.toLocaleString()}
+          Amount: INR {plan.price.toLocaleString()}
         </p>
         <PayPalScriptProvider options={initialOptions}>
           <PayPalButtons

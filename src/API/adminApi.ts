@@ -73,6 +73,7 @@ const adminApi = {
   blockTeacher: (email: string) => {
     return axiosInstance.patch("/admin/blockTeacher", { email });
   },
+  approveTeacher: (email: string) => axiosInstance.patch('/admin/teachers/approve', { email }),
   logout: () => {
     return axiosInstance.post("/admin/logout");
   },

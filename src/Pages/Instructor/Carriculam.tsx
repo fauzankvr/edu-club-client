@@ -160,7 +160,7 @@ const Carricculam = () => {
 
   const handleSubmit = async (values: CurriculumFormValues): Promise<void> => {
     try {
-      const formData = new FormData();
+    const formData = new FormData();
 
       formData.append(
         "sections",
