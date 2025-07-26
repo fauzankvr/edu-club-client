@@ -101,7 +101,6 @@ const studentAPI = {
     }
   },
   resendOtp: async (email: string) => {
-    console.log(email);
     return await axiosInstance.post("/student/resendOtp", { email });
   },
   updateProfile: async (data: ProfileData) => {
@@ -203,7 +202,7 @@ const studentAPI = {
       lectureId,
       progress,
       totalSeconds,
-      actualSecondsWatched
+      actualSecondsWatched,
     });
   },
   createOrder: (cart: object) => {
@@ -328,6 +327,16 @@ const studentAPI = {
   },
   getPlan: async () => {
     return await axiosInstance.get("/student/plan");
+  },
+  sendNotification: async (notification: {
+    studentId: string;
+    instructorId: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean;
+  }) => {
+    return await axiosInstance.post("/student/notifications", notification);
   },
 
   getNotifications: async () => {

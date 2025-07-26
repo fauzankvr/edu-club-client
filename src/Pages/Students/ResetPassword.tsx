@@ -37,12 +37,12 @@ const ResetPassword: React.FC = () => {
         /[^A-Za-z0-9]/,
         "Password must contain at least one special character"
       )
-      .required("Required"),
+      .required("Password Required"),
     confirmPassword: Yup.string()
       .trim("Cannot be only spaces")
       .strict(true)
       .oneOf([Yup.ref("newPassword")], "Passwords must match")
-      .required("Required"),
+      .required("Confirm Password Required"),
   });
 
   const formik = useFormik({

@@ -6,5 +6,6 @@ export interface Purchase {
   createdAt: string;
   updatedAt: string;
   courseDetails: ICourseData;
+  paypalOrderId: string;
   status: string;
 }
