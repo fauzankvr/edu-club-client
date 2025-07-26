@@ -18,7 +18,7 @@ import GoogleLoginSection from "@/components/InstructorCompontents/GoogleLoginSe
 import { setStudent } from "@/features/student/redux/studentSlce";
 import InstructorApi from "@/API/InstructorApi";
 import {
-  FormData,
+  InstructorFormData,
   STEPS,
   validationSchemas,
   initialValues,
@@ -39,40 +39,43 @@ export default function InstructorSignup() {
     }
   }, [navigate]);
 
-  const formik = useFormik<FormData>({
+  const formik = useFormik<InstructorFormData>({
     initialValues: initialValues,
     validationSchema: validationSchemas[currentStep],
     enableReinitialize: true, // Allows schema updates when currentStep changes
     onSubmit: async (values) => {
-  if (currentStep < STEPS.length - 1) {
-    const isValid = await validateCurrentStep();
-    if (isValid) {
-      setCurrentStep(currentStep + 1);
-    }
-  } else {
-    try {
-      // Pass the entire values object to the API
-      const res = await InstructorApi.signup(values);
-      
-      if (res.data && res.data.success) {
-        dispatch(
-          setStudent({ email: values.email, password: values.password })
-        );
-        successToast();
-        navigate("/instructor/otpVerify", {
-          state: {
-            fullName: values.fullName,
-            email: values.email,
-            password: values.password,
-          },
-        });
+      if (currentStep < STEPS.length - 1) {
+        const isValid = await validateCurrentStep();
+        if (isValid) {
+          setCurrentStep(currentStep + 1);
+        }
       } else {
-        failureToast();
-      }
-    } catch (err) {
+        try {
+          // Pass the entire values object to the API
+          const res = await InstructorApi.signup(values);
+
+          if (res.data && res.data.success) {
+            dispatch(
+              setStudent({ email: values.email, password: values.password })
+            );
+            successToast();
+            navigate("/instructor/otpVerify", {
+              state: {
+                fullName: values.fullName,
+                email: values.email,
+                password: values.password,
+              },
+            });
+          } else {
+            failureToast();
+          }
+        } catch (err) {
           let message = "Signup failed. Please try again.";
           if (typeof err === "object" && err !== null) {
-            const errorObj = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
+            const errorObj = err as {
+              response?: { data?: { error?: string; message?: string } };
+              message?: string;
+            };
             message =
               errorObj?.response?.data?.error ||
               errorObj?.response?.data?.message ||

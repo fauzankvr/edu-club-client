@@ -1,7 +1,7 @@
 // types/instructor.ts
 import * as Yup from "yup";
 
-export interface FormData {
+export interface InstructorFormData {
   email: string;
   password: string;
   confirmPassword: string;
@@ -37,7 +37,7 @@ export interface FormData {
   };
 }
 
-export const initialValues: FormData = {
+export const initialValues: InstructorFormData = {
   email: "",
   password: "",
   confirmPassword: "",

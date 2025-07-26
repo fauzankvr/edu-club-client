@@ -19,11 +19,11 @@ import { Teacher } from "../types/instructor";
 import { useEffect, useState } from "react";
 
 /* ---------- helpers ---------- */
-const toArray = (field: any): string[] => {
+const toArray = (field: unknown): string[] => {
   if (!field) return [];
   if (Array.isArray(field)) return field;
   try {
-    const parsed = JSON.parse(field);
+    const parsed = JSON.parse(String(field));
     return Array.isArray(parsed) ? parsed : [String(parsed)];
   } catch {
     return [String(field)];
@@ -219,7 +219,7 @@ const TeacherManagement = () => {
                     >
                       <Icon icon={s.icon} className="w-4 h-4 text-white" />
                     </div>
-                    <div className="text-xl font-bold">{count(s.k as any)}</div>
+                    <div className="text-xl font-bold">{count(s.k as "all" | "approved" | "pending" | "blocked")}</div>
                     <div className="text-xs text-gray-600">{s.label}</div>
                   </div>
                 ))}
@@ -794,7 +794,7 @@ const TeacherManagement = () => {
                               },
                             ].map(
                               ({ k, icon, col }) =>
-                                selected?.socialMedia?.[k] && (
+                                selected?.socialMedia?.[k as keyof typeof selected.socialMedia] && (
                                   <a
                                     key={k}
                                     href={

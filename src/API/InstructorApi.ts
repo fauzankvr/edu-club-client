@@ -1,7 +1,7 @@
 import { clearStudent, setAccessToken } from "@/features/student/redux/studentSlce";
 import { axiosInstance } from "./axiosInstance";
 import { store } from "@/features/student/redux/store"; 
-import type { FormData, Teacher } from "@/Pages/types/instructor";
+import type { InstructorFormData, Teacher } from "@/Pages/types/instructor";
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -84,7 +84,7 @@ const buildFormData = (data: Teacher) => {
 // Student API Methods
 const instructorAPI = {
   // In your API file
-  signup: async (data: FormData) => {
+  signup: async (data: InstructorFormData) => {
     const formData = new FormData();
 
     // Add regular form fields
