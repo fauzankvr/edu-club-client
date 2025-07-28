@@ -5,6 +5,7 @@ import ChatWithTeacher from "@/Pages/Students/ChatWithTeacher";
 import NotesApp from "@/Pages/Students/Notebook";
 import { ICourseData } from "@/Interface/CourseData";
 import { Socket } from "socket.io-client";
+import { Message } from "@/Pages/Students/SingleCourse";
 
 interface Chat {
   _id: string;
@@ -15,14 +16,6 @@ interface Chat {
   isTyping?: boolean;
 }
 
-interface Message {
-  id: string;
-  text: string;
-  sender: string;
-  chatId: string;
-  createdAt: string;
-  seenBy: string[];
-}
 
 const TABS = [
   "Overview",

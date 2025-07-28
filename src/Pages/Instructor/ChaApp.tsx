@@ -15,6 +15,8 @@ import { FixedSizeList as List } from "react-window";
 import { debounce } from "lodash";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { Trash2 } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
 
 // Skeleton UI components
 const SkeletonChatItem: React.FC = () => (
@@ -38,13 +40,20 @@ const socket: Socket = io(baseUri, {
   reconnectionDelay: 1000,
 });
 
+interface Reaction {
+  userId: string;
+  reaction: string;
+}
+
 interface Message {
-  id: string;
+  _id: string;
   text: string;
   sender: string;
   chatId: string;
   createdAt: string;
   seenBy: string[];
+  reactions?: Reaction[];
+  deleted?: boolean;
 }
 
 interface ChatContact {
@@ -64,66 +73,231 @@ interface MessageItemProps {
   instructorId: string;
   getTickColor: (msg: Message) => string;
   seenMessagesRef: React.MutableRefObject<Set<string>>;
+  handleDeleteMessage: (messageId: string, chatId: string) => void;
+  handleAddReaction: (
+    messageId: string,
+    chatId: string,
+    reaction: string
+  ) => void;
 }
 
 const MessageItem: React.FC<MessageItemProps> = memo(
-  ({ msg, instructorId, getTickColor, seenMessagesRef }) => {
+  ({
+    msg,
+    instructorId,
+    getTickColor,
+    seenMessagesRef,
+    handleDeleteMessage,
+    handleAddReaction,
+  }) => {
+    const [showPicker, setShowPicker] = useState(false);
+    const [showActions, setShowActions] = useState(false);
+
     const emitMessageSeen = debounce(
       (chatId: string, userId: string, messageId: string) => {
         socket.emit("messageSeen", { chatId, userId, messageId });
       },
-      1000
+      500
     );
 
     const { ref } = useInView({
-      threshold: 0.8,
-      triggerOnce: true,
+      threshold: 0.6,
       onChange: (inView) => {
         if (
           inView &&
           !msg.seenBy.includes(instructorId) &&
           msg.sender !== instructorId &&
-          !seenMessagesRef.current.has(msg.id)
+          !seenMessagesRef.current.has(msg._id)
         ) {
-          emitMessageSeen(msg.chatId, instructorId, msg.id);
-          seenMessagesRef.current.add(msg.id);
+          if (!msg._id) {
+            console.error(
+              "Cannot emit messageSeen: messageId is undefined",
+              msg
+            );
+            return;
+          }
+          emitMessageSeen(msg.chatId, instructorId, msg._id);
+          seenMessagesRef.current.add(msg._id);
         }
       },
     });
 
+    const isSender = msg.sender === instructorId;
+
+    const reactionCounts =
+      msg.reactions?.reduce((acc, r) => {
+        acc[r.reaction] = (acc[r.reaction] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+    const userReaction = msg.reactions?.find(
+      (r) => r.userId === instructorId
+    )?.reaction;
+
+    const onReactionClick = (emojiObject: { emoji: string }) => {
+      if (!msg._id || !msg.chatId) {
+        console.error("Cannot add reaction: messageId or chatId is undefined", {
+          messageId: msg._id,
+          chatId: msg.chatId,
+        });
+        return;
+      }
+      handleAddReaction(msg._id, msg.chatId, emojiObject.emoji);
+      setShowPicker(false);
+    };
+
+    const handleDeleteClick = () => {
+      if (confirm("Delete this message?")) {
+        handleDeleteMessage(msg._id, msg.chatId);
+      }
+    };
+
+    if (msg.deleted) {
+      return (
+        <div
+          ref={ref}
+          className={`flex mb-3 px-4 ${
+            isSender ? "justify-end" : "justify-start"
+          }`}
+        >
+          <div className="flex items-center space-x-2 py-2 px-3 bg-gray-50 rounded-xl border border-gray-200 max-w-xs">
+            <Icon icon="mdi:delete-outline" className="w-4 h-4 text-gray-400" />
+            <span className="text-sm text-gray-500 italic">
+              This message was deleted
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div
         ref={ref}
-        className={cn(
-          "flex mb-4 px-2 transition-all duration-200",
-          msg.sender === instructorId ? "justify-end" : "justify-start"
-        )}
+        className={`flex mb-3 px-4 group ${
+          isSender ? "justify-end" : "justify-start"
+        }`}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
       >
-        <div
-          className={cn(
-            "px-4 py-2 max-w-xs relative text-sm shadow-md rounded-2xl transition-colors duration-200",
-            msg.sender === instructorId
-              ? "bg-indigo-100 text-indigo-900"
-              : "bg-gray-100 text-gray-800"
+        <div className="relative max-w-[70%] sm:max-w-sm">
+          {/* Message Actions - Desktop Only */}
+          {showActions && (
+            <div
+              className={`absolute -top-8 z-10 hidden sm:flex items-center space-x-1 bg-white shadow-lg border border-gray-200 rounded-lg px-2 py-1 ${
+                isSender ? "right-0" : "left-0"
+              }`}
+            >
+              <button
+                onClick={() => setShowPicker(!showPicker)}
+                className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
+                disabled={!msg._id || !msg.chatId}
+                title="Add reaction"
+              >
+                <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
+              </button>
+              {isSender && (
+                <button
+                  onClick={handleDeleteClick}
+                  className="p-1 rounded-md hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors"
+                  title="Delete message"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
           )}
-        >
-          {msg.text}
+
+          {/* Message Bubble */}
           <div
-            className={cn(
-              "text-xs flex items-center space-x-1 mt-1",
-              msg.sender === instructorId
-                ? "text-indigo-500 justify-end"
-                : "text-gray-500"
-            )}
+            className={`relative px-3 py-2 rounded-lg shadow-sm ${
+              isSender
+                ? "bg-indigo-100 text-indigo-900 ml-6 rounded-br-sm"
+                : "bg-white text-gray-800 border border-gray-200 mr-6 rounded-bl-sm"
+            }`}
           >
-            <span>{dayjs(msg.createdAt).format("h:mm A")}</span>
-            {msg.sender === instructorId && (
-              <Icon
-                icon="mdi:check-all"
-                className={cn("w-4 h-4", getTickColor(msg))}
-              />
-            )}
+            {/* Message Text */}
+            <div className="whitespace-pre-wrap break-words text-sm leading-snug">
+              {msg.text}
+            </div>
+
+            {/* Timestamp and Status */}
+            <div className="flex items-center justify-end mt-1 space-x-1">
+              <span
+                className={`text-[10px] ${
+                  isSender ? "text-indigo-400" : "text-gray-400"
+                }`}
+              >
+                {dayjs(msg.createdAt).format("h:mm A")}
+              </span>
+              {isSender && (
+                <Icon
+                  icon="mdi:check-all"
+                  className={`w-3 h-3 ${getTickColor(msg)}`}
+                />
+              )}
+            </div>
+
+            {/* Mobile Actions - Touch Optimized */}
+            <div className="sm:hidden absolute -bottom-1 right-1 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setShowPicker(!showPicker)}
+                className={`p-1.5 rounded-full shadow-sm transition-colors ${
+                  isSender
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
+                }`}
+                disabled={!msg._id || !msg.chatId}
+              >
+                <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
+              </button>
+              {isSender && (
+                <button
+                  onClick={handleDeleteClick}
+                  className="p-1.5 rounded-full bg-white hover:bg-red-50 text-red-500 shadow-sm border border-gray-200 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Reactions */}
+          {Object.keys(reactionCounts).length > 0 && (
+            <div
+              className={`flex flex-wrap gap-1 ${
+                isSender ? "justify-end mr-1" : "justify-start ml-1"
+              }`}
+            >
+              {Object.entries(reactionCounts).map(([emoji]) => (
+                <button
+                  key={emoji}
+                  onClick={() => onReactionClick({ emoji })}
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] border transition-all duration-200 ${
+                    userReaction === emoji
+                      ? "bg-blue-100 border-blue-300 text-blue-800 shadow-md scale-105"
+                      : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300"
+                  }`}
+                >
+                  <span className="mr-1">{emoji}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Emoji Picker */}
+          {showPicker && (
+            <div className={`absolute z-50 ${isSender ? "right-0" : "left-0"}`}>
+              <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                <EmojiPicker
+                  onEmojiClick={onReactionClick}
+                  searchDisabled
+                  skinTonesDisabled
+                  height={300}
+                  width={280}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -136,6 +310,12 @@ interface MessageListProps {
   getTickColor: (msg: Message) => string;
   seenMessagesRef: React.MutableRefObject<Set<string>>;
   scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+  handleDeleteMessage: (messageId: string, chatId: string) => void;
+  handleAddReaction: (
+    messageId: string,
+    chatId: string,
+    reaction: string
+  ) => void;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -144,7 +324,17 @@ const MessageList: React.FC<MessageListProps> = ({
   getTickColor,
   seenMessagesRef,
   scrollAreaRef,
+  handleDeleteMessage,
+  handleAddReaction,
 }) => {
+  useEffect(() => {
+    messages.forEach((msg, index) => {
+      if (!msg._id) {
+        console.error(`Message at index ${index} has undefined id:`, msg);
+      }
+    });
+  }, [messages]);
+
   const Row = ({
     index,
     style,
@@ -156,11 +346,13 @@ const MessageList: React.FC<MessageListProps> = ({
     return (
       <div style={style}>
         <MessageItem
-          key={msg.id}
+          key={msg._id || `message-${index}`}
           msg={msg}
           instructorId={instructorId}
           getTickColor={getTickColor}
           seenMessagesRef={seenMessagesRef}
+          handleDeleteMessage={handleDeleteMessage}
+          handleAddReaction={handleAddReaction}
         />
       </div>
     );
@@ -170,7 +362,7 @@ const MessageList: React.FC<MessageListProps> = ({
     <List
       height={400}
       itemCount={messages.length}
-      itemSize={60}
+      itemSize={80}
       width="100%"
       className="message-list"
       outerRef={scrollAreaRef}
@@ -196,12 +388,45 @@ const ChatApp: React.FC = () => {
   const isTypingRef = useRef<boolean>(false);
   const sentMessagesRef = useRef<Map<string, Message>>(new Map());
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current && selectedContact) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [selectedContact?.messages]);
+
+  const handleDeleteMessage = useCallback(
+    (messageId: string, chatId: string) => {
+      if (!messageId || !chatId) {
+        console.error("Invalid parameters for deleteMessage:", {
+          messageId,
+          chatId,
+        });
+        return;
+      }
+      socket.emit("deleteMessage", { chatId, messageId, userId: instructorId });
+    },
+    [instructorId]
+  );
+
+  const handleAddReaction = useCallback(
+    (messageId: string, chatId: string, reaction: string) => {
+      if (!messageId || !chatId || !reaction) {
+        console.error("Invalid parameters for addReaction:", {
+          messageId,
+          chatId,
+          reaction,
+        });
+        return;
+      }
+      socket.emit("addReaction", {
+        chatId,
+        messageId,
+        userId: instructorId,
+        reaction,
+      });
+    },
+    [instructorId]
+  );
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -304,7 +529,6 @@ const ChatApp: React.FC = () => {
       }
     );
     socket.on("newMessage", (message: Message) => {
-      // Check if this is a server confirmation of a sent message
       const tempMessage = Array.from(sentMessagesRef.current.entries()).find(
         ([, msg]) =>
           msg.chatId === message.chatId &&
@@ -313,14 +537,13 @@ const ChatApp: React.FC = () => {
           Math.abs(
             new Date(msg.createdAt).getTime() -
               new Date(message.createdAt).getTime()
-          ) < 1000 // Messages within 1 second of each other
+          ) < 1000
       );
 
       if (tempMessage) {
         const [tempId] = tempMessage;
         sentMessagesRef.current.delete(tempId);
 
-        // Replace the temporary message with the server-confirmed one
         setContacts((prev) =>
           prev
             .map((contact) =>
@@ -328,7 +551,7 @@ const ChatApp: React.FC = () => {
                 ? {
                     ...contact,
                     messages: contact.messages.map((msg) =>
-                      msg.id === tempId ? message : msg
+                      msg._id === tempId ? message : msg
                     ),
                     lastMessage: message.text,
                     lastMessageTime: message.createdAt,
@@ -352,7 +575,7 @@ const ChatApp: React.FC = () => {
               ? {
                   ...prev,
                   messages: prev.messages.map((msg) =>
-                    msg.id === tempId ? message : msg
+                    msg._id === tempId ? message : msg
                   ),
                   lastMessage: message.text,
                   lastMessageTime: message.createdAt,
@@ -363,7 +586,6 @@ const ChatApp: React.FC = () => {
         return;
       }
 
-      // Handle incoming messages from other users
       setContacts((prev) =>
         prev
           .map((contact) =>
@@ -406,7 +628,7 @@ const ChatApp: React.FC = () => {
             ? {
                 ...contact,
                 messages: contact.messages.map((msg) =>
-                  msg.id === updatedMessage.id ? updatedMessage : msg
+                  msg._id === updatedMessage._id ? updatedMessage : msg
                 ),
               }
             : contact
@@ -418,13 +640,58 @@ const ChatApp: React.FC = () => {
             ? {
                 ...prev,
                 messages: prev.messages.map((msg) =>
-                  msg.id === updatedMessage.id ? updatedMessage : msg
+                  msg._id === updatedMessage._id ? updatedMessage : msg
                 ),
               }
             : prev
         );
       }
     });
+    socket.on(
+      "messageDeleted",
+      ({ messageId, chatId }: { messageId: string; chatId: string }) => {
+        if (!messageId || !chatId) {
+          console.error("Invalid messageDeleted event:", { messageId, chatId });
+          return;
+        }
+        setContacts((prev) =>
+          prev.map((contact) =>
+            contact.id === chatId
+              ? {
+                  ...contact,
+                  messages: contact.messages.map((msg) =>
+                    msg._id === messageId
+                      ? {
+                          ...msg,
+                          deleted: true,
+                          text: "This message was deleted",
+                        }
+                      : msg
+                  ),
+                }
+              : contact
+          )
+        );
+        if (selectedContact?.id === chatId) {
+          setSelectedContact((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  messages: prev.messages.map((msg) =>
+                    msg._id === messageId
+                      ? {
+                          ...msg,
+                          deleted: true,
+                          text: "This message was deleted",
+                        }
+                      : msg
+                  ),
+                }
+              : prev
+          );
+        }
+      }
+    );
     socket.on(
       "unseenCount",
       ({ chatId, count }: { chatId: string; count: number }) => {
@@ -486,6 +753,7 @@ const ChatApp: React.FC = () => {
       socket.off("userStatus");
       socket.off("newMessage");
       socket.off("messageUpdated");
+      socket.off("messageDeleted");
       socket.off("unseenCount");
       socket.off("typing");
       socket.off("stopTyping");
@@ -507,14 +775,18 @@ const ChatApp: React.FC = () => {
         sender: string;
         createdAt: string;
         seenBy?: string[];
+        reactions?: Reaction[];
+        deleted?: boolean;
       }
       const formattedMessages: Message[] = res.data.map((msg: ApiMessage) => ({
-        id: msg._id,
+        _id: msg._id,
         chatId: msg.chatId,
         text: msg.text,
         sender: msg.sender,
         createdAt: msg.createdAt,
         seenBy: msg.seenBy || [],
+        reactions: msg.reactions || [],
+        deleted: msg.deleted || false,
       }));
 
       setSelectedContact({ ...contact, messages: formattedMessages });
@@ -562,15 +834,16 @@ const ChatApp: React.FC = () => {
 
     const tempMessageId = `temp-${Date.now()}`;
     const newMsg: Message = {
-      id: tempMessageId,
+      _id: tempMessageId,
       chatId: selectedContact.id,
       text: newMessage.trim(),
       sender: instructorId,
       createdAt: new Date().toISOString(),
       seenBy: [instructorId],
+      reactions: [],
+      deleted: false,
     };
 
-    // Store message in sentMessagesRef to prevent duplicates
     sentMessagesRef.current.set(tempMessageId, newMsg);
 
     setSelectedContact((prev) =>
@@ -621,7 +894,7 @@ const ChatApp: React.FC = () => {
         prev
           ? {
               ...prev,
-              messages: prev.messages.filter((msg) => msg.id !== tempMessageId),
+              messages: prev.messages.filter((msg) => msg._id !== tempMessageId),
             }
           : prev
       );
@@ -724,6 +997,8 @@ const ChatApp: React.FC = () => {
                       getTickColor={getTickColor}
                       seenMessagesRef={seenMessagesRef}
                       scrollAreaRef={scrollAreaRef}
+                      handleDeleteMessage={handleDeleteMessage}
+                      handleAddReaction={handleAddReaction}
                     />
                   )}
                   {isTyping[selectedContact.id] && (

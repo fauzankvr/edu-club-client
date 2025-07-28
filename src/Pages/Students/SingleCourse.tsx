@@ -29,14 +29,25 @@
     isTyping?: boolean;
   }
 
-  interface Message {
-    id: string;
-    text: string;
-    sender: string;
-    chatId: string;
-    createdAt: string;
-    seenBy: string[];
-  }
+// Define the IReaction sub-interface
+export interface IReaction {
+  userId: string;
+  reaction: string; // Emoji (e.g., "👍", "😂", "❤️")
+}
+
+
+export interface Message {
+  _id: string; 
+  text: string;
+  sender: "user" | "instructor"; // Typed sender
+  chatId: string;
+  createdAt: Date | string; // Use string for frontend, Date for backend
+  updatedAt?: Date | string;
+  seenBy: string[]; // Array of user IDs who have seen the message
+  deleted?: boolean; // Optional: soft-delete flag
+  reactions?: IReaction[]; // Optional: list of reactions
+}
+
 
   type Tab =
     | "Overview"
@@ -187,7 +198,7 @@
       socket.on("newMessage", (message: Message) => {
         if (message.chatId === chat?._id) {
           setChatMessages((prev) =>
-            prev.some((msg) => msg.id === message.id) ? prev : [...prev, message]
+            prev.some((msg) => msg._id === message._id) ? prev : [...prev, message]
           );
           if (
             message.sender !== studentId &&
@@ -202,7 +213,7 @@
         if (updatedMessage.chatId === chat?._id) {
           setChatMessages((prev) =>
             prev.map((msg) =>
-              msg.id === updatedMessage.id ? updatedMessage : msg
+              msg._id === updatedMessage._id ? updatedMessage : msg
             )
           );
         }
@@ -249,10 +260,12 @@
           const messages = await studentAPI.getMessage(chatData._id);
           setChatMessages(
             messages.data.data.map((msg: Message) => ({
-              id: msg.id,
+              _id: msg._id,
               text: msg.text,
               sender: msg.sender,
               chatId: msg.chatId,
+              reactions: msg.reactions,
+              deleted:msg.deleted,
               createdAt: msg.createdAt,
               seenBy: msg.seenBy || [],
             }))
