@@ -32,7 +32,7 @@
 // Define the IReaction sub-interface
 export interface IReaction {
   userId: string;
-  reaction: string; // Emoji (e.g., "👍", "😂", "❤️")
+  reaction: string; // Emoji 
 }
 
 

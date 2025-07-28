@@ -147,9 +147,9 @@ const MessageItem: React.FC<MessageItemProps> = memo(
     };
 
     const handleDeleteClick = () => {
-      if (confirm("Delete this message?")) {
+      
         handleDeleteMessage(msg._id, msg.chatId);
-      }
+      
     };
 
     if (msg.deleted) {
