@@ -1,7 +1,6 @@
 import Footer from "@/components/InstructorCompontents/Footer";
 import Navbar from "@/components/InstructorCompontents/Navbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,28 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Icon } from "@iconify/react";
 import { useEffect, useState } from "react";
-import { Formik, Form, Field, FieldArray } from "formik";
+import { Formik, Form, FormikHelpers, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import instructorApi from "@/API/InstructorApi";
-import { Teacher } from "../types/instructor";
-
-// Validation Schemas
-const ProfileSchema = Yup.object().shape({
-  fullName: Yup.string().required("Full name is required"),
-  phone: Yup.string()
-    .matches(/^[0-9]{10}$/, "Phone must be 10 digits")
-    .required("Phone number is required"),
-  experience: Yup.number().min(0, "Experience cannot be negative").nullable(),
-  teachingExperience: Yup.number()
-    .min(0, "Teaching experience cannot be negative")
-    .nullable(),
-  paypalEmail: Yup.string().email("Invalid email").nullable(),
-  website: Yup.string().url("Invalid URL").nullable(),
-  linkedInProfile: Yup.string().url("Invalid LinkedIn URL").nullable(),
-  expertise: Yup.array().of(Yup.string()),
-  languages: Yup.array().of(Yup.string()),
-});
+import { ProfileSchema, Teacher } from "../types/instructor";
+import { FieldArrayInput } from "@/components/InstructorCompontents/forms/FieldArrayInput";
+import { cleanTeacherValues } from "@/utils/formUtils";
+import { Eye, EyeOff } from "lucide-react";
 
 const ChangePasswordSchema = Yup.object().shape({
   currentPassword: Yup.string()
@@ -47,121 +32,201 @@ const ChangePasswordSchema = Yup.object().shape({
       /^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       "Password must contain at least one lowercase letter, one number, and one special character"
     )
-
     .required("New password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("newPassword")], "Passwords must match")
     .required("Please confirm your password"),
 });
 
-// Toast Notifications
+interface PasswordFormValues {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+      error?: string;
+    };
+  };
+  message?: string;
+}
+
+interface FormFieldProps {
+  name: string;
+  label: string;
+  type?: string;
+  as?: string;
+  placeholder?: string;
+  required?: boolean;
+  toggleVisibility?: () => void;
+  showPassword?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+
+const FormField = ({
+  name,
+  label,
+  type = "text",
+  as,
+  placeholder,
+  required,
+  toggleVisibility,
+  showPassword,
+  disabled,
+  className,
+}: FormFieldProps) => (
+  <div className="relative">
+    <label htmlFor={name} className="block text-sm font-medium mb-1">
+      {label}
+    </label>
+    <Field
+      id={name}
+      name={name}
+      type={type}
+      as={as}
+      placeholder={placeholder}
+      className={`w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        className || ""
+      }`}
+      required={required}
+      disabled={disabled}
+    />
+    {toggleVisibility && (
+      <button
+        type="button"
+        onClick={toggleVisibility}
+        className="absolute right-3 top-[38px] transform -translate-y-1/2 text-gray-500 focus:outline-none"
+      >
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    )}
+    <ErrorMessage
+      name={name}
+      component="div"
+      className="text-red-500 text-sm mt-1"
+    />
+  </div>
+);
+
 const successToast = (message: string) => toast.success(message);
 const errorToast = (message: string) => toast.error(message);
 
-const Profile = () => {
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+const Profile: React.FC = () => {
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] =
+    useState<boolean>(false);
   const [initialValues, setInitialValues] = useState<Teacher>({
     _id: "",
     email: "",
     fullName: "",
-    phone: "",
-    dateOfBirth: "",
-    Biography: "",
-    profileImage: "",
-    eduQulification: "",
-    expertise: [],
-    experience: 0,
-    teachingExperience: 0,
-    languages: [],
-    certifications: [],
-    currentPosition: "",
-    workPlace: "",
-    linkedInProfile: "",
-    website: "",
     isBlocked: false,
     isApproved: false,
-    address: { street: "", city: "", state: "", country: "", zipCode: "" },
-    paypalEmail: "",
-    socialMedia: { twitter: "", facebook: "", instagram: "", youtube: "" },
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] =
+    useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
 
-  // Fetch initial profile data
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfile = async (): Promise<void> => {
       try {
         const res = await instructorApi.getProfile();
         const profileData = res.profile;
+
         setInitialValues({
           _id: profileData._id || "",
           email: profileData.email || "",
           fullName: profileData.fullName || "",
-          phone: profileData.phone?.toString() || "",
-          dateOfBirth: profileData.dateOfBirth?.split("T")[0] || "",
-          Biography: profileData.Biography || "",
-          profileImage: profileData.profileImage || "",
-          eduQulification: profileData.eduQulification || "",
-          expertise: profileData.expertise || [],
-          experience: profileData.experience || 0,
-          teachingExperience: profileData.teachingExperience || 0,
-          languages: profileData.languages || [],
-          certifications: profileData.certifications || [],
-          currentPosition: profileData.currentPosition || "",
-          workPlace: profileData.workPlace || "",
-          linkedInProfile: profileData.linkedInProfile || "",
-          website: profileData.website || "",
-          isBlocked: profileData.isBlocked || false,
-          isApproved: profileData.isApproved || false,
-          address: profileData.address || {
-            street: "",
-            city: "",
-            state: "",
-            country: "",
-            zipCode: "",
-          },
-          paypalEmail: profileData.paypalEmail || "",
-          socialMedia: profileData.socialMedia || {
-            twitter: "",
-            facebook: "",
-            instagram: "",
-            youtube: "",
-          },
+          isBlocked: Boolean(profileData.isBlocked),
+          isApproved: Boolean(profileData.isApproved),
+          ...(profileData.phone && { phone: profileData.phone }),
+          ...(profileData.profileImage && {
+            profileImage: profileData.profileImage,
+          }),
+          ...(profileData.dateOfBirth && {
+            dateOfBirth: profileData.dateOfBirth.split("T")[0],
+          }),
+          ...(profileData.Biography && { Biography: profileData.Biography }),
+          ...(profileData.eduQulification && {
+            eduQulification: profileData.eduQulification,
+          }),
+          ...(profileData.expertise && { expertise: profileData.expertise }),
+          ...(profileData.experience !== undefined && {
+            experience: profileData.experience,
+          }),
+          ...(profileData.teachingExperience !== undefined && {
+            teachingExperience: profileData.teachingExperience,
+          }),
+          ...(profileData.languages && { languages: profileData.languages }),
+          ...(profileData.certifications && {
+            certifications: profileData.certifications,
+          }),
+          ...(profileData.currentPosition && {
+            currentPosition: profileData.currentPosition,
+          }),
+          ...(profileData.workPlace && { workPlace: profileData.workPlace }),
+          ...(profileData.linkedInProfile && {
+            linkedInProfile: profileData.linkedInProfile,
+          }),
+          ...(profileData.website && { website: profileData.website }),
+          ...(profileData.address && { address: profileData.address }),
+          ...(profileData.paypalEmail && {
+            paypalEmail: profileData.paypalEmail,
+          }),
+          ...(profileData.socialMedia && {
+            socialMedia: profileData.socialMedia,
+          }),
+          ...(profileData.createdAt && { createdAt: profileData.createdAt }),
+          ...(profileData.updatedAt && { updatedAt: profileData.updatedAt }),
         });
-        if (profileData.profileImage) {
+
+        if (
+          profileData.profileImage &&
+          typeof profileData.profileImage === "string"
+        ) {
           setPreviewImage(profileData.profileImage);
         }
-      } catch (err) {
-        console.error("Profile fetch failed:", err);
+      } catch (error) {
+        console.error("Profile fetch failed:", error);
         errorToast("Failed to load profile data");
       }
     };
     fetchProfile();
   }, []);
 
-  // Form Submission Handler
-  const handleSubmit = async (values: Teacher, { setSubmitting }: any) => {
+  const handleSubmit = async (
+    values: Teacher,
+    { setSubmitting }: FormikHelpers<Teacher>
+  ): Promise<void> => {
     try {
-       await instructorApi.updateProfile(values);
+      const cleanedValues = cleanTeacherValues(values);
+      console.log("cleaned", cleanedValues);
+      await instructorApi.updateProfile(cleanedValues);
       successToast("Profile updated successfully");
     } catch (error) {
       console.error("Failed to update profile:", error);
+      const apiError = error as ApiError;
       const errorMessage =
-        (error as any)?.response?.data?.message || "Failed to update profile";
+        apiError.response?.data?.message ||
+        apiError.message ||
+        "Failed to update profile";
       errorToast(errorMessage);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Password Change Handler
   const handlePasswordChange = async (
-    values: any,
-    { resetForm, setSubmitting }: any
-  ) => {
+    values: PasswordFormValues,
+    { resetForm, setSubmitting }: FormikHelpers<PasswordFormValues>
+  ): Promise<void> => {
     try {
+      console.log("Submitting password change:", values);
       await instructorApi.changePassword(
         values.currentPassword,
         values.newPassword
@@ -171,24 +236,41 @@ const Profile = () => {
       setIsPasswordDialogOpen(false);
     } catch (error) {
       console.error("Failed to change password:", error);
+      const apiError = error as ApiError;
       const errorMessage =
-        (error as any)?.response?.data?.message || "Failed to change password";
+        apiError.response?.data?.error ||
+        apiError.response?.data?.message ||
+        apiError.message ||
+        "Failed to change password. Please try again.";
       errorToast(errorMessage);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Helper function to display certificate name from URL
-  const getCertificateName = (url: string) => {
+  const getCertificateName = (url: string): string => {
     try {
-      const { hostname, pathname } = new URL(url);
-      const pathParts = pathname.split("/").filter((p) => p);
-      return `${hostname} - ${
+      const urlObject = new URL(url);
+      const pathParts = urlObject.pathname
+        .split("/")
+        .filter((part) => part.length > 0);
+      return `${urlObject.hostname} - ${
         pathParts[pathParts.length - 1] || "Certificate"
       }`;
     } catch {
-      return url; // Fallback for invalid URLs
+      return url;
+    }
+  };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setFieldValue: (field: string, value: any) => void
+  ): void => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFieldValue("profileImage", file);
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewImage(objectUrl);
     }
   };
 
@@ -211,6 +293,7 @@ const Profile = () => {
                 Showcase your expertise and experience.
               </p>
             </div>
+
             <Dialog
               open={isPasswordDialogOpen}
               onOpenChange={setIsPasswordDialogOpen}
@@ -225,7 +308,7 @@ const Profile = () => {
                 <DialogHeader>
                   <DialogTitle className="text-xl">Change Password</DialogTitle>
                 </DialogHeader>
-                <Formik
+                <Formik<PasswordFormValues>
                   initialValues={{
                     currentPassword: "",
                     newPassword: "",
@@ -233,105 +316,47 @@ const Profile = () => {
                   }}
                   validationSchema={ChangePasswordSchema}
                   onSubmit={handlePasswordChange}
+                  validateOnChange={true}
+                  validateOnBlur={true}
                 >
-                  {({ errors, touched, isSubmitting }) => (
+                  {({ isSubmitting, errors, touched }) => (
                     <Form className="space-y-4">
-                      <div>
-                        <Label htmlFor="currentPassword">
-                          Current Password
-                        </Label>
-                        <div className="relative">
-                          <Field
-                            as={Input}
-                            name="currentPassword"
-                            type={showCurrentPassword ? "text" : "password"}
-                            className="pr-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                            onClick={() =>
-                              setShowCurrentPassword(!showCurrentPassword)
-                            }
-                          >
-                            <Icon
-                              icon={
-                                showCurrentPassword ? "mdi:eye-off" : "mdi:eye"
-                              }
-                              className="h-5 w-5 text-gray-500"
-                            />
-                          </Button>
-                        </div>
-                        {errors.currentPassword && touched.currentPassword && (
-                          <div className="text-red-500 text-xs mt-1">
-                            {errors.currentPassword}
+                      <FormField
+                        name="currentPassword"
+                        label="Current Password"
+                        type={showCurrentPassword ? "text" : "password"}
+                        required
+                        toggleVisibility={() =>
+                          setShowCurrentPassword((prev) => !prev)
+                        }
+                        showPassword={showCurrentPassword}
+                      />
+                      <FormField
+                        name="newPassword"
+                        label="New Password"
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        toggleVisibility={() =>
+                          setShowNewPassword((prev) => !prev)
+                        }
+                        showPassword={showNewPassword}
+                      />
+                      <FormField
+                        name="confirmPassword"
+                        label="Confirm New Password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        toggleVisibility={() =>
+                          setShowConfirmPassword((prev) => !prev)
+                        }
+                        showPassword={showConfirmPassword}
+                      />
+                      {Object.keys(errors).length > 0 &&
+                        Object.keys(touched).length > 0 && (
+                          <div className="text-red-500 text-sm">
+                            Please fix the errors above before submitting.
                           </div>
                         )}
-                      </div>
-                      <div>
-                        <Label htmlFor="newPassword">New Password</Label>
-                        <div className="relative">
-                          <Field
-                            as={Input}
-                            name="newPassword"
-                            type={showNewPassword ? "text" : "password"}
-                            className="pr-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                            onClick={() => setShowNewPassword(!showNewPassword)}
-                          >
-                            <Icon
-                              icon={showNewPassword ? "mdi:eye-off" : "mdi:eye"}
-                              className="h-5 w-5 text-gray-500"
-                            />
-                          </Button>
-                        </div>
-                        {errors.newPassword && touched.newPassword && (
-                          <div className="text-red-500 text-xs mt-1">
-                            {errors.newPassword}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="confirmPassword">
-                          Confirm New Password
-                        </Label>
-                        <div className="relative">
-                          <Field
-                            as={Input}
-                            name="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            className="pr-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                          >
-                            <Icon
-                              icon={
-                                showConfirmPassword ? "mdi:eye-off" : "mdi:eye"
-                              }
-                              className="h-5 w-5 text-gray-500"
-                            />
-                          </Button>
-                        </div>
-                        {errors.confirmPassword && touched.confirmPassword && (
-                          <div className="text-red-500 text-xs mt-1">
-                            {errors.confirmPassword}
-                          </div>
-                        )}
-                      </div>
                       <div className="flex gap-3 pt-2">
                         <Button
                           type="button"
@@ -343,7 +368,7 @@ const Profile = () => {
                         </Button>
                         <Button
                           type="submit"
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || Object.keys(errors).length > 0}
                           className="flex-1 bg-indigo-600 hover:bg-indigo-700"
                         >
                           {isSubmitting ? "Updating..." : "Update Password"}
@@ -356,11 +381,13 @@ const Profile = () => {
             </Dialog>
           </div>
 
-          <Formik
+          <Formik<Teacher>
             enableReinitialize
             initialValues={initialValues}
             validationSchema={ProfileSchema}
             onSubmit={handleSubmit}
+            validateOnChange={true}
+            validateOnBlur={true}
           >
             {({
               errors,
@@ -372,7 +399,7 @@ const Profile = () => {
             }) => (
               <Form>
                 <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4 md:grid-cols-5 mb-6 bg-white shadow-sm rounded-lg p-1">
+                  <TabsList className="grid w-full grid-cols-4 mb-6 bg-white shadow-sm rounded-lg p-1">
                     <TabsTrigger value="basic">Basic</TabsTrigger>
                     <TabsTrigger value="professional">Professional</TabsTrigger>
                     <TabsTrigger value="contact">Contact</TabsTrigger>
@@ -386,35 +413,38 @@ const Profile = () => {
                       </CardHeader>
                       <CardContent className="p-6">
                         <div className="flex items-center gap-8 mb-6">
-                          <div className="relative">
-                            <img
-                              src={
-                                previewImage ||
-                                "https://via.placeholder.com/150"
-                              }
-                              alt="Profile"
-                              className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-lg"
-                            />
+                          <div className="relative w-32 h-32 rounded-full ring-4 ring-white shadow-lg bg-gray-100 flex items-center justify-center">
+                            {previewImage || values?.profileImage ? (
+                              <img
+                                src={previewImage || values?.profileImage}
+                                alt="Profile"
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <Icon
+                                icon="mdi:account"
+                                className="w-16 h-16 text-gray-400"
+                              />
+                            )}
                             <input
                               id="profileImage"
                               type="file"
                               accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  setFieldValue("profileImage", file);
-                                  setPreviewImage(URL.createObjectURL(file));
-                                }
-                              }}
+                              onChange={(e) =>
+                                handleFileChange(e, setFieldValue)
+                              }
                               className="hidden"
                             />
                             <Button
                               type="button"
                               size="sm"
                               className="absolute bottom-1 right-1 rounded-full w-10 h-10 p-0"
-                              onClick={() =>
-                                document.getElementById("profileImage")?.click()
-                              }
+                              onClick={() => {
+                                const fileInput = document.getElementById(
+                                  "profileImage"
+                                ) as HTMLInputElement;
+                                fileInput?.click();
+                              }}
                             >
                               <Icon icon="mdi:camera" className="w-5 h-5" />
                             </Button>
@@ -429,43 +459,43 @@ const Profile = () => {
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="fullName">Full Name *</Label>
-                            <Field as={Input} name="fullName" />
-                            {errors.fullName && touched.fullName && (
-                              <div className="text-red-500 text-sm mt-1">
-                                {errors.fullName}
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <Label htmlFor="phone">Phone Number *</Label>
-                            <Field as={Input} name="phone" />
-                            {errors.phone && touched.phone && (
-                              <div className="text-red-500 text-sm mt-1">
-                                {errors.phone}
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                            <Field as={Input} name="dateOfBirth" type="date" />
-                          </div>
-                          <div>
-                            <Label htmlFor="email">Email Address</Label>
-                            <Field
-                              as={Input}
-                              name="email"
-                              disabled
-                              className="bg-gray-100"
-                            />
-                          </div>
+                          <FormField
+                            name="fullName"
+                            label="Full Name"
+                            required
+                          />
+                          <FormField name="phone" label="Phone Number" />
+                          <FormField
+                            name="dateOfBirth"
+                            label="Date of Birth"
+                            type="date"
+                          />
+                          <FormField
+                            name="email"
+                            label="Email Address"
+                            disabled
+                            className="bg-gray-100"
+                          />
+                          <FormField
+                            name="eduQulification"
+                            label="Education Qualification"
+                          />
+                          <FormField
+                            name="experience"
+                            label="Total Experience (years)"
+                            type="number"
+                          />
+                          <FormField
+                            name="teachingExperience"
+                            label="Teaching Experience (years)"
+                            type="number"
+                          />
                           <div className="md:col-span-2">
-                            <Label htmlFor="Biography">Biography</Label>
-                            <Field
-                              as="textarea"
+                            <FormField
                               name="Biography"
-                              className="w-full h-28 p-2 border rounded-md"
+                              label="Biography"
+                              as="textarea"
+                              placeholder="Tell us about yourself..."
                             />
                           </div>
                         </div>
@@ -479,121 +509,42 @@ const Profile = () => {
                         <CardTitle>Professional Details</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4 p-6">
-                        <div>
-                          <Label>Areas of Expertise</Label>
-                          <FieldArray name="expertise">
-                            {({ push, remove }) => (
-                              <div className="space-y-2">
-                                {values?.expertise?.map((_, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Field
-                                      name={`expertise.${index}`}
-                                      as={Input}
-                                      placeholder="e.g., React, Node.js"
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => remove(index)}
-                                    >
-                                      <Icon
-                                        icon="mdi:close"
-                                        className="w-4 h-4"
-                                      />
-                                    </Button>
-                                  </div>
-                                ))}
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => push("")}
-                                >
-                                  <Icon
-                                    icon="mdi:plus"
-                                    className="w-4 h-4 mr-1"
-                                  />{" "}
-                                  Add Expertise
-                                </Button>
-                              </div>
-                            )}
-                          </FieldArray>
-                        </div>
-                        <div>
-                          <Label>Languages</Label>
-                          <FieldArray name="languages">
-                            {({ push, remove }) => (
-                              <div className="space-y-2">
-                                {values?.languages?.map((_, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Field
-                                      name={`languages.${index}`}
-                                      as={Input}
-                                      placeholder="e.g., English"
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => remove(index)}
-                                    >
-                                      <Icon
-                                        icon="mdi:close"
-                                        className="w-4 h-4"
-                                      />
-                                    </Button>
-                                  </div>
-                                ))}
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => push("")}
-                                >
-                                  <Icon
-                                    icon="mdi:plus"
-                                    className="w-4 h-4 mr-1"
-                                  />{" "}
-                                  Add Language
-                                </Button>
-                              </div>
-                            )}
-                          </FieldArray>
-                        </div>
+                        <FieldArrayInput
+                          name="expertise"
+                          label="Areas of Expertise"
+                          placeholder="e.g., React, Node.js"
+                        />
+                        <FieldArrayInput
+                          name="languages"
+                          label="Languages"
+                          placeholder="e.g., English"
+                        />
                         <div>
                           <Label>Certifications</Label>
                           <div className="space-y-2 pt-2">
-                            {(values.certifications ?? []).length > 0 ? (
-                              (values.certifications ?? []).map(
-                                (cert, index) => (
-                                  <a
-                                    key={index}
-                                    href={cert}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-                                  >
-                                    <Icon
-                                      icon="mdi:file-certificate-outline"
-                                      className="text-blue-600 w-5 h-5 flex-shrink-0"
-                                    />
-                                    <span className="text-sm text-blue-700 font-medium truncate">
-                                      {getCertificateName(cert)}
-                                    </span>
-                                    <Icon
-                                      icon="mdi:external-link"
-                                      className="text-blue-500 w-4 h-4 ml-auto"
-                                    />
-                                  </a>
-                                )
-                              )
+                            {values.certifications &&
+                            values.certifications.length > 0 ? (
+                              values.certifications.map((cert, index) => (
+                                <a
+                                  key={`cert-${index}`}
+                                  href={cert}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                                >
+                                  <Icon
+                                    icon="mdi:file-certificate-outline"
+                                    className="text-blue-600 w-5 h-5 flex-shrink-0"
+                                  />
+                                  <span className="text-sm text-blue-700 font-medium truncate">
+                                    {getCertificateName(cert)}
+                                  </span>
+                                  <Icon
+                                    icon="mdi:external-link"
+                                    className="text-blue-500 w-4 h-4 ml-auto"
+                                  />
+                                </a>
+                              ))
                             ) : (
                               <p className="text-sm text-gray-500 italic py-2">
                                 No certificates have been added.
@@ -602,49 +553,33 @@ const Profile = () => {
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                          <div>
-                            <Label>Current Position</Label>
-                            <Field
-                              as={Input}
-                              name="currentPosition"
-                              placeholder="Senior Developer"
-                            />
-                          </div>
-                          <div>
-                            <Label>Workplace</Label>
-                            <Field
-                              as={Input}
-                              name="workPlace"
-                              placeholder="Tech Company Inc."
-                            />
-                          </div>
-                          <div>
-                            <Label>LinkedIn Profile</Label>
-                            <Field as={Input} name="linkedInProfile" />
-                            {errors.linkedInProfile &&
-                              touched.linkedInProfile && (
-                                <div className="text-red-500 text-sm mt-1">
-                                  {errors.linkedInProfile}
-                                </div>
-                              )}
-                          </div>
-                          <div>
-                            <Label>Personal Website</Label>
-                            <Field as={Input} name="website" />
-                            {errors.website && touched.website && (
-                              <div className="text-red-500 text-sm mt-1">
-                                {errors.website}
-                              </div>
-                            )}
-                          </div>
+                          <FormField
+                            name="currentPosition"
+                            label="Current Position"
+                            placeholder="Senior Developer"
+                          />
+                          <FormField
+                            name="workPlace"
+                            label="Workplace"
+                            placeholder="Tech Company Inc."
+                          />
+                          <FormField
+                            name="linkedInProfile"
+                            label="LinkedIn Profile"
+                            placeholder="https://linkedin.com/..."
+                          />
+                          <FormField
+                            name="website"
+                            label="Personal Website"
+                            placeholder="https://yourwebsite.com"
+                          />
                           <div className="md:col-span-2">
-                            <Label>PayPal Email (for payments)</Label>
-                            <Field as={Input} name="paypalEmail" type="email" />
-                            {errors.paypalEmail && touched.paypalEmail && (
-                              <div className="text-red-500 text-sm mt-1">
-                                {errors.paypalEmail}
-                              </div>
-                            )}
+                            <FormField
+                              name="paypalEmail"
+                              label="PayPal Email (for payments)"
+                              type="email"
+                              placeholder="paypal@example.com"
+                            />
                           </div>
                         </div>
                       </CardContent>
@@ -659,25 +594,32 @@ const Profile = () => {
                       <CardContent className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="md:col-span-2">
-                            <Label>Street Address</Label>
-                            <Field as={Input} name="address.street" />
+                            <FormField
+                              name="address.street"
+                              label="Street Address"
+                              placeholder="123 Main St"
+                            />
                           </div>
-                          <div>
-                            <Label>City</Label>
-                            <Field as={Input} name="address.city" />
-                          </div>
-                          <div>
-                            <Label>State/Province</Label>
-                            <Field as={Input} name="address.state" />
-                          </div>
-                          <div>
-                            <Label>Country</Label>
-                            <Field as={Input} name="address.country" />
-                          </div>
-                          <div>
-                            <Label>Zip Code</Label>
-                            <Field as={Input} name="address.zipCode" />
-                          </div>
+                          <FormField
+                            name="address.city"
+                            label="City"
+                            placeholder="New York"
+                          />
+                          <FormField
+                            name="address.state"
+                            label="State/Province"
+                            placeholder="NY"
+                          />
+                          <FormField
+                            name="address.country"
+                            label="Country"
+                            placeholder="United States"
+                          />
+                          <FormField
+                            name="address.zipCode"
+                            label="Zip Code"
+                            placeholder="10001"
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -690,38 +632,26 @@ const Profile = () => {
                       </CardHeader>
                       <CardContent className="p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Twitter</Label>
-                            <Field
-                              as={Input}
-                              name="socialMedia.twitter"
-                              placeholder="https://twitter.com/..."
-                            />
-                          </div>
-                          <div>
-                            <Label>Facebook</Label>
-                            <Field
-                              as={Input}
-                              name="socialMedia.facebook"
-                              placeholder="https://facebook.com/..."
-                            />
-                          </div>
-                          <div>
-                            <Label>Instagram</Label>
-                            <Field
-                              as={Input}
-                              name="socialMedia.instagram"
-                              placeholder="https://instagram.com/..."
-                            />
-                          </div>
-                          <div>
-                            <Label>YouTube</Label>
-                            <Field
-                              as={Input}
-                              name="socialMedia.youtube"
-                              placeholder="https://youtube.com/..."
-                            />
-                          </div>
+                          <FormField
+                            name="socialMedia.twitter"
+                            label="Twitter"
+                            placeholder="https://twitter.com/..."
+                          />
+                          <FormField
+                            name="socialMedia.facebook"
+                            label="Facebook"
+                            placeholder="https://facebook.com/..."
+                          />
+                          <FormField
+                            name="socialMedia.instagram"
+                            label="Instagram"
+                            placeholder="https://instagram.com/..."
+                          />
+                          <FormField
+                            name="socialMedia.youtube"
+                            label="YouTube"
+                            placeholder="https://youtube.com/..."
+                          />
                         </div>
                       </CardContent>
                     </Card>

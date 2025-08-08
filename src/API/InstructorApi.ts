@@ -174,7 +174,11 @@ const instructorAPI = {
   },
   updateProfile: async (data: Teacher) => {
     const formData = buildFormData(data);
-    const res = await axiosInstance.put("/instructor/profile", formData);
+    const res = await axiosInstance.put("/instructor/profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   },
   getCourseById: async (id: string) => {
