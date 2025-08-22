@@ -183,7 +183,7 @@ const AdminPayouts: React.FC = () => {
                           {payout.paypalEmail}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                          ${payout.amount.toFixed(2)}
+                          ₹{payout.amount.toFixed(2)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {format(new Date(payout.createdAt), "MMM dd, yyyy")}

@@ -77,7 +77,7 @@ const LandingPage = () => {
 
         // Fetch languages
         const languageResponse = await instructorAPI.getAllLanguages();
-        setLanguages(languageResponse.data.data); // Adjust based on actual response structure
+        setLanguages(languageResponse.data.data.result); // Adjust based on actual response structure
 
         // Fetch course if id exists
         if (id) {

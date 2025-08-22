@@ -7,7 +7,6 @@ const Navbar = () => {
   const navigate = useNavigate()
 const handleLogout = async () => {
   try {
-    console.log("logout");
     await adminApi.logout();
     localStorage.removeItem("accessTokenAdmin");
     navigate("/admin/login")

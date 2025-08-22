@@ -12,6 +12,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Pagination from "@/components/adminComponet/pagination";
+// import { set } from "lodash";
 
 interface Instructor {
     _id: string;
@@ -40,19 +42,22 @@ const CourseManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil((courses?.length || 0) / rowsPerPage);
-  const currentRows = courses.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  // const rowsPerPage = 5;
+  // const totalPages = Math.ceil((courses?.length || 0) / rowsPerPage);
+  // const currentRows = courses.slice(
+  //   (currentPage - 1) * rowsPerPage,
+  //   currentPage * rowsPerPage
+  // );
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-          const res = await adminApi.findCourseDatas();
-          console.log("Fetched courses:", res.data.data.courses);
+        const limit = 5;
+        const res = await adminApi.findCourseDatas(currentPage, limit);
+        setTotalPages(res.data.data.totalPages );
+        console.log("totalPages:", res.data.data.totalPages);
         setCourses(res.data.data.courses);
       } catch (err) {
         console.error("Failed to fetch courses:", err);
@@ -61,7 +66,7 @@ const CourseManagement = () => {
       }
     };
     fetchCourses();
-  }, []);
+  }, [currentPage]);
 
   const toggleBlock = async (index: number) => {
     const course = courses[index];
@@ -112,7 +117,7 @@ const CourseManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((course, idx) => (
+                  {courses.map((course, idx) => (
                     <tr key={course._id} className="border-t">
                       <td className="p-3">{course.title}</td>
                       <td className="p-3">{course.category}</td>
@@ -131,12 +136,13 @@ const CourseManagement = () => {
                             </Button>
                           </DialogTrigger>
                           {selectedCourse && (
-                            <DialogContent className="sm:max-w-[600px]">
+                            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
                               <DialogHeader>
                                 <DialogTitle>
                                   {selectedCourse.title}
                                 </DialogTitle>
                               </DialogHeader>
+
                               <div className="grid gap-4 py-4">
                                 <div>
                                   <strong>Description:</strong>{" "}
@@ -165,9 +171,11 @@ const CourseManagement = () => {
                                 <div>
                                   <strong>Points:</strong>
                                   <ul className="list-disc pl-5">
-                                    {selectedCourse.points.map((point, i) => (
-                                      <li key={i}>{point}</li>
-                                    ))}
+                                    {JSON.parse(selectedCourse.points[0]).map(
+                                      (point: { text: string }, i: number) => (
+                                        <li key={i}>{point.text}</li>
+                                      )
+                                    )}
                                   </ul>
                                 </div>
                                 <div>
@@ -188,9 +196,7 @@ const CourseManagement = () => {
                           className={`text-white ${
                             course.isBlocked ? "bg-blue-600" : "bg-yellow-500"
                           } hover:opacity-90`}
-                          onClick={() =>
-                            toggleBlock(idx + (currentPage - 1) * rowsPerPage)
-                          }
+                          onClick={() => toggleBlock(idx + (currentPage - 1))}
                         >
                           {course.isBlocked ? "Unblock" : "Block"}
                         </Button>
@@ -204,41 +210,11 @@ const CourseManagement = () => {
 
           {/* Pagination */}
           {!loading && (
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-2"
-              >
-                <Icon icon="mdi:chevron-left" className="text-lg" />
-              </Button>
-
-              {[...Array(totalPages)].map((_, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  variant={currentPage === index + 1 ? "default" : "outline"}
-                  className={`rounded ${
-                    currentPage === index + 1 ? "bg-indigo-600 text-white" : ""
-                  }`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </Button>
-              ))}
-
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-2"
-              >
-                <Icon icon="mdi:chevron-right" className="text-lg" />
-              </Button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
           )}
         </div>
       </div>

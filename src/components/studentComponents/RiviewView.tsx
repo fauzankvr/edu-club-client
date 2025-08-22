@@ -175,12 +175,25 @@ const ReviewCard: React.FC<CourseContentProps> = ({ courseId }) => {
               className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
             >
               <div className="flex items-center mb-3">
-                <div className="w-10 h-10 bg-indigo-200 rounded-full overflow-hidden flex items-center justify-center mr-3">
-                  <img
-                    src={review.userDetails.profileImage}
-                    alt={`${review.userDetails.firstName} ${review.userDetails.lastName}`}
-                    className="w-full h-full object-cover"
-                  />
+              
+                <div className="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center mr-3 overflow-hidden">
+                  {review.userDetails.profileImage ? (
+                    <img
+                      src={review.userDetails.profileImage}
+                      alt={`${review.userDetails.firstName} ${review.userDetails.lastName}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none"; // hide broken img
+                        e.currentTarget.parentElement!.innerHTML =
+                          '<span class="text-indigo-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"/></svg></span>';
+                      }}
+                    />
+                  ) : (
+                    <Icon
+                      icon="mdi:account"
+                      className="w-6 h-6 text-indigo-700"
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">

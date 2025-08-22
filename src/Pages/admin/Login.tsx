@@ -11,6 +11,7 @@ import loginImg from "@/assets/students/loginimg.jpg";
 import adminApi from "@/API/adminApi";
 import { useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { tokenManager } from "@/API/tokenManager";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -35,7 +36,8 @@ export default function Login() {
         console.log(res.data.success)
         if (res && res.data.success) {
           dispatch(setStudent(res.data.data.accessToken));
-          localStorage.setItem("accessTokenAdmin", res.data.data.accessToken);
+          // localStorage.setItem("accessTokenAdmin", res.data.data.accessToken);
+          tokenManager.setToken("admin", res.data.data.accessToken);
           successToast();
           navigate("/admin/dashboard");
         } else {

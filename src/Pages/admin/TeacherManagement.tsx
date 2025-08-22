@@ -58,7 +58,9 @@ const TeacherManagement = () => {
     (async () => {
       try {
         setLoading(true);
-        const res = await adminApi.getAllTeachers();
+        const limit = 8;
+        const res = await adminApi.getAllTeachers(limit, page);
+        // setTotalPages(res.data.data.totalPages);
         setTeachers(beautifyTeachers(res?.data?.data || []));
       } catch (err) {
         console.error("Failed to fetch teachers", err);

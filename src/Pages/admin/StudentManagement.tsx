@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
+import Pagination from "@/components/adminComponet/pagination";
 
 interface Student {
   email: string;
@@ -18,20 +19,15 @@ const StudentManagemnt = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil((students?.length || 0) / rowsPerPage);
-  const currentRows = students.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    const limit = 7;
     const fetchStudents = async () => {
       try {
-        const res = await adminApi.findStudentDatas();
-        // Adjust based on response format
-        setStudents(res.data.data.studentsData || res.data);
+        const res = await adminApi.findStudentDatas(limit, currentPage);
+        setStudents(res.data.data.studentsData );
+        setTotalPages(res.data.data.totalPages );
       } catch (err) {
         console.error("Failed to fetch students:", err);
       } finally {
@@ -39,7 +35,7 @@ const StudentManagemnt = () => {
       }
     };
     fetchStudents();
-  }, []);
+  }, [currentPage]);
 
   const toggleBlock = async (index: number) => {
     const student = students[index];
@@ -88,7 +84,7 @@ const StudentManagemnt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((student, idx) => (
+                  {students.map((student, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3">{`${student.firstName ?? ""} ${
                         student.lastName ?? ""
@@ -102,7 +98,7 @@ const StudentManagemnt = () => {
                             student.isBlocked ? "bg-blue-600" : "bg-yellow-500"
                           } hover:opacity-90`}
                           onClick={() =>
-                            toggleBlock(idx + (currentPage - 1) * rowsPerPage)
+                            toggleBlock(idx + (currentPage - 1))
                           }
                         >
                           {student.isBlocked ? "Unblock" : "Block"}
@@ -117,41 +113,11 @@ const StudentManagemnt = () => {
 
           {/* Pagination */}
           {!loading && (
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-2"
-              >
-                <Icon icon="mdi:chevron-left" className="text-lg" />
-              </Button>
-
-              {[...Array(totalPages)].map((_, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  variant={currentPage === index + 1 ? "default" : "outline"}
-                  className={`rounded ${
-                    currentPage === index + 1 ? "bg-indigo-600 text-white" : ""
-                  }`}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </Button>
-              ))}
-
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="px-2"
-              >
-                <Icon icon="mdi:chevron-right" className="text-lg" />
-              </Button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
           )}
         </div>
       </div>
