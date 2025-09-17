@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Icon } from "@iconify/react";
 import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
 import toast, { Toaster } from "react-hot-toast";
+import Pagination from "@/components/adminComponet/pagination";
 
 interface Language {
-  _id?: string;
+  id?: string;
   name: string;
   isBlocked?: boolean;
 }
@@ -20,22 +20,20 @@ const LanguageManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editData, setEditData] = useState<Language>({name:""})
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil(languages.length / rowsPerPage);
-  const currentRows = languages.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+
 
   useEffect(() => {
     fetchLanguages();
-  }, []);
+  }, [currentPage]);
 
   const fetchLanguages = async () => {
     try {
-        const res = await adminApi.getAllLanguages();
-      setLanguages(res.data.data);
+      const limit = 8;
+      const res = await adminApi.getAllLanguages(limit, currentPage);
+      setTotalPages(res.data.data.totalPages);
+      setLanguages(res.data.data.result);
     } catch (err) {
       console.error("Failed to fetch languages:", err);
     } finally {
@@ -59,7 +57,7 @@ const LanguageManagement = () => {
   const toggleBlock = async (index: number) => {
     const language = languages[index];
     try {
-      await adminApi.toggleLanguageStatus(language._id!);
+      await adminApi.toggleLanguageStatus(language.id!);
       const updated = [...languages];
       updated[index].isBlocked = !language.isBlocked;
       setLanguages(updated);
@@ -73,13 +71,13 @@ const LanguageManagement = () => {
     setIsEditModalOpen(true);
   };
     const handleUpdateLanguage = async () => {
-      if (!editData.name.trim() || !editData._id) return;
+      if (!editData.name.trim() || !editData.id) return;
   
       try {
-        await adminApi.updateLanguage(editData._id, { name: editData.name });
+        await adminApi.updateLanguage(editData.id, { name: editData.name });
         setLanguages((prev) =>
           prev.map((cat) =>
-            cat._id === editData._id ? { ...cat, name: editData.name } : cat
+            cat.id === editData.id ? { ...cat, name: editData.name } : cat
           )
         );
         toast.success("Category updated");
@@ -132,7 +130,7 @@ const LanguageManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((language, idx) => (
+                  {languages.map((language, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3 capitalize">{language.name}</td>
                       <td className="p-3">
@@ -145,7 +143,7 @@ const LanguageManagement = () => {
                             language.isBlocked ? "bg-green-600" : "bg-red-500"
                           } hover:opacity-90`}
                           onClick={() =>
-                            toggleBlock(idx + (currentPage - 1) * rowsPerPage)
+                            toggleBlock(idx + (currentPage - 1) )
                           }
                         >
                           {language.isBlocked ? "Unblock" : "Block"}
@@ -167,36 +165,11 @@ const LanguageManagement = () => {
 
           {/* Pagination */}
           {!loading && (
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                <Icon icon="mdi:chevron-left" className="text-lg" />
-              </Button>
-
-              {[...Array(totalPages)].map((_, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  variant={currentPage === index + 1 ? "default" : "outline"}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </Button>
-              ))}
-
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              >
-                <Icon icon="mdi:chevron-right" className="text-lg" />
-              </Button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
           )}
         </div>
       </div>

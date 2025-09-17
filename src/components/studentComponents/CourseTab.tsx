@@ -1,20 +1,11 @@
 import FeedbackSection from "@/Pages/Students/FeedbackSection";
 import AiChat from "@/Pages/Students/AiChat";
 import Discussion from "@/Pages/Students/Discussion";
-import ChatWithTeacher from "@/Pages/Students/ChatWithTeacher";
+import ChatWithTeacher, { Chat } from "@/Pages/Students/ChatWithTeacher";
 import NotesApp from "@/Pages/Students/Notebook";
 import { ICourseData } from "@/Interface/CourseData";
 import { Socket } from "socket.io-client";
-import { Message } from "@/Pages/Students/SingleCourse";
-
-interface Chat {
-  _id: string;
-  userId: string;
-  instructorId: string;
-  lastMessageAt?: string;
-  instructor: { fullName: string; profileImage: string; email?: string };
-  isTyping?: boolean;
-}
+import { IInstructor, Message } from "@/Pages/Students/SingleCourse";
 
 
 const TABS = [
@@ -42,6 +33,7 @@ interface CourseTabsProps {
   instructorLastSeen: string;
   isInstructorBlocked: boolean;
   socket: Socket;
+  instructor:IInstructor
 }
 
 export default function CourseTabs({
@@ -59,6 +51,7 @@ export default function CourseTabs({
   instructorLastSeen,
   isInstructorBlocked,
   socket,
+  instructor
 }: CourseTabsProps) {
   return (
     <>
@@ -92,7 +85,7 @@ export default function CourseTabs({
           </>
         )}
         {currentTab === "Reviews" && (
-          <FeedbackSection courseId={course?._id ?? ""} />
+          <FeedbackSection courseId={course?.id ?? ""} />
         )}
         {currentTab === "Discussion" && <Discussion />}
         {currentTab === "Contact Tutor" && (
@@ -108,10 +101,11 @@ export default function CourseTabs({
             instructorLastSeen={instructorLastSeen}
             isInstructorBlocked={isInstructorBlocked}
             socket={socket}
+            instructor={instructor}
           />
         )}
         {currentTab === "Not Book" && <NotesApp course={course} />}
-        {currentTab === "Ai Chat" && <AiChat courseId={course?._id ?? ""} />}
+        {currentTab === "Ai Chat" && <AiChat courseId={course?.id ?? ""} />}
       </div>
     </>
   );

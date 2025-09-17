@@ -7,15 +7,15 @@ import Navbar from "@/components/InstructorCompontents/Navbar";
 import Sidebar from "./Sidbar";
 
 interface Transaction {
-  _id: string;
-  payoutStatus:string;
-  course: {
+  id: string;
+  payoutStatus: string;
+  courseId: {
     _id: string;
     title: string;
     courseImageId: string;
     status: string;
   };
-  student: {
+  studentId: {
     _id: string;
     firstName: string;
     lastName: string;
@@ -197,7 +197,7 @@ const Wallet: React.FC = () => {
                   </thead>
                   <tbody>
                     {transactions.map((txn) => (
-                      <tr key={txn._id} className="border-t">
+                      <tr key={txn.id} className="border-t">
                         {/* <td className="px-4 py-2">
                           <img
                             src={txn.course.courseImageId}
@@ -208,9 +208,9 @@ const Wallet: React.FC = () => {
                         <td className="px-4 py-2">
                           {format(new Date(txn.createdAt), "MMM dd, yyyy")}
                         </td>
-                        <td className="px-4 py-2">{txn.course.title}</td>
+                        <td className="px-4 py-2">{txn.courseId.title}</td>
                         <td className="px-4 py-2">
-                          {`${txn.student.firstName} ${txn.student.lastName}`}
+                          {`${txn.studentId.firstName} ${txn.studentId.lastName}`}
                         </td>
                         <td className="px-4 py-2 text-right">
                           ₹{txn.instructorShare.toFixed(2)}

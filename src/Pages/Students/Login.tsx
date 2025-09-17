@@ -14,6 +14,7 @@ import studentApi from "@/API/StudentApi";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { tokenManager } from "@/API/tokenManager";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -42,10 +43,10 @@ export default function Login() {
     onSubmit: async (values) => {
       try {
         const res = await studentApi.login(values);
-        console.log("Login response:", res.data);
         if (res && res.data.success) {
           dispatch(setStudent(res.data.data.accessToken));
-          localStorage.setItem("studentToken", res.data.data.accessToken);
+          // localStorage.setItem("studentToken", res.data.data.accessToken);
+          tokenManager.setToken("student", res.data.data.accessToken);
           successToast();
           navigate("/", { replace: true });
         } else {

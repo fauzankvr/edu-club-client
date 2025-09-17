@@ -8,14 +8,14 @@ import { toast, Toaster } from "react-hot-toast";
 dayjs.extend(relativeTime);
 
 export interface Review {
-  _id: string;
+  id: string;
   name: string;
   rating: number;
   comment: string;
   createdAt: string;
   likes: number;
   dislikes: number;
-  userDetails: {
+  user: {
     firstName: string,
     lastName: string,
     profileImage:string
@@ -89,7 +89,7 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
       const { data } = await studentAPI.reactToReview(reviewId, type);
       setReviews((prev) =>
         prev.map((r) =>
-          r._id === reviewId
+          r.id === reviewId
             ? {
                 ...r,
                 likes: data.data.reviews.likes,
@@ -221,20 +221,32 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
         <div className="mt-10 space-y-6">
           {reviews.map((review) => (
             <div
-              key={review._id}
+              key={review.id}
               className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
             >
               <div className="flex items-center mb-3">
                 <div className="w-10 h-10 bg-indigo-200 rounded-full overflow-hidden flex items-center justify-center mr-3">
-                  <img
-                    src={review.userDetails.profileImage}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  {review.user.profileImage ? (
+                    <img
+                      src={review.user.profileImage}
+                      alt={`${review.user.firstName} ${review.user.lastName}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none"; 
+                         e.currentTarget.parentElement!.innerHTML =
+                           '<span class="text-indigo-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"/></svg></span>';
+                      }}
+                    />
+                  ) : (
+                    <Icon
+                      icon="mdi:account"
+                      className="w-6 h-6 text-indigo-700"
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">
-                    {review.userDetails.firstName} {review.userDetails.lastName}
+                    {review.user.firstName} {review.user.lastName}
                   </p>
                   <p className="text-sm text-gray-500">
                     {dayjs(review.createdAt).fromNow()}
@@ -253,14 +265,14 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
               <p className="text-gray-700 leading-relaxed">{review.comment}</p>
               <div className="flex items-center mt-4 text-gray-500 space-x-6">
                 <button
-                  onClick={() => handleReact(review._id, "like")}
+                  onClick={() => handleReact(review.id, "like")}
                   className="flex items-center hover:text-indigo-600 transition"
                 >
                   <Icon icon="mdi:thumb-up-outline" className="w-5 h-5 mr-1" />
                   <span>{review.likes}</span>
                 </button>
                 <button
-                  onClick={() => handleReact(review._id, "dislike")}
+                  onClick={() => handleReact(review.id, "dislike")}
                   className="flex items-center hover:text-indigo-600 transition"
                 >
                   <Icon

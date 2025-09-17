@@ -5,7 +5,7 @@ export interface Purchase {
   priceUSD: number;
   createdAt: string;
   updatedAt: string;
-  courseDetails: ICourseData;
+  courseId: ICourseData;
   paypalOrderId: string;
   status: string;
 }

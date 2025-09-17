@@ -1,130 +1,113 @@
 import { Plan } from "@/Pages/admin/PlanManagment";
 import { axiosInstance } from "./axiosInstance";
 import { DashboardParams, ReportParams } from "@/Pages/admin/Dashboard";
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    if (config.url?.startsWith("/admin")) {
-      const accessToken = localStorage.getItem("accessTokenAdmin");
-      if (accessToken) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
-      }       
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config as typeof error.config & {
-      _retry?: boolean;
-    };
-
-    if (
-      error.response &&
-        error.response.status === 401 &&
-        error.response.data?.message ==="Unauthorized: No token provided"&&
-      !originalRequest._retry
-    ) {
-      originalRequest._retry = true;
-
-      try {
-        const response = await axiosInstance.post("/refresh");
-        const { accessToken } = response.data;
-
-        // Save new token
-        localStorage.setItem("accessTokenAdmin", accessToken);
-        // store.dispatch(setAccessToke(accessToken));
-
-        // Set token on future requests
-        axiosInstance.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${accessToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
-
-        // Retry the original request
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // store.dispatch(clearStudent());
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
+import {
+  ADMIN_LOGIN_API,
+  ADMIN_LOGOUT_API,
+  ADMIN_BLOCK_STUDENT_API,
+  ADMIN_FIND_ALL_STUDENTS_API,
+  ADMIN_GET_ALL_TEACHERS_API,
+  ADMIN_BLOCK_TEACHER_API,
+  ADMIN_APPROVE_TEACHER_API,
+  ADMIN_CATEGORY_UPDATE_API,
+  ADMIN_LANGUAGE,
+  ADMIN_LANGUAGE_UPDATE_API,
+  ADMIN_PAYOUTS_API,
+  ADMIN_PAYOUT_API,
+  ADMIN_PLANS_API,
+  ADMIN_PLAN_API,
+  ADMIN_DASHBOARD_API,
+  ADMIN_REPORT_API,
+  ADMIN_COURSES_API,
+  ADMIN_BLOCK_COURSE_API,
+  ADMIN_CATEGORY,
+} from "@/constants/adminApi";
 
 const adminApi = {
   login: (formdata: object) => {
-    return axiosInstance.post("/admin/login", formdata);
+    return axiosInstance.post(ADMIN_LOGIN_API, formdata);
   },
   blockStudent: (email: string) => {
-    return axiosInstance.patch("/admin/blockStudent", { email });
+    return axiosInstance.patch(ADMIN_BLOCK_STUDENT_API, { email });
   },
-  findStudentDatas: () => {
-    return axiosInstance.get("/admin/findAllStudent");
+  findStudentDatas: (limit: number, page: number) => {
+    return axiosInstance.get(
+      `${ADMIN_FIND_ALL_STUDENTS_API}?limit=${limit}&page=${page}`
+    );
   },
-  getAllTeachers: () => {
-    return axiosInstance.get("/admin/findAllTeachers");
+  getAllTeachers: (limit: number, page: number) => {
+    return axiosInstance.get(
+      `${ADMIN_GET_ALL_TEACHERS_API}?limit=${limit}&page=${page}`
+    );
   },
   blockTeacher: (email: string) => {
-    return axiosInstance.patch("/admin/blockTeacher", { email });
+    return axiosInstance.patch(ADMIN_BLOCK_TEACHER_API, { email });
   },
-  approveTeacher: (email: string) => axiosInstance.patch('/admin/teachers/approve', { email }),
+  approveTeacher: (email: string) =>
+    axiosInstance.patch(ADMIN_APPROVE_TEACHER_API, { email }),
+
   logout: () => {
-    return axiosInstance.post("/admin/logout");
+    return axiosInstance.post(ADMIN_LOGOUT_API);
   },
 
-  getAllCategories: () => {
-    return axiosInstance.get("/admin/category/getAll");
+  getAllCategories: (page: number, limit: number) => {
+    return axiosInstance.get(
+      `${ADMIN_CATEGORY}?page=${page}&limit=${limit}`
+    );
   },
   addCategory: (data: { name: string }) => {
-    return axiosInstance.post("/admin/category/add", data);
+    return axiosInstance.post(ADMIN_CATEGORY, data);
   },
   toggleCategoryStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/category/toggleBlock/${id}`);
+    return axiosInstance.patch(`${ADMIN_CATEGORY}/${id}/block`);
   },
   updateCategory: (id: string, data: { name: string }) => {
-    return axiosInstance.patch(`/admin/category/update/${id}`, data);
+    return axiosInstance.patch(`${ADMIN_CATEGORY_UPDATE_API}/${id}`, data);
   },
-  getAllLanguages: () => {
-    return axiosInstance.get("/admin/language/getAll");
+
+  getAllLanguages: (limit: number, page: number) => {
+    return axiosInstance.get(
+      `${ADMIN_LANGUAGE}?limit=${limit}&page=${page}`
+    );
   },
   addLanguage: (data: { name: string }) => {
-    return axiosInstance.post("/admin/language/add", data);
+    return axiosInstance.post(ADMIN_LANGUAGE, data);
   },
   updateLanguage: (id: string, data: { name: string }) => {
-    return axiosInstance.patch(`/admin/language/update/${id}`, data);
+    return axiosInstance.patch(`${ADMIN_LANGUAGE_UPDATE_API}/${id}`, data);
   },
   toggleLanguageStatus: (id: string) => {
-    return axiosInstance.patch(`/admin/language/toggleBlock/${id}`);
+    return axiosInstance.patch(`${ADMIN_LANGUAGE}/${id}/block`);
   },
+
   getPayoutRequests: () => {
-    return axiosInstance.get("/admin/payouts");
+    return axiosInstance.get(ADMIN_PAYOUTS_API);
   },
   approvePayout: (requestId: string, action: "APPROVE" | "REJECT") => {
-    return axiosInstance.post(`/admin/payout/${requestId}`, { action });
+    return axiosInstance.post(`${ADMIN_PAYOUT_API}/${requestId}`, { action });
   },
-  getAllPlans: () => axiosInstance.get("/admin/plans"),
-  addPlan: (plan: Plan) => axiosInstance.post("/admin/plans", plan),
-  updatePlan: (id: string, plan: Plan) =>
-    axiosInstance.put(`/admin/plans/${id}`, plan),
-  togglePlanStatus: (id: string) =>
-    axiosInstance.patch(`/admin/plans/${id}/toggle`),
-  findPlan: (id: string) => axiosInstance.get(`/admin/plan/${id}`),
-  getDashboard: (params: DashboardParams) =>
-    axiosInstance.get("/admin/dashboard", { params }),
-  getReport: (params: ReportParams) =>
-    axiosInstance.get("/admin/report", { params, responseType: "blob" }),
 
-  findCourseDatas: () => {
-    return axiosInstance.get("/admin/courses");
+  getAllPlans: (limit: number, page: number) =>
+    axiosInstance.get(`${ADMIN_PLANS_API}?limit=${limit}&page=${page}`),
+  addPlan: (plan: Plan) => axiosInstance.post(ADMIN_PLANS_API, plan),
+  updatePlan: (id: string, plan: Plan) =>
+    axiosInstance.put(`${ADMIN_PLANS_API}/${id}`, plan),
+  togglePlanStatus: (id: string) =>
+    axiosInstance.patch(`${ADMIN_PLANS_API}/${id}/toggle`),
+  findPlan: (id: string) => axiosInstance.get(`${ADMIN_PLAN_API}/${id}`),
+
+  getDashboard: (params: DashboardParams) =>
+    axiosInstance.get(ADMIN_DASHBOARD_API, { params }),
+  getReport: (params: ReportParams) =>
+    axiosInstance.get(ADMIN_REPORT_API, { params, responseType: "blob" }),
+
+  findCourseDatas: (page: number, limit: number) => {
+    return axiosInstance.get(
+      `${ADMIN_COURSES_API}?page=${page}&limit=${limit}`
+    );
   },
   blockCourse: (courseId: string) => {
-    return axiosInstance.patch(`/admin/course/${courseId}/block`);
+    return axiosInstance.patch(`${ADMIN_BLOCK_COURSE_API}/${courseId}/block`);
   },
 };
 

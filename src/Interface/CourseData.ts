@@ -12,39 +12,40 @@ export interface CourseFormData {
 }
 
 export interface ICourseData {
-  _id: string;
+  id: string;
   category: string;
   courseImageId: string;
   description: string;
   discount: string;
   instructor: {
-    name: string;
+    fullName: string;
     profileImage: string;
+    id?: string;
   };
   language: string;
   points: string[];
   price: number;
   students: string[];
   title: string;
-  instructorDetails: Instructor;
+  // instructor: Instructor;
   averageRating: number;
 }
 
 export interface ILecture {
-  _id: string;
+  id: string;
   title: string;
   videoPath?: string;
   pdfPath?: string;
 }
 
 export interface ISection {
-  _id: string;
+  id: string;
   title: string;
   lectures: ILecture[];
 }
 
 export interface ICarriculam {
-  _id: string; 
+  id: string; 
   courseId: string; 
   instructor: string;
   sections: ISection[];

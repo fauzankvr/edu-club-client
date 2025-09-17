@@ -8,7 +8,7 @@ import { getSocket } from "@/services/socketService";
 import { Socket } from "socket.io-client";
 
 interface Notification {
-  _id: string;
+  id: string;
   userId: string;
   type: "course_update" | "quiz_reminder" | "message" | "achievement";
   title: string;
@@ -39,14 +39,14 @@ const Notifications = () => {
     const initialize = async () => {
       try {
         const student = await studentAPI.getProfile();
-        socketInstance = getSocket(student.profile._id);
+        socketInstance = getSocket(student.profile.id);
 
         // Remove previous listener (if any) before adding a new one
         socketInstance.off("newNotification");
 
         socketInstance.on("connect", () => {
           console.log(
-            `Socket connected for student ${student.profile._id}: ${socketInstance.id}`
+            `Socket connected for student ${student.profile.id}: ${socketInstance.id}`
           );
         });
 
@@ -90,7 +90,7 @@ const Notifications = () => {
       await studentAPI.markNotificationAsRead(notificationId);
       setNotifications((prev) =>
         prev.map((notification) =>
-          notification._id === notificationId
+          notification.id === notificationId
             ? { ...notification, read: true }
             : notification
         )
@@ -130,7 +130,7 @@ const Notifications = () => {
           <div className="space-y-4">
             {notifications.map((notification) => (
               <div
-                key={notification._id}
+                key={notification.id}
                 className={`flex items-start p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition ${
                   notification.read ? "opacity-60" : ""
                 }`}
@@ -171,7 +171,7 @@ const Notifications = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleMarkAsRead(notification._id);
+                      handleMarkAsRead(notification.id);
                     }}
                     className="text-blue-500 hover:text-blue-700"
                   >

@@ -6,6 +6,7 @@ import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
 import toast, { Toaster } from "react-hot-toast";
+import Pagination from "@/components/adminComponet/pagination";
 
 interface Feature {
   description: string;
@@ -37,29 +38,26 @@ const PlanManagement = () => {
     isFeatured: false,
   });
   const [newFeature, setNewFeature] = useState({ description: "", icon: "" });
+  const [totalPages, setTotalPages] = useState(1);
 
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil(plans.length / rowsPerPage);
-  const currentRows = plans.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
 
   useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const limit = 7;
+        const res = await adminApi.getAllPlans(limit, currentPage);
+        setPlans(res.data.data.result);
+        setTotalPages(res.data.data.totalPages);
+      } catch (err) {
+        console.error("Failed to fetch plans:", err);
+        toast.error("Failed to load plans");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPlans();
-  }, []);
+  }, [currentPage]);
 
-  const fetchPlans = async () => {
-    try {
-      const res = await adminApi.getAllPlans();
-      setPlans(res.data.data);
-    } catch (err) {
-      console.error("Failed to fetch plans:", err);
-      toast.error("Failed to load plans");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddFeature = () => {
     if (!newFeature.description || !newFeature.icon) return;
@@ -192,7 +190,7 @@ const PlanManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((plan, idx) => (
+                  {plans.map((plan, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3 capitalize">{plan.name}</td>
                       <td className="p-3">₹{plan.price}</td>
@@ -208,7 +206,7 @@ const PlanManagement = () => {
                             plan.isBlocked ? "bg-green-600" : "bg-red-500"
                           } hover:opacity-90`}
                           onClick={() =>
-                            toggleDisable(idx + (currentPage - 1) * rowsPerPage)
+                            toggleDisable(idx + (currentPage - 1))
                           }
                         >
                           {plan.isBlocked ? "Enable" : "Disable"}
@@ -228,34 +226,13 @@ const PlanManagement = () => {
             </div>
           )}
 
-          <div className="flex justify-center mt-6 space-x-2">
-            <Button
-              variant="ghost"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <Icon icon="mdi:chevron-left" className="text-lg" />
-            </Button>
-            {[...Array(totalPages)].map((_, index) => (
-              <Button
-                key={index}
-                size="sm"
-                variant={currentPage === index + 1 ? "default" : "outline"}
-                onClick={() => setCurrentPage(index + 1)}
-              >
-                {index + 1}
-              </Button>
-            ))}
-            <Button
-              variant="ghost"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <Icon icon="mdi:chevron-right" className="text-lg" />
-            </Button>
-          </div>
+          {!loading &&  (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
+          )}
         </div>
       </div>
 

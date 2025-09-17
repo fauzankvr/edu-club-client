@@ -20,11 +20,11 @@ import { FixedSizeList as List } from "react-window";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Socket } from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
-import { Message } from "./SingleCourse";
+import { IInstructor, Message } from "./SingleCourse";
 
 
-interface Chat {
-  _id: string;
+export interface Chat {
+  id: string;
   userId: string;
   instructorId: string;
   lastMessageAt?: string;
@@ -44,6 +44,7 @@ interface ChatTutorInterfaceProps {
   instructorLastSeen: string;
   isInstructorBlocked: boolean;
   socket: Socket;
+  instructor:IInstructor
 }
 
 interface Plan {
@@ -106,23 +107,25 @@ const MessageItem: React.FC<{
           inView &&
           !msg.seenBy.includes(studentId) &&
           msg.sender !== studentId &&
-          !seenMessagesRef.current.has(msg._id)
+          !seenMessagesRef.current.has(msg.id)
         ) {
-          if (!msg._id) {
+
+          if (!msg.id) {
             console.error(
               "Cannot emit messageSeen: messageId is undefined",
               msg
             );
             return;
           }
-          emitMessageSeen(msg.chatId, studentId, msg._id);
-          seenMessagesRef.current.add(msg._id);
+          emitMessageSeen(msg.chatId, studentId, msg.id);
+          seenMessagesRef.current.add(msg.id);
         }
       },
     });
 
     useEffect(() => {
-      if (!msg._id) {
+      console.log('msgggg',msg)
+      if (!msg.id) {
         console.error("Message _id is undefined for message:", msg);
       }
     }, [msg]);
@@ -140,20 +143,20 @@ const MessageItem: React.FC<{
     )?.reaction;
 
     const onReactionClick = (emojiObject: { emoji: string }) => {
-      if (!msg._id || !msg.chatId) {
+      if (!msg.id || !msg.chatId) {
         console.error("Cannot add reaction: messageId or chatId is undefined", {
-          messageId: msg._id,
+          messageId: msg.id,
           chatId: msg.chatId,
         });
         return;
       }
-      handleAddReaction(msg._id, msg.chatId, emojiObject.emoji);
+      handleAddReaction(msg.id, msg.chatId, emojiObject.emoji);
       setShowPicker(false);
     };
 
     const handleDeleteClick = () => {
      
-        handleDeleteMessage(msg._id, msg.chatId);
+        handleDeleteMessage(msg.id, msg.chatId);
       
     };
 
@@ -195,7 +198,7 @@ const MessageItem: React.FC<{
               <button
                 onClick={() => setShowPicker(!showPicker)}
                 className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-                disabled={!msg._id || !msg.chatId}
+                disabled={!msg.id || !msg.chatId}
                 title="Add reaction"
               >
                 <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
@@ -254,7 +257,7 @@ const MessageItem: React.FC<{
                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                     : "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
                 }`}
-                disabled={!msg._id || !msg.chatId}
+                disabled={!msg.id || !msg.chatId}
               >
                 <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
               </button>
@@ -331,7 +334,7 @@ const MessageList: React.FC<MessageListProps> = ({
   // Debug messages for missing _ids
   useEffect(() => {
     messages.forEach((msg, index) => {
-      if (!msg._id) {
+      if (!msg.id) {
         console.error(`Message at index ${index} has undefined _id:`, msg);
       }
     });
@@ -352,7 +355,7 @@ const MessageList: React.FC<MessageListProps> = ({
     return (
       <div style={style}>
         <MessageItem
-          key={msg._id || `message-${index}`} // Fallback key if _id is undefined
+          key={msg.id || `message-${index}`} // Fallback key if _id is undefined
           msg={msg}
           studentId={studentId}
           getTickColor={getTickColor}
@@ -386,6 +389,7 @@ export default function ChatWithTeacher({
   setUnseenCount,
   isInstructorBlocked,
   socket,
+  instructor
 }: ChatTutorInterfaceProps): JSX.Element {
   const [message, setMessage] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -394,6 +398,7 @@ export default function ChatWithTeacher({
   const seenMessagesRef = useRef<Set<string>>(new Set());
   const navigate = useNavigate();
   const isTypingRef = useRef<boolean>(false);
+ 
 
   // Debug chatMessages
   useEffect(() => {
@@ -418,18 +423,18 @@ export default function ChatWithTeacher({
         if (
           !msg.seenBy.includes(studentId) &&
           msg.sender !== studentId &&
-          !seenMessagesRef.current.has(msg._id)
+          !seenMessagesRef.current.has(msg.id)
         ) {
-          if (!msg._id) {
+          if (!msg.id) {
             console.error("Cannot mark message as seen: messageId is undefined", msg);
             return;
           }
           socket.emit("messageSeen", {
             chatId: msg.chatId,
             userId: studentId,
-            messageId: msg._id,
+            messageId: msg.id,
           });
-          seenMessagesRef.current.add(msg._id);
+          seenMessagesRef.current.add(msg.id);
         }
       });
     },
@@ -469,13 +474,13 @@ export default function ChatWithTeacher({
 
   useEffect(() => {
     socket.on("messageUpdated", (updatedMessage: Message) => {
-      if (!updatedMessage._id) {
+      if (!updatedMessage.id) {
         console.error("Received messageUpdated with undefined _id:", updatedMessage);
         return;
       }
       setChatMessages(
         chatMessages.map((msg) =>
-          msg._id === updatedMessage._id ? updatedMessage : msg
+          msg.id === updatedMessage.id ? updatedMessage : msg
         )
       );
     });
@@ -489,7 +494,7 @@ export default function ChatWithTeacher({
         }
         setChatMessages(
           chatMessages.map((msg) =>
-            msg._id === messageId
+            msg.id === messageId
               ? { ...msg, deleted: true, text: "This message was deleted" }
               : msg
           )
@@ -528,41 +533,41 @@ export default function ChatWithTeacher({
   useEffect(() => {
     seenMessagesRef.current.clear();
     markMessagesAsSeen(chatMessages);
-  }, [chat?._id, chatMessages, markMessagesAsSeen]);
+  }, [chat?.id, chatMessages, markMessagesAsSeen]);
 
   useEffect(() => {
     setUnseenCount(0);
   }, [setUnseenCount]);
 
   const handleTyping = useCallback(() => {
-    if (!studentId || !chat?._id || isInstructorBlocked || !message.trim()) {
+    if (!studentId || !chat?.id || isInstructorBlocked || !message.trim()) {
       if (isTypingRef.current) {
-        socket.emit("stopTyping", { chatId: chat?._id, sender: studentId });
+        socket.emit("stopTyping", { chatId: chat?.id, sender: studentId });
         isTypingRef.current = false;
       }
       return;
     }
     if (!isTypingRef.current) {
-      socket.emit("typing", { chatId: chat._id, sender: studentId });
+      socket.emit("typing", { chatId: chat.id, sender: studentId });
       isTypingRef.current = true;
     }
-  }, [studentId, chat?._id, isInstructorBlocked, message, socket]);
+  }, [studentId, chat?.id, isInstructorBlocked, message, socket]);
 
   const handleStopTyping = useCallback(() => {
     if (isTypingRef.current) {
-      socket.emit("stopTyping", { chatId: chat?._id, sender: studentId });
+      socket.emit("stopTyping", { chatId: chat?.id, sender: studentId });
       isTypingRef.current = false;
     }
-  }, [studentId, chat?._id, socket]);
+  }, [studentId, chat?.id, socket]);
 
   const handleSendMessage = async () => {
-    if (!message.trim() || !chat?._id || !studentId || isInstructorBlocked) {
+    if (!message.trim() || !chat?.id || !studentId || isInstructorBlocked) {
       setError("Cannot send message");
       return;
     }
     try {
       socket.emit("sendMessage", {
-        chatId: chat._id,
+        chatId: chat.id,
         text: message.trim(),
         sender: studentId,
       });
@@ -623,7 +628,7 @@ export default function ChatWithTeacher({
               onClick={() => {
                 const roomId = Math.random().toString(36).substring(2);
                 window.open(
-                  `/video-call?chatId=${chat?._id}&studentId=${studentId}&instructorId=${instructorId}&roomId=${roomId}`,
+                  `/video-call?chatId=${chat?.id}&studentId=${studentId}&instructorId=${instructorId}&roomId=${roomId}`,
                   "_blank"
                 );
               }}
@@ -635,9 +640,9 @@ export default function ChatWithTeacher({
         </div>
       )}
       <div className="bg-gray-50 p-4 border-b border-gray-200 flex items-center">
-        {chat?.instructor?.profileImage ? (
+        {instructor?.profileImage ? (
           <img
-            src={chat.instructor.profileImage}
+            src={instructor.profileImage}
             alt="Instructor"
             className="w-8 h-8 rounded-full object-cover mr-3"
           />
@@ -647,8 +652,8 @@ export default function ChatWithTeacher({
           </div>
         )}
         <div className="font-medium">
-          {chat?.instructor?.fullName
-            ? `Mr. ${chat.instructor.fullName}`
+          {instructor?.fullName
+            ? `Mr. ${instructor.fullName}`
             : "Loading..."}
           {isInstructorBlocked && (
             <span className="text-red-500 text-sm ml-2">(Blocked)</span>

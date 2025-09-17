@@ -36,7 +36,7 @@ export default function Certificates({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {progressData.map((progress) => (
                 <Card
-                  key={progress._id}
+                  key={progress.id}
                   className={`p-4 shadow-sm border ${
                     progress.completed
                       ? "border-green-200"
@@ -99,7 +99,7 @@ export default function Certificates({
           courseName={selectedCourse.courseId.title}
           instructorName={selectedCourse.courseId.instructor.fullName}
           issuedDate={selectedCourse.updatedAt.split("T")[0]}
-          certificateId={`EDU-${selectedCourse._id.slice(-6)}`} // Generate a simple certificate ID
+          certificateId={`EDU-${selectedCourse.id.slice(-6)}`} // Generate a simple certificate ID
           logoUrl={backgroundImage}
           signatureUrl={signatureImage}
         />

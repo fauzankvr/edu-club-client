@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import studentAPI from "@/API/StudentApi";
 import { AxiosError } from "axios";
+import { tokenManager } from "@/API/tokenManager";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -48,7 +49,8 @@ export default function Login() {
         console.log("Login response:", res);
         if (res && res.data.success) {
           dispatch(setStudent(res.data.accessToken));
-          localStorage.setItem("InstructorToken", res.data.accessToken);
+          // localStorage.setItem("InstructorToken", res.data.accessToken);
+          tokenManager.setToken("instructor", res.data.accessToken);
           successToast();
           navigate("/instructor/home", { replace: true });
         } else {

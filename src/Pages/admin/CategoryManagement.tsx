@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Icon } from "@iconify/react";
 import Navbar from "@/components/adminComponet/Navbar";
 import Sidebar from "@/components/adminComponet/Sidebar";
 import adminApi from "@/API/adminApi";
 import toast, { Toaster } from "react-hot-toast";
+import Pagination from "@/components/adminComponet/pagination";
 
 
 interface Category {
-  _id?: string;
+  id?: string;
   name: string;
   isBlocked?: boolean;
 }
@@ -21,23 +21,18 @@ const CategoryManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState<Category>({ name: "" });
-
-
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil(categories.length / rowsPerPage);
-  const currentRows = categories.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [currentPage]);
 
   const fetchCategories = async () => {
     try {
-      const res = await adminApi.getAllCategories(); // Update this API method
-      setCategories(res.data.data);
+      const limit = 10;
+      const res = await adminApi.getAllCategories(currentPage, limit);
+      setCategories(res.data.data.result);
+      setTotalPages(res.data.data.pages);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
     } finally {
@@ -61,7 +56,7 @@ const CategoryManagement = () => {
   const toggleDisable = async (index: number) => {
     const category = categories[index];
     try {
-      await adminApi.toggleCategoryStatus(category._id!); // Update this API method
+      await adminApi.toggleCategoryStatus(category.id!); // Update this API method
       const updated = [...categories];
       updated[index].isBlocked = !category.isBlocked;
       setCategories(updated);
@@ -76,13 +71,13 @@ const CategoryManagement = () => {
   };
   
   const handleUpdateCategory = async () => {
-    if (!editData.name.trim() || !editData._id) return;
+    if (!editData.name.trim() || !editData.id) return;
 
     try {
-      await adminApi.updateCategory(editData._id, { name: editData.name });
+      await adminApi.updateCategory(editData.id, { name: editData.name });
       setCategories((prev) =>
         prev.map((cat) =>
-          cat._id === editData._id ? { ...cat, name: editData.name } : cat
+          cat.id === editData.id ? { ...cat, name: editData.name } : cat
         )
       );
       toast.success("Category updated");
@@ -99,7 +94,7 @@ const CategoryManagement = () => {
       <Navbar />
       <div className="min-h-screen flex bg-white">
         <Sidebar />
-        <Toaster/>
+        <Toaster />
         <div className="flex-1 p-6">
           {/* Add New Category */}
           <div className="mb-6 flex gap-4 items-center">
@@ -135,7 +130,7 @@ const CategoryManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((category, idx) => (
+                  {categories.map((category, idx) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3 capitalize">{category.name}</td>
                       <td className="p-3">
@@ -148,7 +143,7 @@ const CategoryManagement = () => {
                             category.isBlocked ? "bg-green-600" : "bg-red-500"
                           } hover:opacity-90`}
                           onClick={() =>
-                            toggleDisable(idx + (currentPage - 1) * rowsPerPage)
+                            toggleDisable(idx + (currentPage - 1) )
                           }
                         >
                           {category.isBlocked ? "Enable" : "Disable"}
@@ -170,36 +165,11 @@ const CategoryManagement = () => {
 
           {/* Pagination */}
           {!loading && (
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button
-                variant="ghost"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                <Icon icon="mdi:chevron-left" className="text-lg" />
-              </Button>
-
-              {[...Array(totalPages)].map((_, index) => (
-                <Button
-                  key={index}
-                  size="sm"
-                  variant={currentPage === index + 1 ? "default" : "outline"}
-                  onClick={() => setCurrentPage(index + 1)}
-                >
-                  {index + 1}
-                </Button>
-              ))}
-
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              >
-                <Icon icon="mdi:chevron-right" className="text-lg" />
-              </Button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
           )}
         </div>
       </div>

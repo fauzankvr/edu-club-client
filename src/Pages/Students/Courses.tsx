@@ -191,7 +191,7 @@ const Courses = () => {
                 <>
                   {courses.map((item) => (
                     <div
-                      key={item._id}
+                      key={item.id}
                       className="bg-white shadow rounded-xl p-4 md:p-6 border border-indigo-100 hover:shadow-md transition-all"
                     >
                       <div className="flex flex-col md:flex-row gap-4">
@@ -268,12 +268,12 @@ const Courses = () => {
                                 className="w-8 h-8 rounded-full"
                               />
                               <span className="text-sm font-medium text-gray-700">
-                                {item.instructor.name}
+                                {item.instructor.fullName}
                               </span>
                             </div>
                             <button
                               className="flex items-center gap-1 rounded-full px-4 py-1 text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer"
-                              onClick={() => handleCardClick(item._id, item)}
+                              onClick={() => handleCardClick(item.id, item)}
                             >
                               View course
                               <Icon icon="mdi:arrow-right" />

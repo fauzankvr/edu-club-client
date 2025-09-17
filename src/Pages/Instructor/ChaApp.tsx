@@ -46,7 +46,7 @@ interface Reaction {
 }
 
 interface Message {
-  _id: string;
+  id: string;
   text: string;
   sender: string;
   chatId: string;
@@ -107,17 +107,17 @@ const MessageItem: React.FC<MessageItemProps> = memo(
           inView &&
           !msg.seenBy.includes(instructorId) &&
           msg.sender !== instructorId &&
-          !seenMessagesRef.current.has(msg._id)
+          !seenMessagesRef.current.has(msg.id)
         ) {
-          if (!msg._id) {
+          if (!msg.id) {
             console.error(
               "Cannot emit messageSeen: messageId is undefined",
               msg
             );
             return;
           }
-          emitMessageSeen(msg.chatId, instructorId, msg._id);
-          seenMessagesRef.current.add(msg._id);
+          emitMessageSeen(msg.chatId, instructorId, msg.id);
+          seenMessagesRef.current.add(msg.id);
         }
       },
     });
@@ -135,20 +135,20 @@ const MessageItem: React.FC<MessageItemProps> = memo(
     )?.reaction;
 
     const onReactionClick = (emojiObject: { emoji: string }) => {
-      if (!msg._id || !msg.chatId) {
+      if (!msg.id || !msg.chatId) {
         console.error("Cannot add reaction: messageId or chatId is undefined", {
-          messageId: msg._id,
+          messageId: msg.id,
           chatId: msg.chatId,
         });
         return;
       }
-      handleAddReaction(msg._id, msg.chatId, emojiObject.emoji);
+      handleAddReaction(msg.id, msg.chatId, emojiObject.emoji);
       setShowPicker(false);
     };
 
     const handleDeleteClick = () => {
       
-        handleDeleteMessage(msg._id, msg.chatId);
+        handleDeleteMessage(msg.id, msg.chatId);
       
     };
 
@@ -190,7 +190,7 @@ const MessageItem: React.FC<MessageItemProps> = memo(
               <button
                 onClick={() => setShowPicker(!showPicker)}
                 className="p-1 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-                disabled={!msg._id || !msg.chatId}
+                disabled={!msg.id || !msg.chatId}
                 title="Add reaction"
               >
                 <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
@@ -246,7 +246,7 @@ const MessageItem: React.FC<MessageItemProps> = memo(
                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                     : "bg-white hover:bg-gray-50 text-gray-600 border border-gray-200"
                 }`}
-                disabled={!msg._id || !msg.chatId}
+                disabled={!msg.id || !msg.chatId}
               >
                 <Icon icon="mdi:emoticon-outline" className="w-3 h-3" />
               </button>
@@ -329,7 +329,7 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   useEffect(() => {
     messages.forEach((msg, index) => {
-      if (!msg._id) {
+      if (!msg.id) {
         console.error(`Message at index ${index} has undefined id:`, msg);
       }
     });
@@ -346,7 +346,7 @@ const MessageList: React.FC<MessageListProps> = ({
     return (
       <div style={style}>
         <MessageItem
-          key={msg._id || `message-${index}`}
+          key={msg.id || `message-${index}`}
           msg={msg}
           instructorId={instructorId}
           getTickColor={getTickColor}
@@ -432,7 +432,7 @@ const ChatApp: React.FC = () => {
     const fetchChats = async () => {
       try {
         const instructor = await instructorAPI.getProfile();
-        setInstructorId(instructor.profile._id);
+        setInstructorId(instructor.profile.id);
         socket.emit("set-role", {
           role: "instructor",
           userId: instructor.profile._id,
@@ -440,8 +440,8 @@ const ChatApp: React.FC = () => {
 
         const res = await instructorAPI.getAllChats();
         interface ChatApiResponse {
-          _id: string;
-          studentDetails?: {
+          id: string;
+          userId?: {
             firstName?: string;
             lastName?: string;
             profileImage?: string;
@@ -456,19 +456,17 @@ const ChatApp: React.FC = () => {
 
         const formattedContacts: ChatContact[] = res.data.data.map(
           (chat: ChatApiResponse) => ({
-            id: chat._id,
-            name: `${chat.studentDetails?.firstName || ""}${
-              chat.studentDetails?.lastName
-                ? " " + chat.studentDetails.lastName
-                : ""
+            id: chat.id,
+            name: `${chat.userId?.firstName || ""}${
+              chat.userId?.lastName ? " " + chat.userId.lastName : ""
             }`,
-            avatar: chat.studentDetails?.profileImage || "",
+            avatar: chat.userId?.profileImage || "",
             lastSeen: chat.userLastSeen || new Date().toISOString(),
             lastMessage: chat.lastMessage || "No messages yet",
             lastMessageTime: chat.lastMessageTime,
             messages: [],
             unseenCount: chat.unreadCount || 0,
-            studentId: chat.studentDetails?._id || "",
+            studentId: chat.userId?._id || "",
           })
         );
 
@@ -551,7 +549,7 @@ const ChatApp: React.FC = () => {
                 ? {
                     ...contact,
                     messages: contact.messages.map((msg) =>
-                      msg._id === tempId ? message : msg
+                      msg.id === tempId ? message : msg
                     ),
                     lastMessage: message.text,
                     lastMessageTime: message.createdAt,
@@ -575,7 +573,7 @@ const ChatApp: React.FC = () => {
               ? {
                   ...prev,
                   messages: prev.messages.map((msg) =>
-                    msg._id === tempId ? message : msg
+                    msg.id === tempId ? message : msg
                   ),
                   lastMessage: message.text,
                   lastMessageTime: message.createdAt,
@@ -628,7 +626,7 @@ const ChatApp: React.FC = () => {
             ? {
                 ...contact,
                 messages: contact.messages.map((msg) =>
-                  msg._id === updatedMessage._id ? updatedMessage : msg
+                  msg.id === updatedMessage.id ? updatedMessage : msg
                 ),
               }
             : contact
@@ -640,7 +638,7 @@ const ChatApp: React.FC = () => {
             ? {
                 ...prev,
                 messages: prev.messages.map((msg) =>
-                  msg._id === updatedMessage._id ? updatedMessage : msg
+                  msg.id === updatedMessage.id ? updatedMessage : msg
                 ),
               }
             : prev
@@ -660,7 +658,7 @@ const ChatApp: React.FC = () => {
               ? {
                   ...contact,
                   messages: contact.messages.map((msg) =>
-                    msg._id === messageId
+                    msg.id === messageId
                       ? {
                           ...msg,
                           deleted: true,
@@ -678,7 +676,7 @@ const ChatApp: React.FC = () => {
               ? {
                   ...prev,
                   messages: prev.messages.map((msg) =>
-                    msg._id === messageId
+                    msg.id === messageId
                       ? {
                           ...msg,
                           deleted: true,
@@ -762,6 +760,7 @@ const ChatApp: React.FC = () => {
   }, [instructorId, selectedContact]);
 
   const handleContactClick = useCallback(async (contact: ChatContact) => {
+    console.log('contavt, ',contact)
     try {
       if (!joinedChatsRef.current.has(contact.id)) {
         socket.emit("joinChat", contact.id);
@@ -769,7 +768,7 @@ const ChatApp: React.FC = () => {
       }
       const res = await instructorAPI.getMessages(contact.id);
       interface ApiMessage {
-        _id: string;
+        id: string;
         chatId: string;
         text: string;
         sender: string;
@@ -779,7 +778,7 @@ const ChatApp: React.FC = () => {
         deleted?: boolean;
       }
       const formattedMessages: Message[] = res.data.map((msg: ApiMessage) => ({
-        _id: msg._id,
+        id: msg.id,
         chatId: msg.chatId,
         text: msg.text,
         sender: msg.sender,
@@ -834,7 +833,7 @@ const ChatApp: React.FC = () => {
 
     const tempMessageId = `temp-${Date.now()}`;
     const newMsg: Message = {
-      _id: tempMessageId,
+      id: tempMessageId,
       chatId: selectedContact.id,
       text: newMessage.trim(),
       sender: instructorId,
@@ -894,7 +893,7 @@ const ChatApp: React.FC = () => {
         prev
           ? {
               ...prev,
-              messages: prev.messages.filter((msg) => msg._id !== tempMessageId),
+              messages: prev.messages.filter((msg) => msg.id !== tempMessageId),
             }
           : prev
       );

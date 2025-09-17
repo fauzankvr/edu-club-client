@@ -26,7 +26,7 @@ export default function CourseContent({
       <div className="space-y-3">
         {carriculam.sections.map((section, idx) => {
           const sectionProgress = progress?.sections?.find(
-            (sec) => sec.sectionId === section._id
+            (sec) => sec.sectionId === section.id
           );
           const sectionProgressPercentage = sectionProgress?.lectures
             ? (sectionProgress.lectures.reduce(
@@ -39,7 +39,7 @@ export default function CourseContent({
             : 0;
           return (
             <div
-              key={section._id}
+              key={section.id}
               className="border rounded-lg overflow-hidden"
             >
               <button
@@ -68,15 +68,15 @@ export default function CourseContent({
                 section.lectures.length > 0 &&
                 section.lectures.map((lesson) => {
                   const lectureProgress = sectionProgress?.lectures.find(
-                    (lec) => lec.lectureId === lesson._id
+                    (lec) => lec.lectureId === lesson.id
                   );
                   const progressValue = parseInt(lectureProgress?.progress || "0");
-                  const isSelected = lesson._id === currentLesson?._id;
+                  const isSelected = lesson.id === currentLesson?.id;
 
                   return (
                     <div
-                      key={lesson._id}
-                      onClick={() => handleLessonClick(lesson, section._id)}
+                      key={lesson.id}
+                      onClick={() => handleLessonClick(lesson, section.id)}
                       className={`px-6 py-3 cursor-pointer transition-colors duration-200 rounded-md ${
                         isSelected
                           ? "bg-gray-100 border-l-4 border-indigo-600"
