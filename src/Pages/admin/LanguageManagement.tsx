@@ -8,7 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 import Pagination from "@/components/adminComponet/pagination";
 
 interface Language {
-  _id?: string;
+  id?: string;
   name: string;
   isBlocked?: boolean;
 }
@@ -22,12 +22,7 @@ const LanguageManagement = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
 
-  // const rowsPerPage = 5;
-  // const totalPages = Math.ceil(languages.length / rowsPerPage);
-  // const currentRows = languages.slice(
-  //   (currentPage - 1) * rowsPerPage,
-  //   currentPage * rowsPerPage
-  // );
+
 
   useEffect(() => {
     fetchLanguages();
@@ -62,7 +57,7 @@ const LanguageManagement = () => {
   const toggleBlock = async (index: number) => {
     const language = languages[index];
     try {
-      await adminApi.toggleLanguageStatus(language._id!);
+      await adminApi.toggleLanguageStatus(language.id!);
       const updated = [...languages];
       updated[index].isBlocked = !language.isBlocked;
       setLanguages(updated);
@@ -76,13 +71,13 @@ const LanguageManagement = () => {
     setIsEditModalOpen(true);
   };
     const handleUpdateLanguage = async () => {
-      if (!editData.name.trim() || !editData._id) return;
+      if (!editData.name.trim() || !editData.id) return;
   
       try {
-        await adminApi.updateLanguage(editData._id, { name: editData.name });
+        await adminApi.updateLanguage(editData.id, { name: editData.name });
         setLanguages((prev) =>
           prev.map((cat) =>
-            cat._id === editData._id ? { ...cat, name: editData.name } : cat
+            cat.id === editData.id ? { ...cat, name: editData.name } : cat
           )
         );
         toast.success("Category updated");

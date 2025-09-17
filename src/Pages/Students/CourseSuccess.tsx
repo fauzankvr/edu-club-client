@@ -36,7 +36,7 @@ function CourseSuccessCard() {
       try {
         const response = await studentAPI.getProfile();
         console.log("Fetched student profile:", response);
-        setStudentId(response.profile._id);
+        setStudentId(response.profile.id);
       } catch (error) {
         console.error("Error fetching profile:", error);
         setError("Failed to load profile data");
@@ -176,7 +176,7 @@ function CourseSuccessCard() {
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
                       <span className="font-semibold">Instructor: </span>
-                      {course.instructorDetails.fullName}
+                      {course.instructor.fullName}
                     </p>
                   </div>
                   <button

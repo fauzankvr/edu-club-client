@@ -36,12 +36,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config as any;
-
+    console.log(error.response);
     if (
       error.response &&
       error.response.status === 401 &&
       !originalRequest._retry &&
-      originalRequest._role
+      originalRequest._role &&
+      error.response.data.message == "Unauthorized"
     ) {
       originalRequest._retry = true;
       const role = originalRequest._role;

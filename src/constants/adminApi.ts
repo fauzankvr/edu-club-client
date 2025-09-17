@@ -7,15 +7,12 @@ export const ADMIN_GET_ALL_TEACHERS_API = "/admin/findAllTeachers";
 export const ADMIN_BLOCK_TEACHER_API = "/admin/blockTeacher";
 export const ADMIN_APPROVE_TEACHER_API = "/admin/teachers/approve";
 
-export const ADMIN_CATEGORY_GET_ALL_API = "/admin/category/getAll";
-export const ADMIN_CATEGORY_ADD_API = "/admin/category/add";
-export const ADMIN_CATEGORY_TOGGLE_API = "/admin/category/toggleBlock";
+
+export const ADMIN_CATEGORY = "/admin/category";
 export const ADMIN_CATEGORY_UPDATE_API = "/admin/category/update";
 
-export const ADMIN_LANGUAGE_GET_ALL_API = "/admin/language/getAll";
-export const ADMIN_LANGUAGE_ADD_API = "/admin/language/add";
+export const ADMIN_LANGUAGE = "/admin/language";
 export const ADMIN_LANGUAGE_UPDATE_API = "/admin/language/update";
-export const ADMIN_LANGUAGE_TOGGLE_API = "/admin/language/toggleBlock";
 
 export const ADMIN_PAYOUTS_API = "/admin/payouts";
 export const ADMIN_PAYOUT_API = "/admin/payout";

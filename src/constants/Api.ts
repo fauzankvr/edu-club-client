@@ -13,14 +13,14 @@ export const STUDENT_PROFILE_API = "/student/profile";
 export const STUDENT_API = "/student";
 
 // Courses
-export const STUDENT_ALL_COURSES_API = "/student/getAllCourses";
-export const STUDENT_PROGRESS_API = "/student/getAllProgress";
+export const STUDENT_ALL_COURSES_API = "/student/courses";
+export const STUDENT_PROGRESS_API = "/student/progress";
 
 // Orders
 export const STUDENT_ORDER_API = "/student/orders";
 
 // Wishlist
-export const STUDENT_WISHLIST_API = "/student/course/wishlist";
+export const STUDENT_WISHLIST_API = "/student/wishlist";
 
 // Notes
 export const STUDENT_NOTES_API = "/student/notes";

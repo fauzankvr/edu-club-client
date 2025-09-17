@@ -18,26 +18,23 @@
 
   import backgroundImage from "../../assets/students/cetificate.jpg";
   import signatureImage from "../../assets/students/signature.png";
+import { Chat } from "./ChatWithTeacher";
 
-
-  interface Chat {
-    _id: string;
-    userId: string;
-    instructorId: string;
-    lastMessageAt?: string;
-    instructor: { fullName: string; profileImage: string; email?: string };
-    isTyping?: boolean;
-  }
 
 // Define the IReaction sub-interface
 export interface IReaction {
   userId: string;
   reaction: string; // Emoji 
 }
+export interface IInstructor{
+  fullName: string;
+  profileImage: string;
+  email?: string 
+}
 
 
 export interface Message {
-  _id: string; 
+  id: string; 
   text: string;
   sender: "user" | "instructor"; // Typed sender
   chatId: string;
@@ -68,6 +65,7 @@ export interface Message {
     const [studentId, setStudentId] = useState<string>("");
     const [studentName, setStudentName] = useState<string>("");
     const [instructorId, setInstructorId] = useState<string>("");
+    const [instructor,setInstructor] = useState<IInstructor>()
     const [chat, setChat] = useState<Chat | null>(null);
     const [chatMessages, setChatMessages] = useState<Message[]>([]);
     const [instructorStatus, setInstructorStatus] = useState<string>("offline");
@@ -89,7 +87,7 @@ export interface Message {
           setIsLoading(true);
           const student = await studentAPI.getProfile();
           setStudentName(`${student.profile.firstName} ${student.profile.lastName}`);
-          if (student?.profile?._id) setStudentId(student.profile._id);
+          if (student?.profile?.id) setStudentId(student.profile.id);
           else throw new Error("Student profile not found");
           if (!id) throw new Error("Course ID not provided");
 
@@ -97,21 +95,25 @@ export interface Message {
           const courseData = courseResponse.data.data.course;
           const curriculum = courseResponse.data.data.curriculum;
 
-          const courseId = courseData?._id;
-          if (!courseId || !student?.profile?._id)
+          const courseId = courseData?.id;
+          if (!courseId || !student?.profile?.id)
             throw new Error("Missing course ID or student ID");
 
           const progressResponse = await studentAPI.getProgress(
-            student.profile._id,
+            student.profile.id,
             courseId
           );
           setCourse(courseData);
           setCarriculam(curriculum);
           setProgress(progressResponse.data.data.progress || null);
           setCurrentLesson(curriculum?.sections[0]?.lectures[0] || null);
-
-          if (courseData?.instructorDetails?._id)
-            setInstructorId(courseData.instructorDetails._id);
+          console.log(courseData.instructor);
+          setInstructor(courseData.instructor)
+          // if (!instructor) {
+          //   throw new Error("please fix insturcor");
+          // }
+          if (courseData?.instructor?._id)
+            setInstructorId(courseData.instructor._id);
           else throw new Error("Instructor not found for course");
         } catch (error: unknown) {
           console.error("Fetch Error:", error);
@@ -196,9 +198,9 @@ export interface Message {
         }
       );
       socket.on("newMessage", (message: Message) => {
-        if (message.chatId === chat?._id) {
+        if (message.chatId === chat?.id) {
           setChatMessages((prev) =>
-            prev.some((msg) => msg._id === message._id) ? prev : [...prev, message]
+            prev.some((msg) => msg.id === message.id) ? prev : [...prev, message]
           );
           if (
             message.sender !== studentId &&
@@ -210,10 +212,10 @@ export interface Message {
         }
       });
       socket.on("messageUpdated", (updatedMessage: Message) => {
-        if (updatedMessage.chatId === chat?._id) {
+        if (updatedMessage.chatId === chat?.id) {
           setChatMessages((prev) =>
             prev.map((msg) =>
-              msg._id === updatedMessage._id ? updatedMessage : msg
+              msg.id === updatedMessage.id ? updatedMessage : msg
             )
           );
         }
@@ -221,46 +223,51 @@ export interface Message {
       socket.on(
         "unseenCount",
         ({ chatId, count }: { chatId: string; count: number }) => {
-          if (chatId === chat?._id) setUnseenCount(count);
+          if (chatId === chat?.id) setUnseenCount(count);
         }
       );
       socket.on(
         "typing",
         ({ chatId, sender }: { chatId: string; sender: string }) => {
-          if (chatId === chat?._id && sender !== studentId)
+          if (chatId === chat?.id && sender !== studentId)
             setChat((prev) => prev && { ...prev, isTyping: true });
         }
       );
       socket.on(
         "stopTyping",
         ({ chatId, sender }: { chatId: string; sender: string }) => {
-          if (chatId === chat?._id && sender !== studentId)
+          if (chatId === chat?.id && sender !== studentId)
             setChat((prev) => prev && { ...prev, isTyping: false });
         }
       );
 
       const initializeChat = async () => {
         try {
+
           const response = await studentAPI.getChat(studentId);
+    
           let chatData = response.data.data.find(
             (c: Chat) => c.instructorId === instructorId
           );
+          
           if (!chatData) {
             const createResponse = await studentAPI.postChat({
               userId: studentId,
               instructorId,
             });
+        
             chatData = createResponse.data;
           }
           setChat(chatData);
-          if (chatJoinedRef.current !== chatData._id) {
-            socket.emit("joinChat", chatData._id);
-            chatJoinedRef.current = chatData._id;
+          if (chatJoinedRef.current !== chatData.id) {
+            socket.emit("joinChat", chatData.id);
+            chatJoinedRef.current = chatData.id;
           }
-          const messages = await studentAPI.getMessage(chatData._id);
+          const messages = await studentAPI.getMessage(chatData.id);
+  
           setChatMessages(
             messages.data.data.map((msg: Message) => ({
-              _id: msg._id,
+              id: msg.id,
               text: msg.text,
               sender: msg.sender,
               chatId: msg.chatId,
@@ -295,7 +302,7 @@ export interface Message {
         socket.off("typing");
         socket.off("stopTyping");
       };
-    }, [studentId, instructorId, chat?._id, currentTab]);
+    }, [studentId, instructorId, chat?.id, currentTab]);
 
     const updateLessonProgress = async (
       sectionId: string,
@@ -305,12 +312,12 @@ export interface Message {
       actualSecondsWatched: number
     ) => {
       try {
-        if (!studentId || !course?._id) {
+        if (!studentId || !course?.id) {
           throw new Error("Missing studentId or courseId");
         }
         const response = await studentAPI.updateProgress(
           studentId,
-          course._id,
+          course.id,
           sectionId,
           lectureId,
           progressValue.toString(),
@@ -325,7 +332,7 @@ export interface Message {
             progressValue >= 99 &&
             !sentThresholdsRef.current[lectureId]?.includes(99)
           ) {
-            console.log('iam inside the 99 condition');
+            
             const socket = getSocket(studentId);
             const notification = {
               studentId: studentId,
@@ -338,8 +345,7 @@ export interface Message {
               read: false,
             };
             studentAPI.sendNotification(notification);
-            console.log("socket", socket);
-            console.log("notification", notification);
+         
             socket.emit("newNotification", notification);
             sentThresholdsRef.current[lectureId] = [
               ...(sentThresholdsRef.current[lectureId] || []),
@@ -359,21 +365,23 @@ export interface Message {
     };
     const handleLessonClick = (lesson: ILecture, sectionId: string) => {
       setCurrentLesson(lesson);
-      if (lesson._id !== currentLesson?._id) {
-        sentThresholdsRef.current[lesson._id] = [];
+      console.log('section id',sectionId)
+      if (lesson.id !== currentLesson?.id) {
+        sentThresholdsRef.current[lesson.id] = [];
       }
       if (lesson.pdfPath && !lesson.videoPath && studentId) {
         const sectionProgress = progress?.sections?.find(
           (sec) => sec.sectionId === sectionId
         );
         const lectureProgress = sectionProgress?.lectures.find(
-          (lec) => lec.lectureId === lesson._id
+          (lec) => lec.lectureId === lesson.id
         );
         if (lectureProgress && parseInt(lectureProgress.progress) < 5) {
-          updateLessonProgress(sectionId, lesson._id, 5,0,0);
+          updateLessonProgress(sectionId, lesson.id, 5,0,0);
         }
       }
     };
+    
 
     const toggleSection = (i: number) =>
       setOpenSection(openSection === i ? null : i);
@@ -406,7 +414,7 @@ export interface Message {
                 currentLesson={currentLesson}
                 carriculam={carriculam}
                 studentId={studentId}
-                courseId={course?._id}
+                courseId={course?.id}
                 updateLessonProgress={updateLessonProgress}
               />
               <div className="mt-4">
@@ -443,6 +451,7 @@ export interface Message {
                 instructorLastSeen={instructorLastSeen}
                 isInstructorBlocked={isInstructorBlocked}
                 socket={getSocket(studentId)}
+                instructor={instructor}
               />
             </div>
             <CourseContent
@@ -462,7 +471,7 @@ export interface Message {
             onClose={() => setShowModal(false)}
             studentName={studentName}
             courseName={course?.title || "basic React"}
-            instructorName={course?.instructorDetails.fullName || "Jhone"}
+            instructorName={course?.instructor.fullName || "Jhone"}
             issuedDate={progress.updatedAt.split("T")[0]}
             certificateId="EDU-123456"
             logoUrl={backgroundImage}

@@ -35,15 +35,15 @@ interface ProfileResponse {
 
 // Define the Progress interface based on provided data
 export interface Progress {
-  _id: string;
+  id: string;
   studentId: {
-    _id: string;
+    id: string;
     email: string;
     firstName: string;
     lastName: string;
   };
   courseId: {
-    _id: string;
+    id: string;
     title: string;
     instructor: {
       fullName: string;

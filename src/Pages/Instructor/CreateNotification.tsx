@@ -27,14 +27,14 @@ const CreateNotification = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   interface Student {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
   }
 
   interface Notification {
-    _id: string;
+    id: string;
     studentId: string;
     type: string;
     title: string;
@@ -47,12 +47,12 @@ const CreateNotification = () => {
     const initialize = async () => {
       try {
         const instructor = await instructorAPI.getProfile();
-        const socketInstance = getSocket(instructor.profile._id);
+        const socketInstance = getSocket(instructor.profile.id);
         setSocket(socketInstance);
 
         socketInstance.on("connect", () => {
           console.log(
-            `Socket connected for instructor ${instructor.profile._id}: ${socketInstance.id}`
+            `Socket connected for instructor ${instructor.profile.id}: ${socketInstance.id}`
           );
         });
         socketInstance.emit("set-role", {
@@ -72,7 +72,7 @@ const CreateNotification = () => {
         }
 
         interface ApiWalletItem {
-          student: ApiStudent;
+          studentId: ApiStudent;
         }
 
         interface ApiResponse {
@@ -85,8 +85,8 @@ const CreateNotification = () => {
         const uniqueStudents: ApiStudent[] = Array.from(
           new Map<string, ApiStudent>(
             response.data.data.map((item: ApiWalletItem) => [
-              item.student._id,
-              item.student,
+              item.studentId._id,
+              item.studentId,
             ])
           ).values()
         );
@@ -252,9 +252,9 @@ const CreateNotification = () => {
                         {filteredStudents.length > 0 ? (
                           filteredStudents.map((student) => (
                             <div
-                              key={student._id}
+                              key={student.id}
                               className="p-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                              onClick={() => handleStudentSelect(student._id)}
+                              onClick={() => handleStudentSelect(student.id)}
                             >
                               <Icon
                                 icon="mdi:account"
@@ -276,15 +276,15 @@ const CreateNotification = () => {
                       <div className="mt-2 text-sm text-gray-600">
                         Selected:{" "}
                         {
-                          students.find((s) => s._id === formData.userId)
+                          students.find((s) => s.id === formData.userId)
                             ?.firstName
                         }{" "}
                         {
-                          students.find((s) => s._id === formData.userId)
+                          students.find((s) => s.id === formData.userId)
                             ?.lastName
                         }{" "}
                         (
-                        {students.find((s) => s._id === formData.userId)?.email}
+                        {students.find((s) => s.id === formData.userId)?.email}
                         )
                       </div>
                     )}
@@ -383,7 +383,7 @@ const CreateNotification = () => {
                     <div className="space-y-4">
                       {notifications.map((notification) => (
                         <Card
-                          key={notification._id}
+                          key={notification.id}
                           className="p-4 shadow-sm border border-gray-200"
                         >
                           <div className="flex items-center justify-between">
@@ -397,14 +397,14 @@ const CreateNotification = () => {
                               <p className="text-sm text-gray-500">
                                 Sent to:{" "}
                                 {students.find(
-                                  (s) => s._id === notification.studentId
+                                  (s) => s.id === notification.studentId
                                 )?.firstName || "Unknown"}{" "}
                                 {students.find(
-                                  (s) => s._id === notification.studentId
+                                  (s) => s.id === notification.studentId
                                 )?.lastName || ""}{" "}
                                 (
                                 {students.find(
-                                  (s) => s._id === notification.studentId
+                                  (s) => s.id === notification.studentId
                                 )?.email || "Unknown"}
                                 )
                               </p>

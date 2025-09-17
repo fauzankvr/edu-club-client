@@ -25,10 +25,10 @@ interface OrderDetail {
 
 interface DashboardData {
   totalRevenue: number;
-  totalEnrollments: number;
-  monthlyRevenue: { name: string; uv: number }[];
+  totalCourses: number;
+  revenueByPeriod: { name: string; revenue: number }[];
   payoutSummary: { totalPayout: number; pendingPayout: number };
-  reviewRating: number;
+  // reviewRating: number;
   orderDetails: OrderDetail[];
 }
 
@@ -132,17 +132,17 @@ const DashboardOverview = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Total Enrollment</p>
+                    <p className="text-sm font-medium">Total Courses</p>
                     <p className="text-lg font-bold text-indigo-600">
-                      {data.totalEnrollments}
+                      {data.totalCourses}
                     </p>
                   </div>
-                  <div>
+                  {/* <div>
                     <p className="text-sm font-medium">Review Rating</p>
                     <p className="text-lg font-bold text-indigo-600">
                       {data.reviewRating.toFixed(1)}
                     </p>
-                  </div>
+                  </div> */}
                   <div>
                     <p className="text-sm font-medium">Pending Payout</p>
                     <p className="text-lg font-bold text-indigo-600">
@@ -156,12 +156,12 @@ const DashboardOverview = () => {
               <Card className="mb-4">
                 <CardContent className="h-64 p-4">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.monthlyRevenue}>
+                    <BarChart data={data.revenueByPeriod}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="uv" fill="#4f46e5" />
+                      <Bar dataKey="revenue" fill="#4f46e5" />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>

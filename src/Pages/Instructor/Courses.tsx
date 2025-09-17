@@ -78,7 +78,7 @@ const Courses = () => {
 
           {/* Dynamic Course Cards */}
           {courses.map((course:ICourseData) => (
-            <Card key={course._id} className="mb-4">
+            <Card key={course.id} className="mb-4">
               <CardContent className="flex flex-col md:flex-row p-4 gap-4">
                 <img
                   src={
@@ -126,7 +126,7 @@ const Courses = () => {
                     className="mt-2 bg-indigo-500"
                     onClick={() =>
                       navigate(
-                        `/instructor/dashboard/courses/landingpage/${course._id}`
+                        `/instructor/dashboard/courses/landingpage/${course.id}`
                       )
                     }
                   >

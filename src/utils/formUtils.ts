@@ -4,7 +4,7 @@ import { Teacher } from "@/Pages/types/instructor";
 export const cleanTeacherValues = (teacher: Teacher): Partial<Teacher> => {
   const cleaned: Partial<Teacher> = {};
   
-  cleaned._id = teacher._id;
+  cleaned.id = teacher.id;
   cleaned.email = teacher.email;
   cleaned.fullName = teacher.fullName;
   cleaned.isBlocked = teacher.isBlocked;

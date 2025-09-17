@@ -206,7 +206,7 @@ export const validationSchemas = [
 
 
 export interface Teacher {
-  _id: string;
+  id: string;
   email: string;
   fullName: string;
   phone?: string;

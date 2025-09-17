@@ -42,14 +42,14 @@ export default function CallHistory() {
     const setupSocket = async () => {
       try {
         const instructor = await instructorAPI.getProfile();
-        setInstructorId(instructor.profile._id);
+        setInstructorId(instructor.profile.id);
         socket.emit("set-role", {
           role: "instructor",
-          userId: instructor.profile._id,
+          userId: instructor.profile.id,
         });
 
         const callHistoryData = await instructorAPI.getCallhistory(
-          instructor.profile._id
+          instructor.profile.id
         );
         setCallHistory(callHistoryData.data);
 

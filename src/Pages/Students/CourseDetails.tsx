@@ -156,10 +156,10 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
                 )}
 
                 {activeTab === "content" && (
-                  <CourseContent courseId={course._id} />
+                  <CourseContent courseId={course.id} />
                 )}
                 {activeTab === "reviews" && (
-                  <ReviewCard courseId={course._id} />
+                  <ReviewCard courseId={course.id} />
                 )}
                 {activeTab === "instructor" && (
                   <InstructorProfile instructor={course.instructorDetails} />
@@ -235,14 +235,14 @@ const handleAddToWishlist = async (courseId: string): Promise<void> => {
 
                 <button
                   className="cursor-pointer border-2 border-indigo-600 hover:border-indigo-700 text-indigo-600 w-full py-3 rounded-lg font-semibold text-sm transition-colors duration-300"
-                  onClick={() => handleAddToWishlist(course._id)}
+                  onClick={() => handleAddToWishlist(course.id)}
                 >
                   Add to Wishlist
                 </button>
 
                 <button
                   className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 mt-2 text-white w-full py-3 rounded-lg font-semibold text-sm transition"
-                  onClick={() => handleBuyNow(course._id)}
+                  onClick={() => handleBuyNow(course.id)}
                 >
                   Buy Now
                 </button>

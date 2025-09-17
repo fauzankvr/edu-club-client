@@ -9,7 +9,7 @@ import Pagination from "@/components/adminComponet/pagination";
 
 
 interface Category {
-  _id?: string;
+  id?: string;
   name: string;
   isBlocked?: boolean;
 }
@@ -56,7 +56,7 @@ const CategoryManagement = () => {
   const toggleDisable = async (index: number) => {
     const category = categories[index];
     try {
-      await adminApi.toggleCategoryStatus(category._id!); // Update this API method
+      await adminApi.toggleCategoryStatus(category.id!); // Update this API method
       const updated = [...categories];
       updated[index].isBlocked = !category.isBlocked;
       setCategories(updated);
@@ -71,13 +71,13 @@ const CategoryManagement = () => {
   };
   
   const handleUpdateCategory = async () => {
-    if (!editData.name.trim() || !editData._id) return;
+    if (!editData.name.trim() || !editData.id) return;
 
     try {
-      await adminApi.updateCategory(editData._id, { name: editData.name });
+      await adminApi.updateCategory(editData.id, { name: editData.name });
       setCategories((prev) =>
         prev.map((cat) =>
-          cat._id === editData._id ? { ...cat, name: editData.name } : cat
+          cat.id === editData.id ? { ...cat, name: editData.name } : cat
         )
       );
       toast.success("Category updated");

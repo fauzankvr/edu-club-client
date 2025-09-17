@@ -37,7 +37,7 @@ export default function MediaViewer({
   // Reset sentThresholdsRef when currentLesson changes
   useEffect(() => {
     sentThresholdsRef.current = [];
-  }, [currentLesson?._id]);
+  }, [currentLesson?.id]);
 
   // Handle PDF load error
   const handlePdfError = useCallback(() => {
@@ -62,7 +62,7 @@ export default function MediaViewer({
           ) {
             updateLessonProgress(
               sectionId,
-              currentLesson._id,
+              currentLesson.id,
               roundedProgress,
               duration,
               currentTime
@@ -74,7 +74,7 @@ export default function MediaViewer({
     },
     [
       currentLesson?.videoPath,
-      currentLesson?._id,
+      currentLesson?.id,
       studentId,
       updateLessonProgress,
     ]
@@ -107,13 +107,13 @@ export default function MediaViewer({
     if (currentLesson?.pdfPath) {
       const sectionId =
         carriculam.sections.find((sec) =>
-          sec.lectures.some((lec) => lec._id === currentLesson._id)
-        )?._id || "";
-      handlePdfView(sectionId, currentLesson._id);
+          sec.lectures.some((lec) => lec.id === currentLesson.id)
+        )?.id || "";
+      handlePdfView(sectionId, currentLesson.id);
     }
   }, [
     currentLesson?.pdfPath,
-    currentLesson?._id,
+    currentLesson?.id,
     carriculam.sections,
     handlePdfView,
   ]);
@@ -130,8 +130,8 @@ export default function MediaViewer({
             onTimeUpdate={() =>
               handleTimeUpdate(
                 carriculam.sections.find((sec) =>
-                  sec.lectures.some((lec) => lec._id === currentLesson._id)
-                )?._id || ""
+                  sec.lectures.some((lec) => lec.id === currentLesson.id)
+                )?.id || ""
               )
             }
           >
@@ -153,9 +153,9 @@ export default function MediaViewer({
               onClick={() =>
                 markLessonComplete(
                   carriculam.sections.find((sec) =>
-                    sec.lectures.some((lec) => lec._id === currentLesson._id)
-                  )?._id || "",
-                  currentLesson._id
+                    sec.lectures.some((lec) => lec.id === currentLesson.id)
+                  )?.id || "",
+                  currentLesson.id
                 )
               }
               className="absolute bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"

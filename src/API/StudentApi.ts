@@ -137,7 +137,7 @@ const studentAPI = {
   getAllProgress: async () => axiosInstance.get(STUDENT_PROGRESS_API),
 
   getProgress: async (studentId: string, courseId: string) =>
-    axiosInstance.get(`/student/getProgress/${studentId}/${courseId}`),
+    axiosInstance.get(`/student/progress/${studentId}/${courseId}`),
 
   updateProgress: async (
     studentId: string,
@@ -148,7 +148,7 @@ const studentAPI = {
     totalSeconds: number,
     actualSecondsWatched: number
   ) =>
-    axiosInstance.patch("/student/updateProgress", {
+    axiosInstance.patch("/student/progress", {
       studentId,
       courseId,
       sectionId,
@@ -170,7 +170,7 @@ const studentAPI = {
     axiosInstance.get(`/student/order/success/${id}`),
 
   findFullCourse: (id: string) =>
-    axiosInstance.get(`/student/course/fullcourse/${id}`),
+    axiosInstance.get(`/student/course/${id}`),
 
   addReview: (
     courseId: string,
@@ -233,7 +233,7 @@ const studentAPI = {
 
   createNote: (noteData: {
     title: string;
-    course_id: string;
+    courseId: string;
     notes: string[];
   }) => axiosInstance.post(STUDENT_NOTES_API, noteData),
 

@@ -170,7 +170,7 @@ const instructorAPI = {
   updateCourse: async (courseId: string, formData: FormData) => {
     try {
       const response = await axiosInstance.post(
-        `/instructor/updateCourse/${courseId}`,
+        `/instructor/update/${courseId}`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -272,7 +272,7 @@ const instructorAPI = {
     });
   },
   getCallhistory: (instructorId: string) => {
-    return axiosInstance.get(`/instructor/getCallhistory/${instructorId}`);
+    return axiosInstance.get(`/instructor/callhistory/${instructorId}`);
   },
   getDashboard: (params: any) => {
     return axiosInstance.get(INSTRUCTOR_DASHBOARD_API, { params });

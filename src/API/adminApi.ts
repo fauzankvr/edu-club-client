@@ -9,14 +9,9 @@ import {
   ADMIN_GET_ALL_TEACHERS_API,
   ADMIN_BLOCK_TEACHER_API,
   ADMIN_APPROVE_TEACHER_API,
-  ADMIN_CATEGORY_GET_ALL_API,
-  ADMIN_CATEGORY_ADD_API,
-  ADMIN_CATEGORY_TOGGLE_API,
   ADMIN_CATEGORY_UPDATE_API,
-  ADMIN_LANGUAGE_GET_ALL_API,
-  ADMIN_LANGUAGE_ADD_API,
+  ADMIN_LANGUAGE,
   ADMIN_LANGUAGE_UPDATE_API,
-  ADMIN_LANGUAGE_TOGGLE_API,
   ADMIN_PAYOUTS_API,
   ADMIN_PAYOUT_API,
   ADMIN_PLANS_API,
@@ -25,6 +20,7 @@ import {
   ADMIN_REPORT_API,
   ADMIN_COURSES_API,
   ADMIN_BLOCK_COURSE_API,
+  ADMIN_CATEGORY,
 } from "@/constants/adminApi";
 
 const adminApi = {
@@ -56,14 +52,14 @@ const adminApi = {
 
   getAllCategories: (page: number, limit: number) => {
     return axiosInstance.get(
-      `${ADMIN_CATEGORY_GET_ALL_API}?page=${page}&limit=${limit}`
+      `${ADMIN_CATEGORY}?page=${page}&limit=${limit}`
     );
   },
   addCategory: (data: { name: string }) => {
-    return axiosInstance.post(ADMIN_CATEGORY_ADD_API, data);
+    return axiosInstance.post(ADMIN_CATEGORY, data);
   },
   toggleCategoryStatus: (id: string) => {
-    return axiosInstance.patch(`${ADMIN_CATEGORY_TOGGLE_API}/${id}`);
+    return axiosInstance.patch(`${ADMIN_CATEGORY}/${id}/block`);
   },
   updateCategory: (id: string, data: { name: string }) => {
     return axiosInstance.patch(`${ADMIN_CATEGORY_UPDATE_API}/${id}`, data);
@@ -71,17 +67,17 @@ const adminApi = {
 
   getAllLanguages: (limit: number, page: number) => {
     return axiosInstance.get(
-      `${ADMIN_LANGUAGE_GET_ALL_API}?limit=${limit}&page=${page}`
+      `${ADMIN_LANGUAGE}?limit=${limit}&page=${page}`
     );
   },
   addLanguage: (data: { name: string }) => {
-    return axiosInstance.post(ADMIN_LANGUAGE_ADD_API, data);
+    return axiosInstance.post(ADMIN_LANGUAGE, data);
   },
   updateLanguage: (id: string, data: { name: string }) => {
     return axiosInstance.patch(`${ADMIN_LANGUAGE_UPDATE_API}/${id}`, data);
   },
   toggleLanguageStatus: (id: string) => {
-    return axiosInstance.patch(`${ADMIN_LANGUAGE_TOGGLE_API}/${id}`);
+    return axiosInstance.patch(`${ADMIN_LANGUAGE}/${id}/block`);
   },
 
   getPayoutRequests: () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+ import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import studentAPI from "@/API/StudentApi";
 import { useParams } from "react-router-dom";
@@ -28,7 +28,7 @@ const Comment: React.FC<CommentProps> = ({ userId, text }) => (
 );
 
 interface DiscussionItem {
-  _id: string;
+  id: string;
   studentId: User & { profileImage: string };
   text: string;
   likes: number;
@@ -155,7 +155,7 @@ const Discussion: React.FC = () => {
 
       {/* Discussion List */}
       {discussions.map((d) => (
-        <div key={d._id} className="flex gap-4 items-start mb-4">
+        <div key={d.id} className="flex gap-4 items-start mb-4">
           <div className="w-12 h-12 bg-indigo-700 rounded-full flex items-center justify-center text-white text-lg font-bold">
             {d.studentId.firstName[0]}
           </div>
@@ -171,23 +171,23 @@ const Discussion: React.FC = () => {
                 <Icon
                   icon="mdi:thumb-up-outline"
                   className="cursor-pointer"
-                  onClick={() => handleReact(d._id, "like")}
+                  onClick={() => handleReact(d.id, "like")}
                 />
                 {d.likes}
                 <Icon
                   icon="mdi:thumb-down-outline"
                   className="cursor-pointer"
-                  onClick={() => handleReact(d._id, "dislike")}
+                  onClick={() => handleReact(d.id, "dislike")}
                 />
                 {d.dislikes}
               </div>
               <div
                 className="flex items-center gap-1 cursor-pointer hover:text-indigo-600"
-                onClick={() => handleShowReplies(d._id)}
+                onClick={() => handleShowReplies(d.id)}
               >
                 <Icon icon="mdi:comment-outline" />
                 <span>
-                  {discussionReplies[d._id]?.isOpen
+                  {discussionReplies[d.id]?.isOpen
                     ? "Hide replies"
                     : "Show replies"}
                 </span>
@@ -195,7 +195,7 @@ const Discussion: React.FC = () => {
               <div
                 className="flex items-center gap-1 cursor-pointer hover:text-indigo-600"
                 onClick={() =>
-                  setActiveReplyId(activeReplyId === d._id ? null : d._id)
+                  setActiveReplyId(activeReplyId === d.id ? null : d.id)
                 }
               >
                 <Icon icon="mdi:reply" />
@@ -204,7 +204,7 @@ const Discussion: React.FC = () => {
             </div>
 
             {/* Reply Input */}
-            {activeReplyId === d._id && (
+            {activeReplyId === d.id && (
               <div className="ml-10 mt-2">
                 <input
                   type="text"
@@ -214,7 +214,7 @@ const Discussion: React.FC = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-1 mb-2"
                 />
                 <button
-                  onClick={() => handleReplySubmit(d._id)}
+                  onClick={() => handleReplySubmit(d.id)}
                   className="bg-indigo-500 text-white px-4 py-1 rounded hover:bg-indigo-600"
                 >
                   Send Reply
@@ -223,10 +223,10 @@ const Discussion: React.FC = () => {
             )}
 
             {/* Replies */}
-            {discussionReplies[d._id]?.isOpen && (
+            {discussionReplies[d.id]?.isOpen && (
               <div className="ml-10 mt-3 flex flex-col gap-2">
-                {discussionReplies[d._id]?.replies?.length ? (
-                  discussionReplies[d._id].replies.map((r, i) => (
+                {discussionReplies[d.id]?.replies?.length ? (
+                  discussionReplies[d.id].replies.map((r, i) => (
                     <Comment key={i} userId={r.userId} text={r.text} />
                   ))
                 ) : (

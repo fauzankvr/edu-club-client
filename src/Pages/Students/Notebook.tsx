@@ -4,8 +4,8 @@ import studentAPI from "@/API/StudentApi";
 import { ICourseData } from "@/Interface/CourseData";
 import { toast, ToastContainer } from "react-toastify";
 
-interface INote {
-  _id: string;
+export interface INote {
+  id: string;
   title: string;
   notes: string[];
   student_id?: string | null;
@@ -88,8 +88,9 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        if (course?._id) {
-          const res = await studentAPI.getNotes(course._id);
+        if (course?.id) {
+          const res = await studentAPI.getNotes(course.id);
+          
           setNotebooks(res.data.data.notes);
         }
       } catch (err) {
@@ -102,10 +103,10 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
 
   const addNotebook = async (title: string) => {
     try {
-      if (course?._id) {
+      if (course?.id) {
         const newNote = await studentAPI.createNote({
           title: title,
-          course_id: course._id,
+          courseId: course.id,
           notes: [],
         });
         setNotebooks((prev) => [...prev, newNote.data.data.notes]);
@@ -116,14 +117,14 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
   };
   const EditNotebook = async (notebookId: string, title: string) => {
     try {
-      if (course?._id) {
+      if (course?.id) {
         const updatedNote = await studentAPI.updateNoteBookTitle(
           notebookId,
           title
         );
         setNotebooks((prev) =>
           prev.map((notebook) =>
-            notebook._id === notebookId ? updatedNote.data.data.notes : notebook
+            notebook.id === notebookId ? updatedNote.data.data.notes : notebook
           )
         );
         setEditingNoteBook(null); // Clear editing state after update
@@ -138,7 +139,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
     try {
       await studentAPI.deleteNotebook(notebookId);
       setNotebooks((prev) =>
-        prev.filter((notebook) => notebook._id !== notebookId)
+        prev.filter((notebook) => notebook.id !== notebookId)
       );
       setNoteInputs((prev) => {
         const { [notebookId]: _, ...rest } = prev;
@@ -159,7 +160,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
 
       setNotebooks((prev) =>
         prev.map((notebook) =>
-          notebook._id === notebookId ? updatedNotebook : notebook
+          notebook.id === notebookId ? updatedNotebook : notebook
         )
       );
       setNoteInputs((prev) => ({ ...prev, [notebookId]: "" }));
@@ -174,13 +175,21 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
         notebookId,
         noteIndex
       );
-      const updatedNotebook = res.data.data.notes;
+      if (res.data.data.notes) {
+        
+        setNotebooks((prev) =>
+          prev.map((notebook) =>
+            notebook.id === notebookId
+              ? {
+                  ...notebook,
+                  notes: notebook.notes.filter((_, i) => i !== noteIndex),
+                }
+              : notebook
+          )
+        );
 
-      setNotebooks((prev) =>
-        prev.map((notebook) =>
-          notebook._id === notebookId ? updatedNotebook : notebook
-        )
-      );
+      }
+    
     } catch (error) {
       console.error("Failed to delete note:", error);
     }
@@ -201,7 +210,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
 
       setNotebooks((prev) =>
         prev.map((notebook) =>
-          notebook._id === notebookId ? updatedNotebook : notebook
+          notebook.id === notebookId ? updatedNotebook : notebook
         )
       );
       setEditingNote(null);
@@ -304,12 +313,12 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
         <div className="space-y-6">
           {notebooks.map((notebook) => (
             <div
-              key={notebook._id}
+              key={notebook.id}
               className="bg-gray-200 p-6 rounded-md shadow-md relative"
             >
-              {editingNoteBook?.notebookId === notebook._id ? (
+              {editingNoteBook?.notebookId === notebook.id ? (
                 <form
-                  onSubmit={(e) => handleEditSubmitTitle(e, notebook._id)}
+                  onSubmit={(e) => handleEditSubmitTitle(e, notebook.id)}
                   className="flex w-full gap-2 items-center"
                 >
                   <input
@@ -346,7 +355,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
                   <div className="flex items-end gap-2">
                     <button
                       onClick={() =>
-                        startEditingNotebook(notebook._id, notebook.title)
+                        startEditingNotebook(notebook.id, notebook.title)
                       }
                       className="text-blue-500 hover:text-blue-700 transition-colors"
                       title="Edit Notebook"
@@ -354,7 +363,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
                       <Icon icon="mdi:pencil" width="18" height="18" />
                     </button>
                     <button
-                      onClick={() => confirmDelete(notebook._id, "Notebook")}
+                      onClick={() => confirmDelete(notebook.id, "Notebook")}
                       className="text-red-500 hover:text-red-700 transition-colors"
                       title="Delete Notebook"
                     >
@@ -366,11 +375,11 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
               <ul className="space-y-2 mb-4">
                 {notebook.notes.map((note, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    {editingNote?.notebookId === notebook._id &&
+                    {editingNote?.notebookId === notebook.id &&
                     editingNote?.index === index ? (
                       <form
                         onSubmit={(e) =>
-                          handleEditSubmit(e, notebook._id, index)
+                          handleEditSubmit(e, notebook.id, index)
                         }
                         className="flex w-full gap-2 items-center"
                       >
@@ -416,7 +425,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
                         <span className="text-gray-800 flex-grow">{note}</span>
                         <button
                           onClick={() =>
-                            startEditingNote(notebook._id, index, note)
+                            startEditingNote(notebook.id, index, note)
                           }
                           className="text-blue-500 hover:text-blue-700 transition-colors"
                           title="Edit Note"
@@ -425,7 +434,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
                         </button>
                         <button
                           onClick={() =>
-                            confirmDelete(notebook._id, "Note", index)
+                            confirmDelete(notebook.id, "Note", index)
                           }
                           className="text-red-500 hover:text-red-700 transition-colors"
                           title="Delete Note"
@@ -439,18 +448,18 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
               </ul>
               <textarea
                 placeholder="Write note here..."
-                value={noteInputs[notebook._id] || ""}
+                value={noteInputs[notebook.id] || ""}
                 onChange={(e) =>
                   setNoteInputs((prev) => ({
                     ...prev,
-                    [notebook._id]: e.target.value,
+                    [notebook.id]: e.target.value,
                   }))
                 }
                 className="w-full p-2 border border-indigo-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               <div className="flex justify-end">
                 <button
-                  onClick={() => addNoteToNotebook(notebook._id)}
+                  onClick={() => addNoteToNotebook(notebook.id)}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
                 >
                   Save
