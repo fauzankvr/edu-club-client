@@ -1,9 +1,9 @@
-import {axiosInstance} from "./axiosInstance";
+import { axiosInstance } from "./axiosInstance";
 import { store } from "@/features/student/redux/store";
-import { setAccessToken,clearStudent } from "@/features/student/redux/studentSlce";
+import { setAccessToken, clearStudent } from "@/features/student/redux/studentSlce";
 import { CourseQueryParams } from "@/Interface/CourseData";
 import { ProfileData } from "@/Pages/types/student";
-      
+
 axiosInstance.interceptors.request.use(
   (config) => {
     if (config.url?.startsWith("/student")) {
@@ -11,7 +11,7 @@ axiosInstance.interceptors.request.use(
       const accessToken = localStorage.getItem("studentToken");
       if (accessToken) {
         config.headers["Authorization"] = `Bearer ${accessToken}`;
-      }       
+      }
     }
     return config;
   },
@@ -29,7 +29,7 @@ axiosInstance.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 401 &&
-      originalRequest._retry 
+      originalRequest._retry
     ) {
       originalRequest._retry = false;
       try {
@@ -151,7 +151,7 @@ const studentAPI = {
         });
       }
 
-      const response = await axiosInstance.get("/student/getAllCourses", {
+      const response = await axiosInstance.get("/courses", {
         params,
         withCredentials: true,
       });
