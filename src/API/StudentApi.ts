@@ -53,60 +53,57 @@ axiosInstance.interceptors.response.use(
 
 // Student API Methods
 const studentAPI = {
+  // ── Auth ──────────────────────────────────────────────────────────────────
   login: (formdata: object) => {
-    return axiosInstance.post("/student/login", formdata);
+    return axiosInstance.post("/students/login", formdata);
   },
   googleLogin: ({ token, role }: { token: string; role: string }) => {
-    return axiosInstance.post("/student/google-login", { token, role });
+    return axiosInstance.post("/students/google-login", { token, role });
   },
   verifyOtp: (formData: object) => {
-    return axiosInstance.post("/student/verifyotp", formData);
+    return axiosInstance.post("/students/verify-otp", formData);
   },
-
   ForgotverifyOtp: (formData: object) => {
-    return axiosInstance.post("/student/forgotVerifyOtp", formData);
+    return axiosInstance.post("/students/forgot-verify-otp", formData);
   },
   sendOtp: (email: string) => {
-    return axiosInstance.post("/student/sendOtp", { email });
+    return axiosInstance.post("/students/send-otp", { email });
   },
   resetPassword: (newPassword: string, email: string) => {
-    return axiosInstance.post("/student/resetPassword", { newPassword, email });
+    return axiosInstance.post("/students/reset-password", { newPassword, email });
   },
-
-  fetchCourse: (
-    query1?: string,
-    query2?: string,
-    price?: string,
-    page?: number
-  ) => {
-    return axiosInstance.get(
-      `/student/get_course?search=${query1}&category=${query2}&price=${price}&page=${page}`
-    );
-  },
-
-  getProfile: async () => {
-    return await axiosInstance.get("/student/profile").then((res) => res.data);
-  },
-
   logout: async () => {
     try {
-      await axiosInstance.post("/student/logout");
+      await axiosInstance.post("/students/logout");
       store.dispatch(clearStudent());
       localStorage.removeItem("studentToken");
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed:", error);
-      // Optional: show toast or fallback redirect
-      // window.location.href = "/student/login";
     }
   },
   resendOtp: async (email: string) => {
-    return await axiosInstance.post("/student/resendOtp", { email });
+    return await axiosInstance.post("/students/resend-otp", { email });
+  },
+
+  // ── Student Profile ───────────────────────────────────────────────────────
+  getStudent: async () => {
+    try {
+      const response = await axiosInstance.get("/students");
+      console.log(response);
+      return response;
+    } catch (error) {
+      console.error("Fetching student failed:", error);
+      throw error;
+    }
+  },
+  getProfile: async () => {
+    return await axiosInstance.get("/students/profile").then((res) => res.data);
   },
   updateProfile: async (data: ProfileData) => {
     try {
       console.log("Updating profile with data:", data);
-      const response = await axiosInstance.put("/student/profile", data, {
+      const response = await axiosInstance.put("/students/profile", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -118,16 +115,7 @@ const studentAPI = {
     }
   },
 
-  getStudent: async () => {
-    try {
-      const response = await axiosInstance.get("/student");
-      console.log(response);
-      return response;
-    } catch (error) {
-      console.error("Fetching student failed:", error);
-      throw error;
-    }
-  },
+  // ── Courses ───────────────────────────────────────────────────────────────
   getAllCourses: async (
     searchQuery?: string,
     page?: number,
@@ -164,7 +152,7 @@ const studentAPI = {
   },
   findOneCourse: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/student/getCourse/${id}`);
+      const response = await axiosInstance.get(`/courses/${id}`);
       return response.data;
     } catch (error) {
       console.error("Fetching course failed:", error);
@@ -173,7 +161,7 @@ const studentAPI = {
   },
   findCarriculam: async (id: string) => {
     try {
-      const response = await axiosInstance.get(`/student/getCurriculum/${id}`);
+      const response = await axiosInstance.get(`/courses/${id}/curriculum`);
       return response.data;
     } catch (error) {
       console.error("Fetching curriculum failed:", error);
@@ -181,10 +169,10 @@ const studentAPI = {
     }
   },
   getAllProgress: async () => {
-    return axiosInstance.get("/student/getAllProgress");
+    return axiosInstance.get("/students/progress");
   },
   getProgress: async (studentId: string, courseId: string) => {
-    return axiosInstance.get(`/student/getProgress/${studentId}/${courseId}`);
+    return axiosInstance.get(`/students/${studentId}/courses/${courseId}/progress`);
   },
   updateProgress: async (
     studentId: string,
@@ -195,7 +183,7 @@ const studentAPI = {
     totalSeconds: number,
     actualSecondsWatched: number
   ) => {
-    return axiosInstance.patch("/student/updateProgress", {
+    return axiosInstance.patch("/students/progress", {
       studentId,
       courseId,
       sectionId,
@@ -205,110 +193,114 @@ const studentAPI = {
       actualSecondsWatched,
     });
   },
-  createOrder: (cart: object) => {
-    return axiosInstance.post("/student/orders", { cart });
-  },
-
-  captureOrder: (orderID: string) => {
-    return axiosInstance.post(`/student/orders/capture/${orderID}`);
-  },
-  getPurchaseHistory: () => {
-    return axiosInstance.get("/student/orders");
+  getEnrolledCourses: () => {
+    return axiosInstance.get("/courses/enrolled");
   },
   findCoursByid: (id: string) => {
-    return axiosInstance.get(`/student/order/success/${id}`);
+    return axiosInstance.get(`/courses/order/${id}`);
   },
   findFullCourse: (id: string) => {
-    return axiosInstance.get(`/student/course/fullcourse/${id}`);
+    return axiosInstance.get(`/courses/full/${id}`);
   },
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  createOrder: (cart: object) => {
+    return axiosInstance.post("/students/orders", { cart });
+  },
+  captureOrder: (orderID: string) => {
+    return axiosInstance.post(`/students/orders/${orderID}/capture`);
+  },
+  getPurchaseHistory: () => {
+    return axiosInstance.get("/students/orders");
+  },
+
+  // ── Reviews ───────────────────────────────────────────────────────────────
   addReview: (
     courseId: string,
     reviewData: { rating: number; comment: string }
   ) => {
-    return axiosInstance.post(`/student/course/${courseId}/review`, reviewData);
+    return axiosInstance.post(`/courses/${courseId}/reviews`, reviewData);
   },
-
   getReviews: (courseId: string) => {
-    return axiosInstance.get(`/student/course/${courseId}/reviews`);
+    return axiosInstance.get(`/courses/${courseId}/reviews`);
   },
   getMyReview: (courseId: string) => {
-    return axiosInstance.get(`/student/course/myReview/${courseId}`);
+    return axiosInstance.get(`/courses/${courseId}/my-review`);
   },
-
   reactToReview: (reviewId: string, type: "like" | "dislike") => {
-    return axiosInstance.patch(`/student/${reviewId}/reaction`, { type });
+    return axiosInstance.patch(`/reviews/${reviewId}/reaction`, { type });
   },
 
+  // ── Wishlist ──────────────────────────────────────────────────────────────
   addToWishlist: (courseId: string) => {
-    return axiosInstance.post(`/student/course/${courseId}/wishlist`);
+    return axiosInstance.post(`/courses/${courseId}/wishlist`);
   },
   removeFromWishlist: (courseId: string) => {
-    return axiosInstance.delete(`/student/course/${courseId}/wishlist`);
+    return axiosInstance.delete(`/courses/${courseId}/wishlist`);
   },
   getWishlist: () => {
-    return axiosInstance.get("/student/course/wishlist");
-  },
-  getEnrolledCourses: () => {
-    return axiosInstance.get("/student/courses/enrolled");
+    return axiosInstance.get("/students/wishlist");
   },
 
-  chatApi: (message: { message: string }, courseId: string) => {
-    return axiosInstance.post(`/student/gemini/chat/${courseId}`, message);
-  },
-  findAiChat: (courseId: string) => {
-    return axiosInstance.get(`/student/gemini/chat/${courseId}`);
-  },
+  // ── Discussions ───────────────────────────────────────────────────────────
   getDiscussion: (id: string) => {
-    return axiosInstance.get(`/student/discussion/${id}`);
+    return axiosInstance.get(`/discussions/${id}`);
   },
   createDiscussion: (id: string, payload: { text: string }) => {
-    return axiosInstance.post(`/student/discussion/${id}`, payload);
+    return axiosInstance.post(`/discussions/${id}`, payload);
   },
   reactHandle: (id: string, type: string) => {
-    return axiosInstance.post(`/student/${id}/react`, { type: type });
+    return axiosInstance.post(`/discussions/${id}/react`, { type: type });
   },
   addReply: (discussionId: string, data: { text: string }) => {
-    return axiosInstance.post(
-      `/student/discussion/${discussionId}/reply`,
-      data
-    );
+    return axiosInstance.post(`/discussions/${discussionId}/replies`, data);
   },
   getReplies: (discussionId: string) => {
-    return axiosInstance.get(`/student/discussion/replay/${discussionId}`);
+    return axiosInstance.get(`/discussions/${discussionId}/replies`);
   },
+
+  // ── Chat ──────────────────────────────────────────────────────────────────
   postChat: (chatData: { userId: string; instructorId: string }) => {
-    return axiosInstance.post("/student/chat", chatData);
+    return axiosInstance.post("/chats", chatData);
   },
   getChat: (userId: string) => {
-    return axiosInstance.get(`/student/chat/user/${userId}`);
+    return axiosInstance.get(`/chats/user/${userId}`);
   },
   getMessage: (selectedChatId: string) => {
-    return axiosInstance.get(`/chat/messages/${selectedChatId}`);
+    return axiosInstance.get(`/chats/${selectedChatId}/messages`);
   },
   postMessage: (messageData: object) => {
-    return axiosInstance.post("/chat/message", messageData);
+    return axiosInstance.post("/chats/messages", messageData);
   },
+  chatApi: (message: { message: string }, courseId: string) => {
+    return axiosInstance.post(`/chats/${courseId}/ai`, message);
+  },
+  findAiChat: (courseId: string) => {
+    return axiosInstance.get(`/chats/${courseId}/ai`);
+  },
+
+  // ── Notes ─────────────────────────────────────────────────────────────────
   getNotes: (courseId: string) => {
-    return axiosInstance.get(`/student/notes/${courseId}`);
+    return axiosInstance.get(`/notes/${courseId}`);
   },
   createNote: (noteData: {
     title: string;
     course_id: string;
     notes: string[];
   }) => {
-    return axiosInstance.post("/student/notes", noteData);
+    return axiosInstance.post("/notes", noteData);
   },
   updateNoteBookTitle: (notebookId: string, title: string) => {
-    return axiosInstance.patch(`/student/noteTitle/${notebookId}`, { title });
+    return axiosInstance.patch(`/notes/${notebookId}/title`, { title });
   },
   addNoteToNotebook: (id: string, note: string) => {
-    return axiosInstance.put(`/student/notes/${id}`, { note });
+    return axiosInstance.put(`/notes/${id}`, { note });
   },
   deleteNotebook: async (notebookId: string) => {
-    return await axiosInstance.delete(`/student/notes/${notebookId}`);
+    return await axiosInstance.delete(`/notes/${notebookId}`);
   },
   deleteNoteFromNotebook: async (notebookId: string, noteIndex: number) => {
-    return await axiosInstance.patch(`/student/note/${notebookId}/delete`, {
+    return await axiosInstance.patch(`/notes/${notebookId}/delete`, {
       noteIndex,
     });
   },
@@ -317,17 +309,25 @@ const studentAPI = {
     noteIndex: number,
     newText: string
   ) => {
-    return await axiosInstance.patch(`/student/note/${notebookId}/update`, {
+    return await axiosInstance.patch(`/notes/${notebookId}/update`, {
       noteIndex,
       newText,
     });
   },
+
+  // ── Plans ─────────────────────────────────────────────────────────────────
   getPlans: async () => {
-    return await axiosInstance.get("/admin/plans");
+    return await axiosInstance.get("/plans");
   },
   getPlan: async () => {
-    return await axiosInstance.get("/student/plan");
+    return await axiosInstance.get("/students/plans");
   },
+  createPlanOrder: (data: { planId: string; userId: string }) =>
+    axiosInstance.post("/plans/checkout", data),
+  capturePlanOrder: (orderId: string) =>
+    axiosInstance.post(`/plans/checkout/capture`, { orderId }),
+
+  // ── Notifications ─────────────────────────────────────────────────────────
   sendNotification: async (notification: {
     studentId: string;
     instructorId: string;
@@ -336,36 +336,40 @@ const studentAPI = {
     message: string;
     read: boolean;
   }) => {
-    return await axiosInstance.post("/student/notifications", notification);
+    return await axiosInstance.post("/students/notifications", notification);
   },
-
   getNotifications: async () => {
-    return await axiosInstance.get("/student/notifications");
+    return await axiosInstance.get("/students/notifications");
   },
   markNotificationAsRead: async (notificationId: string) => {
-    return await axiosInstance.patch(
-      `/student/notifications/${notificationId}`
+    return await axiosInstance.patch(`/students/notifications/${notificationId}`);
+  },
+
+  // ── Legacy / unused (kept for backward compat, remove if not needed) ──────
+  fetchCourse: (
+    query1?: string,
+    query2?: string,
+    price?: string,
+    page?: number
+  ) => {
+    return axiosInstance.get(
+      `/student/get_course?search=${query1}&category=${query2}&price=${price}&page=${page}`
     );
   },
   clearNotifications: async () => {
     return await axiosInstance.delete("/student/notifications");
   },
-
   checkout: (data: {
     userId: string;
     planId: string;
     paymentMethod: string;
     amount: number;
     currency: string;
-  }) => axiosInstance.post("/plan/checkout", data),
+  }) => axiosInstance.post("/plans/checkout", data),
   updateCheckout: (
     id: string,
     data: { paymentStatus: string; transactionId?: string }
   ) => axiosInstance.patch(`/plan/checkout/${id}`, data),
-  createPlanOrder: (data: { planId: string; userId: string }) =>
-    axiosInstance.post("/plan/checkout", data),
-  capturePlanOrder: (orderId: string) =>
-    axiosInstance.post(`/plan/checkout/capture`, { orderId }),
 };
 
 export default studentAPI;
