@@ -12,6 +12,26 @@ export interface CourseFormData {
 }
 
 export interface ICourseData {
+  _id: string;
+  category: string;
+  courseImageId: string;
+  description: string;
+  discount: string;
+  instructor: {
+    name: string;
+    profileImage: string;
+  };
+  language: string;
+  points: string[];
+  price: number;
+  students: string[];
+  title: string;
+  instructorDetails: Instructor;
+  averageRating: number;
+}
+
+
+export interface ICourseData1 {
   id: string;
   category: string;
   courseImageId: string;
