@@ -143,15 +143,15 @@ const getStatusBadge = (status: string) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {purchases.map((purchase) => (
+                  {purchases.filter((p) => p.courseDetails).map((purchase) => (
                     <tr
                       key={purchase.id}
                       className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                     >
                       <td className="py-4 px-4 flex items-center gap-3">
                         <img
-                          src={purchase.courseDetails.courseImageId}
-                          alt={purchase.courseDetails.title}
+                          src={purchase.courseDetails?.courseImageId ?? "https://via.placeholder.com/48"}
+                          alt={purchase.courseDetails?.title ?? "Course"}
                           className="w-12 h-12 object-cover rounded-md flex-shrink-0"
                           onError={(e) => {
                             e.currentTarget.src =
@@ -159,7 +159,7 @@ const getStatusBadge = (status: string) => {
                           }}
                         />
                         <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                          {purchase.courseDetails.title}
+                          {purchase.courseDetails?.title ?? "Unknown Course"}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm text-gray-600">
@@ -178,7 +178,7 @@ const getStatusBadge = (status: string) => {
                               handleRetryPayment(purchase.paypalOrderId)
                             }
                             className="text-indigo-600 cursor-pointer hover:text-indigo-800 text-sm font-medium underline focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            aria-label={`Retry payment for ${purchase.courseDetails.title}`}
+                            aria-label={`Retry payment for ${purchase.courseDetails?.title ?? "course"}`}
                           >
                             Retry
                           </button>

@@ -157,11 +157,11 @@ const Discussion: React.FC = () => {
       {discussions.map((d) => (
         <div key={d._id} className="flex gap-4 items-start mb-4">
           <div className="w-12 h-12 bg-indigo-700 rounded-full flex items-center justify-center text-white text-lg font-bold">
-            {d.studentId.firstName[0]}
+          {(d.studentId?.firstName?.[0] ?? "?")}
           </div>
           <div className="flex-1">
             <p className="font-bold">
-              {d.studentId.firstName} {d.studentId.lastName}
+              {d.studentId?.firstName ?? "Unknown"} {d.studentId?.lastName ?? ""}
             </p>
             <p className="text-sm text-gray-700">{d.text}</p>
 

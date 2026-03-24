@@ -39,7 +39,7 @@ export default function CourseContent({
             : 0;
           return (
             <div
-              key={section._id}
+              key={section._id ?? idx}
               className="border rounded-lg overflow-hidden"
             >
               <button
@@ -66,7 +66,7 @@ export default function CourseContent({
               </button>
               {openSection === idx &&
                 section.lectures.length > 0 &&
-                section.lectures.map((lesson) => {
+                section.lectures.map((lesson, lessonIdx) => {
                   const lectureProgress = sectionProgress?.lectures.find(
                     (lec) => lec.lectureId === lesson._id
                   );
@@ -75,7 +75,7 @@ export default function CourseContent({
 
                   return (
                     <div
-                      key={lesson._id}
+                      key={lesson._id ?? lessonIdx}
                       onClick={() => handleLessonClick(lesson, section._id)}
                       className={`px-6 py-3 cursor-pointer transition-colors duration-200 rounded-md ${
                         isSelected

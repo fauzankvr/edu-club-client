@@ -89,7 +89,7 @@ export interface Message {
           setIsLoading(true);
           const student = await studentAPI.getProfile();
           setStudentName(`${student.profile.firstName} ${student.profile.lastName}`);
-          if (student?.profile?._id) setStudentId(student.profile._id);
+          if (student?.profile?.id) setStudentId(student.profile.id);
           else throw new Error("Student profile not found");
           if (!id) throw new Error("Course ID not provided");
 
@@ -98,11 +98,11 @@ export interface Message {
           const curriculum = courseResponse.data.data.curriculum;
 
           const courseId = courseData?.id ?? courseData?._id;
-          if (!courseId || !student?.profile?._id)
+          if (!courseId || !student?.profile?.id)
             throw new Error("Missing course ID or student ID");
 
           const progressResponse = await studentAPI.getProgress(
-            student.profile._id,
+            student.profile.id,
             courseId
           );
           setCourse(courseData);
@@ -110,9 +110,12 @@ export interface Message {
           setProgress(progressResponse.data.data.progress || null);
           setCurrentLesson(curriculum?.sections[0]?.lectures[0] || null);
 
-          if (courseData?.instructorDetails?._id)
-            setInstructorId(courseData.instructorDetails._id);
-          else throw new Error("Instructor not found for course");
+          const instructorId =
+            courseData?.instructorDetails?._id ??
+            courseData?.instructorDetails?.id ??
+            null;
+          if (instructorId) setInstructorId(instructorId);
+          else console.warn("Instructor ID not found in course data");
         } catch (error: unknown) {
           console.error("Fetch Error:", error);
           setError(
@@ -155,7 +158,7 @@ export interface Message {
     }, [progress]);
 
     useEffect(() => {
-      if (!studentId || !instructorId) return;
+      if (!studentId) return;
       const socket = getSocket(studentId);
       socket.emit("set-role", { role: "student", userId: studentId });
 
@@ -242,36 +245,55 @@ export interface Message {
       const initializeChat = async () => {
         try {
           const response = await studentAPI.getChat(studentId);
-          let chatData = response.data.data.find(
-            (c: Chat) => c.instructorId === instructorId
-          );
-          if (!chatData) {
+          const allChats: Chat[] = response.data.data ?? [];
+
+          // Match by known instructorId; fallback to first existing chat
+          let chatData = instructorId
+            ? allChats.find((c: Chat) => c.instructorId === instructorId)
+            : null;
+
+          if (!chatData && instructorId) {
+            // No existing chat with this instructor — create one
             const createResponse = await studentAPI.postChat({
               userId: studentId,
               instructorId,
             });
-            chatData = createResponse.data;
+            chatData = createResponse.data?.data ?? createResponse.data;
           }
+
+          // If instructorId still unknown, use the first available chat
+          if (!chatData && allChats.length > 0) {
+            chatData = allChats[0];
+          }
+
+          if (!chatData) return; // No chat to show yet
+
+          // Backfill instructorId from chat data if we didn't know it before
+          if (!instructorId && chatData.instructorId) {
+            setInstructorId(chatData.instructorId);
+          }
+
           setChat(chatData);
           if (chatJoinedRef.current !== chatData._id) {
             socket.emit("joinChat", chatData._id);
             chatJoinedRef.current = chatData._id;
           }
           const messages = await studentAPI.getMessage(chatData._id);
+          const msgList: Message[] = messages.data.data ?? [];
           setChatMessages(
-            messages.data.data.map((msg: Message) => ({
+            msgList.map((msg: Message) => ({
               _id: msg._id,
               text: msg.text,
               sender: msg.sender,
               chatId: msg.chatId,
               reactions: msg.reactions,
-              deleted:msg.deleted,
+              deleted: msg.deleted,
               createdAt: msg.createdAt,
               seenBy: msg.seenBy || [],
             }))
           );
           setUnseenCount(
-            messages.data.data.filter(
+            msgList.filter(
               (msg: Message) =>
                 msg.sender !== studentId && !msg.seenBy.includes(studentId)
             ).length
@@ -378,7 +400,8 @@ export interface Message {
     const toggleSection = (i: number) =>
       setOpenSection(openSection === i ? null : i);
 
-    if (isLoading || !carriculam || !progress) {
+    // Only block on loading or missing curriculum — progress can be null for new enrollments
+    if (isLoading || !carriculam) {
       return (
         <>
           <Navbar />
@@ -414,7 +437,7 @@ export interface Message {
                   <h2 className="text-lg font-semibold">Course Progress</h2>
                   <div className="text-sm font-medium text-indigo-600">
                     {Math.round(overallProgress)}% Complete
-                    {progress.completed && (
+                    {progress?.completed && (
                       <span className="ml-2 text-green-600">
                         ✓ Course Completed
                       </span>
@@ -463,7 +486,7 @@ export interface Message {
             studentName={studentName}
             courseName={course?.title || "basic React"}
             instructorName={course?.instructorDetails.fullName || "Jhone"}
-            issuedDate={progress.updatedAt.split("T")[0]}
+            issuedDate={progress?.updatedAt?.split("T")[0] ?? ""}
             certificateId="EDU-123456"
             logoUrl={backgroundImage}
             signatureUrl={signatureImage}

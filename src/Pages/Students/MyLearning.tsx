@@ -98,7 +98,7 @@ const MyLearning = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {enrolledCourses.map((course) => (
               <div
-                key={course.courseDetails._id}
+                key={course.courseDetails.id ?? course.courseDetails._id}
                 className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-2xl transition border flex flex-col"
               >
                 <img

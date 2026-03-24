@@ -6,12 +6,12 @@ import { ProfileData } from "@/Pages/types/student";
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    if (config.url?.startsWith("/student")) {
-      // const accessToken = store.getState().student.accessToken;
-      const accessToken = localStorage.getItem("studentToken");
-      if (accessToken) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
-      }
+    // Attach student token to every request when present.
+    // Protected routes (/courses/enrolled, /notes/*, /students/*, etc.) need it;
+    // public routes simply ignore the Authorization header.
+    const accessToken = localStorage.getItem("studentToken");
+    if (accessToken) {
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
     return config;
   },

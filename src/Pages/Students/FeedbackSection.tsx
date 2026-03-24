@@ -227,14 +227,15 @@ const FeedbackSection = ({ courseId }: { courseId: string }) => {
               <div className="flex items-center mb-3">
                 <div className="w-10 h-10 bg-indigo-200 rounded-full overflow-hidden flex items-center justify-center mr-3">
                   <img
-                    src={review.userDetails.profileImage}
+                    src={review.userDetails?.profileImage ?? ""}
                     alt=""
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">
-                    {review.userDetails.firstName} {review.userDetails.lastName}
+                    {review.userDetails?.firstName ?? "Student"}{" "}
+                    {review.userDetails?.lastName ?? ""}
                   </p>
                   <p className="text-sm text-gray-500">
                     {dayjs(review.createdAt).fromNow()}

@@ -302,19 +302,19 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
         />
 
         <div className="space-y-6">
-          {notebooks.map((notebook) => (
+          {notebooks.filter(Boolean).map((notebook) => (
             <div
               key={notebook._id}
               className="bg-gray-200 p-6 rounded-md shadow-md relative"
             >
-              {editingNoteBook?.notebookId === notebook._id ? (
+              {editingNoteBook !== null && editingNoteBook?.notebookId === notebook._id ? (
                 <form
                   onSubmit={(e) => handleEditSubmitTitle(e, notebook._id)}
                   className="flex w-full gap-2 items-center"
                 >
                   <input
                     type="text"
-                    value={editingNoteBook.title}
+                    value={editingNoteBook?.title ?? ""}
                     onChange={(e) =>
                       setEditingNoteBook((prev) =>
                         prev ? { ...prev, title: e.target.value } : prev
