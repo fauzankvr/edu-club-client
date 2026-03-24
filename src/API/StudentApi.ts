@@ -57,7 +57,7 @@ const studentAPI = {
     return axiosInstance.post("/student/login", formdata);
   },
   googleLogin: ({ token, role }: { token: string; role: string }) => {
-    return axiosInstance.post("/student/googleLogin", { token, role });
+    return axiosInstance.post("/student/google-login", { token, role });
   },
   verifyOtp: (formData: object) => {
     return axiosInstance.post("/student/verifyotp", formData);
