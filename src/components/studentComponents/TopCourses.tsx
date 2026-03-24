@@ -57,7 +57,7 @@ const TopCourses = () => {
               course // Show only first 6 courses
             ) => (
               <Card
-                key={course._id}
+                key={course.id}
                 className="shadow-md relative border-2 border-indigo-400 border-dashed"
               >
                 <CardContent className="px-4 py-3">
@@ -114,7 +114,7 @@ const TopCourses = () => {
                       </div>
                       <Button className="cursor-pointer"
                         onClick={() =>
-                          navigate(`/courses/details/${course._id}`, {
+                          navigate(`/courses/details/${course.id}`, {
                             state: { course }
                           })
                         }

@@ -88,8 +88,8 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        if (course?._id) {
-          const res = await studentAPI.getNotes(course._id);
+        if (course?.id) {
+          const res = await studentAPI.getNotes(course.id);
           setNotebooks(res.data.data.notes);
         }
       } catch (err) {
@@ -102,10 +102,10 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
 
   const addNotebook = async (title: string) => {
     try {
-      if (course?._id) {
+      if (course?.id) {
         const newNote = await studentAPI.createNote({
           title: title,
-          course_id: course._id,
+          course_id: course.id,
           notes: [],
         });
         setNotebooks((prev) => [...prev, newNote.data.data.notes]);
@@ -116,7 +116,7 @@ const NotesApp: React.FC<NotesAppProps> = ({ course }) => {
   };
   const EditNotebook = async (notebookId: string, title: string) => {
     try {
-      if (course?._id) {
+      if (course?.id) {
         const updatedNote = await studentAPI.updateNoteBookTitle(
           notebookId,
           title

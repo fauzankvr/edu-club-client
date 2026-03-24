@@ -4,11 +4,11 @@ import { Icon } from "@iconify/react";
 import Footer from "@/components/studentComponents/Footer";
 import { useEffect, useState } from "react";
 import studentAPI from "@/API/StudentApi";
-import { ICourseData1 } from "@/Interface/CourseData";
+import { ICourseData } from "@/Interface/CourseData";
 import { useNavigate } from "react-router-dom";
 
 const Courses = () => {
-  const [courses, setCourses] = useState<ICourseData1[]>([]);
+  const [courses, setCourses] = useState<ICourseData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
@@ -59,7 +59,7 @@ const Courses = () => {
     fetchCourses(searchQuery, 1);
   };
 
-  const handleCardClick = (id: string, item: ICourseData1) => {
+  const handleCardClick = (id: string, item: ICourseData) => {
     navigate(`/courses/details/${id}`, { state: { course: item } });
   };
 

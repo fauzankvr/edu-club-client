@@ -92,7 +92,7 @@ export default function CourseTabs({
           </>
         )}
         {currentTab === "Reviews" && (
-          <FeedbackSection courseId={course?._id ?? ""} />
+          <FeedbackSection courseId={course?.id ?? ""} />
         )}
         {currentTab === "Discussion" && <Discussion />}
         {currentTab === "Contact Tutor" && (
@@ -111,7 +111,7 @@ export default function CourseTabs({
           />
         )}
         {currentTab === "Not Book" && <NotesApp course={course} />}
-        {currentTab === "Ai Chat" && <AiChat courseId={course?._id ?? ""} />}
+        {currentTab === "Ai Chat" && <AiChat courseId={course?.id ?? ""} />}
       </div>
     </>
   );

@@ -35,7 +35,7 @@ const Wishlist = () => {
     try {
       await studentAPI.removeFromWishlist(courseId);
       setWishlistItems((prev) =>
-        prev.filter((item) => item.course._id !== courseId)
+        prev.filter((item) => item.course.id !== courseId)
       );
     } catch (error) {
       console.error("Failed to remove from wishlist:", error);
@@ -123,7 +123,7 @@ const Wishlist = () => {
               <div
                 key={item._id}
                 className="bg-white rounded-xl overflow-hidden border hover:shadow-lg transition-all flex flex-col h-[420px] cursor-pointer"
-                onClick={() => handleCardClick(item.course._id)}
+                onClick={() => handleCardClick(item.course.id)}
               >
                 <div className="w-full h-40 overflow-hidden">
                   <img
@@ -170,7 +170,7 @@ const Wishlist = () => {
                       className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm font-semibold"
                       onClick={(e) => {
                         e.stopPropagation();
-                        confirmDelete(item.course._id);
+                        confirmDelete(item.course.id);
                       }}
                     >
                       Remove
@@ -179,8 +179,7 @@ const Wishlist = () => {
                       className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition text-sm font-semibold"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/courses/checkout/${item.course._id}`);
-                      }}
+                        navigate(`/courses/checkout/${item.course.id}`);                      }}
                     >
                       Buy Now
                     </button>

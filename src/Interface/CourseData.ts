@@ -12,27 +12,8 @@ export interface CourseFormData {
 }
 
 export interface ICourseData {
-  _id: string;
-  category: string;
-  courseImageId: string;
-  description: string;
-  discount: string;
-  instructor: {
-    name: string;
-    profileImage: string;
-  };
-  language: string;
-  points: string[];
-  price: number;
-  students: string[];
-  title: string;
-  instructorDetails: Instructor;
-  averageRating: number;
-}
-
-
-export interface ICourseData1 {
   id: string;
+  _id?: string; // alias – some raw API responses still return _id
   category: string;
   courseImageId: string;
   description: string;
@@ -49,6 +30,7 @@ export interface ICourseData1 {
   instructorDetails: Instructor;
   averageRating: number;
 }
+
 
 export interface ILecture {
   _id: string;

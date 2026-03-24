@@ -97,7 +97,7 @@ export interface Message {
           const courseData = courseResponse.data.data.course;
           const curriculum = courseResponse.data.data.curriculum;
 
-          const courseId = courseData?._id;
+          const courseId = courseData?.id ?? courseData?._id;
           if (!courseId || !student?.profile?._id)
             throw new Error("Missing course ID or student ID");
 
@@ -305,12 +305,12 @@ export interface Message {
       actualSecondsWatched: number
     ) => {
       try {
-        if (!studentId || !course?._id) {
+        if (!studentId || !course?.id) {
           throw new Error("Missing studentId or courseId");
         }
         const response = await studentAPI.updateProgress(
           studentId,
-          course._id,
+          course.id,
           sectionId,
           lectureId,
           progressValue.toString(),
@@ -406,7 +406,7 @@ export interface Message {
                 currentLesson={currentLesson}
                 carriculam={carriculam}
                 studentId={studentId}
-                courseId={course?._id}
+                courseId={course?.id}
                 updateLessonProgress={updateLessonProgress}
               />
               <div className="mt-4">
