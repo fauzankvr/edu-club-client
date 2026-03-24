@@ -7,12 +7,12 @@ export interface CourseFormData {
   category: string;
   actualPrice: string;
   discountPrice: string;
-  points: { text: string}[];
+  points: { text: string }[];
   image: File | null;
 }
 
 export interface ICourseData {
-  _id: string;
+  id: string;
   category: string;
   courseImageId: string;
   description: string;
@@ -44,11 +44,11 @@ export interface ISection {
 }
 
 export interface ICarriculam {
-  _id: string; 
-  courseId: string; 
+  _id: string;
+  courseId: string;
   instructor: string;
   sections: ISection[];
-  createdAt: string; 
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -57,7 +57,7 @@ export interface CourseQueryParams {
   page?: number;
   limit?: number;
   sort?: string;
-  [key: string]: string | number | undefined; 
+  [key: string]: string | number | undefined;
 }
 
 

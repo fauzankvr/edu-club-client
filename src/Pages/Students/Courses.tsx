@@ -19,7 +19,7 @@ const Courses = () => {
   const [selectedFilters, setSelectedFilters] = useState<{
     [key: string]: string;
   }>({});
-  const [sortOption, setSortOption] = useState<string>(""); 
+  const [sortOption, setSortOption] = useState<string>("");
   const [sortDropdownOpen, setSortDropdownOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const Courses = () => {
       setTotalPages(res.totalPages);
       setLanguage(res.languages);
       setCategory(res.categories);
-      
+
     } catch (error) {
       console.error("Error fetching courses:", error);
     } finally {
@@ -59,7 +59,7 @@ const Courses = () => {
     fetchCourses(searchQuery, 1);
   };
 
-  const handleCardClick = (id: string,item:ICourseData) => {
+  const handleCardClick = (id: string, item: ICourseData) => {
     navigate(`/courses/details/${id}`, { state: { course: item } });
   };
 
@@ -72,7 +72,7 @@ const Courses = () => {
   };
   const handleFilterChange = (newFilters: { [key: string]: string }) => {
     setSelectedFilters(newFilters);
-    setPage(1); 
+    setPage(1);
   };
 
   return (
@@ -138,11 +138,10 @@ const Courses = () => {
                           setSortDropdownOpen(false);
                           setPage(1);
                         }}
-                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${
-                          sortOption === option.value
-                            ? "bg-gray-100 font-semibold"
-                            : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 hover:bg-gray-100 ${sortOption === option.value
+                          ? "bg-gray-100 font-semibold"
+                          : ""
+                          }`}
                       >
                         {option.label}
                       </button>
@@ -191,7 +190,7 @@ const Courses = () => {
                 <>
                   {courses.map((item) => (
                     <div
-                      key={item._id}
+                      key={item.id}
                       className="bg-white shadow rounded-xl p-4 md:p-6 border border-indigo-100 hover:shadow-md transition-all"
                     >
                       <div className="flex flex-col md:flex-row gap-4">
@@ -202,7 +201,7 @@ const Courses = () => {
                         />
                         <div
                           className="flex-1 flex flex-col justify-between"
-                         
+
                         >
                           <div>
                             <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded font-medium">
@@ -220,7 +219,7 @@ const Courses = () => {
                                   ₹
                                   {Math.round(
                                     item.price -
-                                      (item.price * +item.discount) / 100
+                                    (item.price * +item.discount) / 100
                                   )}
                                 </div>
                               </div>
@@ -238,8 +237,8 @@ const Courses = () => {
                                       isFull
                                         ? "mdi:star"
                                         : isHalf
-                                        ? "mdi:star-half-full" // or "mdi:star-half"
-                                        : "mdi:star-outline"
+                                          ? "mdi:star-half-full" // or "mdi:star-half"
+                                          : "mdi:star-outline"
                                     }
                                   />
                                 );
@@ -273,7 +272,7 @@ const Courses = () => {
                             </div>
                             <button
                               className="flex items-center gap-1 rounded-full px-4 py-1 text-indigo-600 border border-indigo-600 hover:bg-indigo-600 hover:text-white transition-all cursor-pointer"
-                              onClick={() => handleCardClick(item._id, item)}
+                              onClick={() => handleCardClick(item.id, item)}
                             >
                               View course
                               <Icon icon="mdi:arrow-right" />
